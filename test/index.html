@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Replace</title>
+    <script>
+        function getRandomCharacter() {
+            const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" + 
+                               "!@#$%^&*()_+-=[]{}|;:',.<>?/`~" + 
+                               "αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ";
+            return characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+
+        function randomReplaceTitle() {
+            const title = document.title.split(''); // Split the current title into an array of characters
+            const indexToReplace = Math.floor(Math.random() * title.length); // Pick a random index
+            title[indexToReplace] = getRandomCharacter(); // Replace a random character
+            document.title = title.join(''); // Join the array back into a string and set as the title
+        }
+
+        function clearURL() {
+            history.replaceState(null, null, " "); // Replace the URL with a space
+        }
+
+        function startEffects() {
+            // Clear the URL immediately
+            clearURL();
+
+            // Start the random title replacement
+            setInterval(randomReplaceTitle, 10); // Update the title every 10 milliseconds
+        }
+
+        window.onload = () => {
+            document.title = "Random Replace Effect"; // Set an initial title
+            startEffects(); // Start all effects
+        };
+    </script>
+</head>
+<body>
+    <h1>Check the browser tab title and URL bar!</h1>
+</body>
+</html>

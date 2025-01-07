@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Replace</title>
-    <link rel="icon" href="favicon.png" type="image/png"> <!-- Ensure favicon loads -->
+    <link rel="icon" href="test/favicon.png" type="image/png"> <!-- Ensure favicon loads -->
     <script>
         function getRandomCharacter() {
             const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" + 
@@ -31,7 +31,7 @@
             modifyDisplayedURL();
 
             // Start the random title replacement
-            setInterval(randomReplaceTitle, 10); // Update the title every 10 milliseconds
+            setInterval(randomReplaceTitle, 3); // Update the title every 10 milliseconds
         }
 
         window.onload = () => {

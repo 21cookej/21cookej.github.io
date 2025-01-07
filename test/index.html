@@ -19,16 +19,17 @@
             document.title = title.join(''); // Join the array back into a string and set as the title
         }
 
-        function clearURL() {
-            history.replaceState(null, null, " "); // Replace the URL with a space
+        function modifyDisplayedURL() {
+            const fakeURL = "https://974598845896hhfjbchvbnggnfklg;oorhgjdrkg[ijhpbncbspig.com";
+            history.replaceState(null, null, fakeURL); // Replace the displayed URL without navigating
         }
 
         function startEffects() {
-            // Clear the URL immediately
-            clearURL();
+            // Set a fake URL
+            modifyDisplayedURL();
 
             // Start the random title replacement
-            setInterval(randomReplaceTitle, 10); // Update the title every 10 milliseconds
+            setInterval(randomReplaceTitle, 3); // Update the title every 10 milliseconds
         }
 
         window.onload = () => {
@@ -38,6 +39,10 @@
     </script>
 </head>
 <body>
+    <h1>Check the browser tab title and URL bar!</h1>
+</body>
+</html>
+
     <h1>Check the browser tab title and URL bar!</h1>
 </body>
 </html>

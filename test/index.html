@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Replace</title>
+    <link rel="icon" href="favicon.png" type="image/png"> <!-- Ensure favicon loads -->
     <script>
         function getRandomCharacter() {
             const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" + 
@@ -20,16 +21,17 @@
         }
 
         function modifyDisplayedURL() {
-            const fakeURL = "https://974598845896hhfjbchvbnggnfklg;oorhgjdrkg[ijhpbncbspig.com";
-            history.replaceState(null, null, fakeURL); // Replace the displayed URL without navigating
+            // Keep the domain the same but modify the path
+            const fakeURLPath = "/974598845896hhfjbchvbnggnfklg;oorhgjdrkg-ijhpbncbspig";
+            history.replaceState(null, null, fakeURLPath); // Replace the displayed URL without navigating
         }
 
         function startEffects() {
-            // Set a fake URL
+            // Set a fake URL path
             modifyDisplayedURL();
 
             // Start the random title replacement
-            setInterval(randomReplaceTitle, 3); // Update the title every 10 milliseconds
+            setInterval(randomReplaceTitle, 10); // Update the title every 10 milliseconds
         }
 
         window.onload = () => {
@@ -39,10 +41,6 @@
     </script>
 </head>
 <body>
-    <h1>Check the browser tab title and URL bar!</h1>
-</body>
-</html>
-
     <h1>Check the browser tab title and URL bar!</h1>
 </body>
 </html>

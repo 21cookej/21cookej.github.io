@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enchantment Table Translator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h3 {
+            margin: 10px 0;
+        }
+        textarea {
+            width: 45%;
+            height: 150px;
+            margin: 10px 2.5%;
+            font-size: 18px;
+            padding: 10px;
+            resize: none;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h3>Translator</h3>
+    <div class="container">
+        <textarea id="englishInput" placeholder="Type English here"></textarea>
+        <textarea id="enchantedInput" placeholder="Type Enchanted Language here"></textarea>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>English</th>
+                <th>Translated</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>A</td><td>ᔑ</td></tr>
+            <tr><td>B</td><td>ʖ</td></tr>
+            <tr><td>C</td><td>ᓵ</td></tr>
+            <tr><td>D</td><td>↸</td></tr>
+            <tr><td>E</td><td>ᒷ</td></tr>
+            <tr><td>F</td><td>⎓</td></tr>
+            <tr><td>G</td><td>⊣</td></tr>
+            <tr><td>H</td><td>⍑</td></tr>
+            <tr><td>I</td><td>╎</td></tr>
+            <tr><td>J</td><td>⋮</td></tr>
+            <tr><td>K</td><td>ꖌ</td></tr>
+            <tr><td>L</td><td>ꖎ</td></tr>
+            <tr><td>M</td><td>ᒲ</td></tr>
+            <tr><td>N</td><td>リ</td></tr>
+            <tr><td>O</td><td>𝙹</td></tr>
+            <tr><td>P</td><td>!¡</td></tr>
+            <tr><td>Q</td><td>ᑑ</td></tr>
+            <tr><td>R</td><td>∷</td></tr>
+            <tr><td>S</td><td>ᓭ</td></tr>
+            <tr><td>T</td><td>ℸ</td></tr>
+            <tr><td>U</td><td>⚍</td></tr>
+            <tr><td>V</td><td>⍊</td></tr>
+            <tr><td>W</td><td>∴</td></tr>
+            <tr><td>X</td><td>̇/</td></tr>
+            <tr><td>Y</td><td>||</td></tr>
+            <tr><td>Z</td><td>⨅</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        const englishToEnchanted = {
+            "a": "ᔑ", "b": "ʖ", "c": "ᓵ", "d": "↸", "e": "ᒷ",
+            "f": "⎓", "g": "⊣", "h": "⍑", "i": "╎", "j": "⋮",
+            "k": "ꖌ", "l": "ꖎ", "m": "ᒲ", "n": "リ", "o": "𝙹",
+            "p": "!¡", "q": "ᑑ", "r": "∷", "s": "ᓭ", "t": "ℸ",
+            "u": "⚍", "v": "⍊", "w": "∴", "x": "̇/", "y": "||", "z": "⨅", " ": " "
+        };
+
+        const enchantedToEnglish = {
+            "ᔑ": "a", "ʖ": "b", "ᓵ": "c", "↸": "d", "ᒷ": "e",
+            "⎓": "f", "⊣": "g", "⍑": "h", "╎": "i", "⋮": "j",
+            "ꖌ": "k", "ꖎ": "l", "ᒲ": "m", "リ": "n", "𝙹": "o",
+            "!¡": "p", "ᑑ": "q", "∷": "r", "ᓭ": "s", "ℸ": "t",
+            "⚍": "u", "⍊": "v", "∴": "w", "̇/": "x", "||": "y", "⨅": "z", " ": " "
+        };
+
+        const englishInput = document.getElementById("englishInput");
+        const enchantedInput = document.getElementById("enchantedInput");
+
+        // English to Enchanted Translator
+        englishInput.addEventListener("input", () => {
+            const input = englishInput.value.toLowerCase();
+            enchantedInput.value = Array.from(input).map(char => englishToEnchanted[char] || char).join("");
+        });
+
+        // Enchanted to English Translator
+        enchantedInput.addEventListener("input", () => {
+            const input = enchantedInput.value;
+            let result = "";
+            let buffer = ""; // Buffer for multi-character symbols
+
+            for (const char of input) {
+                buffer += char;
+
+                // Check for multi-character match
+                if (enchantedToEnglish[buffer]) {
+                    result += enchantedToEnglish[buffer];
+                    buffer = ""; // Clear buffer on match
+                } else if (buffer.length > 1) {
+                    // Process the first character and reset buffer
+                    result += enchantedToEnglish[buffer[0]] || buffer[0];
+                    buffer = buffer.slice(1);
+                }
+            }
+
+            // Process any leftover characters
+            if (buffer) {
+                result += Array.from(buffer).map(char => enchantedToEnglish[char] || char).join("");
+            }
+
+            englishInput.value = result;
+        });
+    </script>
+</body>
+</html>

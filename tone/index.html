@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tone Generator</title>
+  <title>Custom Sound Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,95 +17,111 @@
       flex-direction: column;
     }
 
-    h1 {
-      margin-bottom: 20px;
-    }
-
     .container {
       text-align: center;
       padding: 20px;
       border: 2px solid #4e4e4e;
       border-radius: 10px;
       background-color: #2c2c2c;
-    }
-
-    .control {
-      margin: 20px 0;
+      width: 500px;
     }
 
     label {
-      font-size: 18px;
-      margin-right: 10px;
+      display: block;
+      font-size: 16px;
+      margin: 10px 0;
     }
 
     input[type="range"] {
-      width: 250px;
-      margin-top: 10px;
-      background-color: #4e4e4e;
+      width: 60%;
+      margin: 10px 0;
+    }
+
+    select {
+      width: 40%;
+      margin: 10px;
+      padding: 5px;
+      background-color: #3c3c3c;
+      color: white;
+      border: 1px solid #5a5a5a;
       border-radius: 5px;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 5px;
+      font-size: 16px;
     }
 
-    input[type="range"]:focus {
-      outline: none;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      background-color: #6a6a6a;
-      border-radius: 50%;
-      height: 20px;
-      width: 20px;
+    input[type="file"] {
+      background-color: #2c2c2c;
+      border: 1px solid #4e4e4e;
+      color: white;
+      border-radius: 5px;
       cursor: pointer;
+      padding: 5px;
     }
 
-    input[type="range"]::-moz-range-thumb {
-      background-color: #6a6a6a;
-      border-radius: 50%;
-      height: 20px;
-      width: 20px;
+    input[type="file"]::-webkit-file-upload-button {
+      background-color: #3c3c3c;
+      color: white;
+      border: 1px solid #5a5a5a;
       cursor: pointer;
+      padding: 3px;
+      border-radius: 1px;
+    }
+
+    input[type="file"]::-webkit-file-upload-button:hover {
+      background-color: #4e4e4e;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #3c3c3c;
+      color: white;
+      border: 1px solid #5a5a5a;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #4e4e4e;
     }
 
     .output {
       margin-top: 20px;
     }
 
-    select, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      background-color: #3c3c3c;
-      color: white;
-      border: 1px solid #5a5a5a;
-      cursor: pointer;
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
     }
 
-    button:hover, select:hover {
-      background-color: #4e4e4e;
+    .inline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .button-container {
-      margin-top: 20px;
+    .inline label {
+      margin: 0 10px 0 0;
+    }
+
+    .inline select, .inline input[type="range"] {
+      margin: 0 10px;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Tone Generator</h1>
+    <h1>Custom Sound Generator</h1>
 
-    <div class="control">
-      <label for="frequency">Frequency: </label>
+    <div class="inline">
+      <label for="frequency">Frequency:</label>
       <input type="range" id="frequency" min="20" max="24000" value="440">
       <span id="freq-value">440 Hz</span>
     </div>
 
-    <div class="control">
-      <label for="waveform">Waveform: </label>
+    <div class="inline">
+      <label for="waveform">Waveform:</label>
       <select id="waveform">
         <option value="sine">Sine</option>
         <option value="square">Square</option>
@@ -114,23 +130,33 @@
       </select>
     </div>
 
-    <div class="button-container">
-      <button id="toggle">Start</button>
+    <div class="inline">
+      <label for="file-input">Import Custom Sound:</label>
+      <input type="file" id="file-input" accept="audio/*,video/*">
+      <button id="add-sound">Import</button>
     </div>
+    <p class="error" id="error-msg"></p>
 
     <div class="output">
       <p>Current Frequency: <span id="current-frequency">440 Hz</span></p>
       <p>Current Waveform: <span id="current-waveform">Sine</span></p>
     </div>
+
+    <button id="toggle">Start</button>
   </div>
 
   <script>
     let audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let oscillator = null;
+    let audioBufferSource = null;
     let isPlaying = false;
+    let importedFiles = new Set();
 
     const frequencyInput = document.getElementById("frequency");
     const waveformSelect = document.getElementById("waveform");
+    const fileInput = document.getElementById("file-input");
+    const addSoundButton = document.getElementById("add-sound");
+    const errorMsg = document.getElementById("error-msg");
     const toggleButton = document.getElementById("toggle");
     const freqValueDisplay = document.getElementById("freq-value");
     const currentFreqDisplay = document.getElementById("current-frequency");
@@ -139,21 +165,22 @@
     frequencyInput.addEventListener("input", updateFrequency);
     waveformSelect.addEventListener("change", updateWaveform);
     toggleButton.addEventListener("click", toggleTone);
+    addSoundButton.addEventListener("click", importCustomSound);
 
     function updateFrequency() {
       const frequency = frequencyInput.value;
       freqValueDisplay.textContent = `${frequency} Hz`;
+      currentFreqDisplay.textContent = `${frequency} Hz`;
       if (oscillator && isPlaying) {
         oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-        currentFreqDisplay.textContent = `${frequency} Hz`;
       }
     }
 
     function updateWaveform() {
       const waveform = waveformSelect.value;
-      if (oscillator) {
+      currentWaveformDisplay.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
+      if (oscillator && waveform !== "custom") {
         oscillator.type = waveform;
-        currentWaveformDisplay.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
       }
     }
 
@@ -167,7 +194,13 @@
 
     function startTone() {
       oscillator = audioContext.createOscillator();
-      oscillator.type = waveformSelect.value;
+      const waveform = waveformSelect.value;
+      if (waveform === "custom") {
+        // Handle custom sound logic here
+        oscillator = audioBufferSource; // Placeholder for custom sound
+      } else {
+        oscillator.type = waveform;
+      }
       oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
       oscillator.connect(audioContext.destination);
       oscillator.start();
@@ -182,6 +215,30 @@
       }
       toggleButton.textContent = "Start";
       isPlaying = false;
+    }
+
+    function importCustomSound() {
+      const file = fileInput.files[0];
+      if (!file) {
+        errorMsg.textContent = "No file selected!";
+        return;
+      }
+
+      const fileName = file.name.split('.').slice(0, -1).join('.');
+      if (importedFiles.has(fileName)) {
+        errorMsg.textContent = "File with the same name already exists!";
+        return;
+      }
+
+      importedFiles.add(fileName);
+      const option = document.createElement("option");
+      option.value = fileName;
+      option.textContent = fileName;
+      waveformSelect.appendChild(option);
+      waveformSelect.value = fileName; // Automatically select the imported sound
+      currentWaveformDisplay.textContent = fileName; // Update the current waveform with the file name
+      errorMsg.textContent = "";
+      fileInput.value = ""; // Clear the file input
     }
   </script>
 

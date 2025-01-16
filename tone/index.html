@@ -64,7 +64,6 @@
       cursor: pointer;
       padding: 5px;
       flex: 1;
-       /* Hides the default text */
     }
 
     input[type="file"]::-webkit-file-upload-button {
@@ -156,6 +155,7 @@
     let audioBufferSource = null;
     let isPlaying = false;
     let importedFiles = new Set();
+    let customAudioBuffer = null;
 
     const frequencyInput = document.getElementById("frequency");
     const waveformSelect = document.getElementById("waveform");
@@ -198,17 +198,19 @@
     }
 
     function startTone() {
-      oscillator = audioContext.createOscillator();
-      const waveform = waveformSelect.value;
-      if (waveform === "custom") {
-        // Handle custom sound logic here
-        oscillator = audioBufferSource; // Placeholder for custom sound
+      if (waveformSelect.value === "custom" && customAudioBuffer) {
+        audioBufferSource = audioContext.createBufferSource();
+        audioBufferSource.buffer = customAudioBuffer;
+        audioBufferSource.connect(audioContext.destination);
+        audioBufferSource.start();
       } else {
+        oscillator = audioContext.createOscillator();
+        const waveform = waveformSelect.value;
         oscillator.type = waveform;
+        oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
+        oscillator.connect(audioContext.destination);
+        oscillator.start();
       }
-      oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
-      oscillator.connect(audioContext.destination);
-      oscillator.start();
       toggleButton.textContent = "Stop";
       isPlaying = true;
     }
@@ -217,6 +219,10 @@
       if (oscillator) {
         oscillator.stop();
         oscillator.disconnect();
+      }
+      if (audioBufferSource) {
+        audioBufferSource.stop();
+        audioBufferSource.disconnect();
       }
       toggleButton.textContent = "Start";
       isPlaying = false;
@@ -243,6 +249,18 @@
       waveformSelect.value = fileName; // Automatically select the imported sound
       currentWaveformDisplay.textContent = fileName; // Update the current waveform with the file name
       errorMsg.textContent = "";
+
+      // Load and decode the audio file
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        audioContext.decodeAudioData(event.target.result, function(buffer) {
+          customAudioBuffer = buffer;
+        }, function(error) {
+          errorMsg.textContent = "Failed to load audio file.";
+        });
+      };
+      reader.readAsArrayBuffer(file);
+      
       fileInput.value = ""; // Clear the file input
     }
   </script>

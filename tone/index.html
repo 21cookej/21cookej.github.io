@@ -66,14 +66,6 @@
       flex: 1;
     }
 
-    input[type="file"]::-webkit-file-upload-button {
-      background-color: #2c2c2c;
-      color: white;
-      border: 1px solid #4e4e4e;
-      padding: 5px;
-      cursor: pointer;
-    }
-
     button {
       padding: 10px;
       background-color: #3c3c3c;
@@ -146,6 +138,12 @@
       <p>Current Waveform: <span id="current-waveform">Sine</span></p>
     </div>
 
+    <div class="inline">
+      <label for="volume">Volume:</label>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+      <span id="volume-value">100%</span>
+    </div>
+
     <button id="toggle">Start</button>
   </div>
 
@@ -154,23 +152,23 @@
     let oscillator = null;
     let audioBufferSource = null;
     let isPlaying = false;
-    let importedFiles = new Set();
-    let customAudioBuffer = null;
 
     const frequencyInput = document.getElementById("frequency");
     const waveformSelect = document.getElementById("waveform");
     const fileInput = document.getElementById("file-input");
     const addSoundButton = document.getElementById("add-sound");
-    const errorMsg = document.getElementById("error-msg");
     const toggleButton = document.getElementById("toggle");
+    const volumeInput = document.getElementById("volume");
     const freqValueDisplay = document.getElementById("freq-value");
     const currentFreqDisplay = document.getElementById("current-frequency");
     const currentWaveformDisplay = document.getElementById("current-waveform");
+    const volumeValueDisplay = document.getElementById("volume-value");
 
     frequencyInput.addEventListener("input", updateFrequency);
     waveformSelect.addEventListener("change", updateWaveform);
     toggleButton.addEventListener("click", toggleTone);
     addSoundButton.addEventListener("click", importCustomSound);
+    volumeInput.addEventListener("input", updateVolume);
 
     function updateFrequency() {
       const frequency = frequencyInput.value;
@@ -184,8 +182,17 @@
     function updateWaveform() {
       const waveform = waveformSelect.value;
       currentWaveformDisplay.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
-      if (oscillator && waveform !== "custom") {
+      if (oscillator && isPlaying) {
         oscillator.type = waveform;
+      }
+    }
+
+    function updateVolume() {
+      const volume = volumeInput.value;
+      volumeValueDisplay.textContent = `${Math.round(volume * 100)}%`;
+      if (oscillator && isPlaying) {
+        oscillator.connect(audioContext.destination);
+        audioContext.destination.gain.setValueAtTime(volume, audioContext.currentTime);
       }
     }
 
@@ -198,70 +205,41 @@
     }
 
     function startTone() {
-      if (waveformSelect.value === "custom" && customAudioBuffer) {
-        audioBufferSource = audioContext.createBufferSource();
-        audioBufferSource.buffer = customAudioBuffer;
-        audioBufferSource.connect(audioContext.destination);
-        audioBufferSource.start();
-      } else {
-        oscillator = audioContext.createOscillator();
-        const waveform = waveformSelect.value;
-        oscillator.type = waveform;
-        oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
-        oscillator.connect(audioContext.destination);
-        oscillator.start();
-      }
+      oscillator = audioContext.createOscillator();
+      const waveform = waveformSelect.value;
+      oscillator.type = waveform;
+      oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
+
+      const gainNode = audioContext.createGain();
+      gainNode.gain.setValueAtTime(volumeInput.value, audioContext.currentTime);
+
+      oscillator.connect(gainNode).connect(audioContext.destination);
+      oscillator.start();
       toggleButton.textContent = "Stop";
       isPlaying = true;
     }
 
     function stopTone() {
-      if (oscillator) {
-        oscillator.stop();
-        oscillator.disconnect();
-      }
-      if (audioBufferSource) {
-        audioBufferSource.stop();
-        audioBufferSource.disconnect();
-      }
+      oscillator.stop();
       toggleButton.textContent = "Start";
       isPlaying = false;
     }
 
     function importCustomSound() {
       const file = fileInput.files[0];
-      if (!file) {
-        errorMsg.textContent = "No file selected!";
-        return;
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          audioContext.decodeAudioData(e.target.result, function(buffer) {
+            audioBufferSource = audioContext.createBufferSource();
+            audioBufferSource.buffer = buffer;
+            audioBufferSource.connect(audioContext.destination);
+            audioBufferSource.loop = true; // Automatic looping
+            audioBufferSource.start();
+          });
+        };
+        reader.readAsArrayBuffer(file);
       }
-
-      const fileName = file.name.split('.').slice(0, -1).join('.');
-      if (importedFiles.has(fileName)) {
-        errorMsg.textContent = "File with the same name already exists!";
-        return;
-      }
-
-      importedFiles.add(fileName);
-      const option = document.createElement("option");
-      option.value = fileName;
-      option.textContent = fileName;
-      waveformSelect.appendChild(option);
-      waveformSelect.value = fileName; // Automatically select the imported sound
-      currentWaveformDisplay.textContent = fileName; // Update the current waveform with the file name
-      errorMsg.textContent = "";
-
-      // Load and decode the audio file
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        audioContext.decodeAudioData(event.target.result, function(buffer) {
-          customAudioBuffer = buffer;
-        }, function(error) {
-          errorMsg.textContent = "Failed to load audio file.";
-        });
-      };
-      reader.readAsArrayBuffer(file);
-      
-      fileInput.value = ""; // Clear the file input
     }
   </script>
 

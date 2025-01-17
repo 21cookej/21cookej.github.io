@@ -151,6 +151,7 @@
     let audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let oscillator = null;
     let audioBufferSource = null;
+    let gainNode = audioContext.createGain();
     let isPlaying = false;
 
     const frequencyInput = document.getElementById("frequency");
@@ -164,9 +165,11 @@
     const currentWaveformDisplay = document.getElementById("current-waveform");
     const volumeValueDisplay = document.getElementById("volume-value");
 
+    let customBuffer = null;
+
     frequencyInput.addEventListener("input", updateFrequency);
     waveformSelect.addEventListener("change", updateWaveform);
-    toggleButton.addEventListener("click", toggleTone);
+    toggleButton.addEventListener("click", toggleSound);
     addSoundButton.addEventListener("click", importCustomSound);
     volumeInput.addEventListener("input", updateVolume);
 
@@ -174,55 +177,60 @@
       const frequency = frequencyInput.value;
       freqValueDisplay.textContent = `${frequency} Hz`;
       currentFreqDisplay.textContent = `${frequency} Hz`;
-      if (oscillator && isPlaying) {
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      if (audioBufferSource && customBuffer) {
+        audioBufferSource.playbackRate.setValueAtTime(frequency / 440, audioContext.currentTime);
       }
     }
 
     function updateWaveform() {
       const waveform = waveformSelect.value;
       currentWaveformDisplay.textContent = waveform.charAt(0).toUpperCase() + waveform.slice(1);
-      if (oscillator && isPlaying) {
-        oscillator.type = waveform;
-      }
     }
 
     function updateVolume() {
       const volume = volumeInput.value;
       volumeValueDisplay.textContent = `${Math.round(volume * 100)}%`;
-      if (oscillator && isPlaying) {
-        oscillator.connect(audioContext.destination);
-        audioContext.destination.gain.setValueAtTime(volume, audioContext.currentTime);
-      }
+      gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
     }
 
-    function toggleTone() {
+    function toggleSound() {
       if (isPlaying) {
-        stopTone();
+        stopSound();
       } else {
-        startTone();
+        startSound();
       }
     }
 
-    function startTone() {
-      oscillator = audioContext.createOscillator();
-      const waveform = waveformSelect.value;
-      oscillator.type = waveform;
-      oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
-
-      const gainNode = audioContext.createGain();
-      gainNode.gain.setValueAtTime(volumeInput.value, audioContext.currentTime);
-
-      oscillator.connect(gainNode).connect(audioContext.destination);
-      oscillator.start();
-      toggleButton.textContent = "Stop";
+    function startSound() {
+      if (customBuffer) {
+        audioBufferSource = audioContext.createBufferSource();
+        audioBufferSource.buffer = customBuffer;
+        audioBufferSource.loop = true;
+        audioBufferSource.playbackRate.setValueAtTime(frequencyInput.value / 440, audioContext.currentTime);
+        audioBufferSource.connect(gainNode).connect(audioContext.destination);
+        audioBufferSource.start();
+      } else {
+        oscillator = audioContext.createOscillator();
+        oscillator.type = waveformSelect.value;
+        oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
+        oscillator.connect(gainNode).connect(audioContext.destination);
+        oscillator.start();
+      }
       isPlaying = true;
+      toggleButton.textContent = "Stop";
     }
 
-    function stopTone() {
-      oscillator.stop();
-      toggleButton.textContent = "Start";
+    function stopSound() {
+      if (oscillator) {
+        oscillator.stop();
+        oscillator = null;
+      }
+      if (audioBufferSource) {
+        audioBufferSource.stop();
+        audioBufferSource = null;
+      }
       isPlaying = false;
+      toggleButton.textContent = "Start";
     }
 
     function importCustomSound() {
@@ -231,11 +239,7 @@
         const reader = new FileReader();
         reader.onload = function(e) {
           audioContext.decodeAudioData(e.target.result, function(buffer) {
-            audioBufferSource = audioContext.createBufferSource();
-            audioBufferSource.buffer = buffer;
-            audioBufferSource.connect(audioContext.destination);
-            audioBufferSource.loop = true; // Automatic looping
-            audioBufferSource.start();
+            customBuffer = buffer;
           });
         };
         reader.readAsArrayBuffer(file);

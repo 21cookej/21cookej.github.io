@@ -142,12 +142,13 @@
   <script>
     let clickCount = 0;
     const targetClicks = 5; // Number of clicks required to open the URL
-    const url = "https://21cookej.github.io"; // Replace with your chosen URL
+    const url = "https://21cookej.github.io/"; // The target URL
 
     document.getElementById("button").addEventListener("click", () => {
       clickCount++;
       if (clickCount >= targetClicks) {
-        window.location.href = url;
+        window.open(url, "_self"); // Open the URL in the current tab
+        window.close(); // Close the current page
       }
     });
   </script>

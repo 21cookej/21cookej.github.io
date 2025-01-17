@@ -125,6 +125,18 @@
       margin: 15px 0 -3px 3px;
       border: 7px solid black;
     }
+
+    #click-counter {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 16px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -139,13 +151,26 @@
     </div>
   </div>
 
+  <div id="click-counter">Clicks: 0</div>
+
   <script>
     let clickCount = 0;
-    const targetClicks = 5; // Number of clicks required to open the URL
+    const targetClicks = 1000; // Number of clicks required to open the URL
+    const counterStart = 10; // When the click counter becomes visible
     const url = "https://21cookej.github.io/"; // The target URL
+
+    const clickCounter = document.getElementById("click-counter");
 
     document.getElementById("button").addEventListener("click", () => {
       clickCount++;
+
+      // Show the click counter after the 10th click
+      if (clickCount >= counterStart) {
+        clickCounter.style.display = "block";
+        clickCounter.textContent = `Clicks: ${clickCount}`;
+      }
+
+      // Open URL and close page after 100 clicks
       if (clickCount >= targetClicks) {
         window.open(url, "_self"); // Open the URL in the current tab
         window.close(); // Close the current page

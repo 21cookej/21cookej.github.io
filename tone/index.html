@@ -103,6 +103,24 @@
     .inline select, .inline input[type="range"] {
       margin: 0 10px;
     }
+
+    .sound-list {
+      margin-top: 20px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .sound-item {
+      padding: 5px;
+      cursor: pointer;
+      background-color: #3c3c3c;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+
+    .sound-item:hover {
+      background-color: #4e4e4e;
+    }
   </style>
 </head>
 <body>
@@ -145,6 +163,7 @@
     </div>
 
     <button id="toggle">Start</button>
+
   </div>
 
   <script>
@@ -166,6 +185,7 @@
     const volumeValueDisplay = document.getElementById("volume-value");
 
     let customBuffer = null;
+    let customSounds = []; // Array to store custom sounds
 
     frequencyInput.addEventListener("input", updateFrequency);
     waveformSelect.addEventListener("change", updateWaveform);
@@ -203,13 +223,21 @@
 
     function startSound() {
       if (customBuffer) {
+        // Create a buffer source for the custom sound and make it loop automatically
         audioBufferSource = audioContext.createBufferSource();
         audioBufferSource.buffer = customBuffer;
         audioBufferSource.loop = true;
+        
+        // Set the playback rate of the custom sound according to the frequency slider
         audioBufferSource.playbackRate.setValueAtTime(frequencyInput.value / 440, audioContext.currentTime);
+        
+        // Connect the buffer source to the gain node and destination
         audioBufferSource.connect(gainNode).connect(audioContext.destination);
+        
+        // Start the sound playback
         audioBufferSource.start();
       } else {
+        // Default oscillator setup if no custom sound is loaded
         oscillator = audioContext.createOscillator();
         oscillator.type = waveformSelect.value;
         oscillator.frequency.setValueAtTime(frequencyInput.value, audioContext.currentTime);
@@ -240,10 +268,24 @@
         reader.onload = function(e) {
           audioContext.decodeAudioData(e.target.result, function(buffer) {
             customBuffer = buffer;
+            const soundName = file.name.split('.')[0]; // Remove the file extension
+            customSounds.push(soundName); // Add the sound to the list
+            updateWaveformList(); // Update the waveform list
+            fileInput.value = ''; // Clear the input field
           });
         };
         reader.readAsArrayBuffer(file);
       }
+    }
+
+    function updateWaveformList() {
+      waveformSelect.innerHTML = '<option value="sine">Sine</option><option value="square">Square</option><option value="triangle">Triangle</option><option value="sawtooth">Sawtooth</option>';
+      customSounds.forEach(function(soundName) {
+        const customOption = document.createElement("option");
+        customOption.value = soundName;
+        customOption.textContent = soundName;
+        waveformSelect.appendChild(customOption);
+      });
     }
   </script>
 

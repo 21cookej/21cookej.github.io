@@ -183,6 +183,7 @@
     const currentFreqDisplay = document.getElementById("current-frequency");
     const currentWaveformDisplay = document.getElementById("current-waveform");
     const volumeValueDisplay = document.getElementById("volume-value");
+    const errorMsg = document.getElementById("error-msg");
 
     let customBuffer = null;
     let customSounds = []; // Array to store custom sounds
@@ -263,19 +264,23 @@
 
     function importCustomSound() {
       const file = fileInput.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          audioContext.decodeAudioData(e.target.result, function(buffer) {
-            customBuffer = buffer;
-            const soundName = file.name.split('.')[0]; // Remove the file extension
-            customSounds.push(soundName); // Add the sound to the list
-            updateWaveformList(); // Update the waveform list
-            fileInput.value = ''; // Clear the input field
-          });
-        };
-        reader.readAsArrayBuffer(file);
+      if (!file) {
+        errorMsg.textContent = "No file selected!";
+        return;
       }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        audioContext.decodeAudioData(e.target.result, function(buffer) {
+          customBuffer = buffer;
+          const soundName = file.name.split('.')[0]; // Remove the file extension
+          customSounds.push(soundName); // Add the sound to the list
+          updateWaveformList(); // Update the waveform list
+          fileInput.value = ''; // Clear the input field
+          errorMsg.textContent = ''; // Clear error message
+        });
+      };
+      reader.readAsArrayBuffer(file);
     }
 
     function updateWaveformList() {

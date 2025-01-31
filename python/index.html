@@ -11,9 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
     
-    <!-- Pyodide for running Python in browser -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,9 +59,20 @@
             padding: 10px;
         }
 
-        #editor {
+        #editor-wrapper {
             flex-grow: 1;
             border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            resize: vertical;
+            overflow: hidden;
+            min-height: 200px;
+            max-height: 80vh;
+        }
+
+        #editor {
+            flex-grow: 1;
+            border: none;
         }
 
         /* Output box */
@@ -77,7 +85,6 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
-
     </style>
 </head>
 <body>
@@ -94,7 +101,9 @@
 
     <!-- Editor & Output -->
     <div class="editor-container">
-        <textarea id="editor"></textarea>
+        <div id="editor-wrapper">
+            <textarea id="editor"></textarea>
+        </div>
         <h3>Output:</h3>
         <div id="output">Click "Run" to see output here...</div>
     </div>
@@ -128,18 +137,26 @@ print(greet("World"))`);
             }
         });
 
-        async function runPython() {
-            let outputDiv = document.getElementById("output");
-            outputDiv.innerHTML = "Running...";
-
-            try {
-                let pyodide = await loadPyodide();
-                let code = editor.getValue();
-                let result = pyodide.runPython(code);
-                outputDiv.innerHTML = result;
-            } catch (error) {
-                outputDiv.innerHTML = "Error: " + error;
+        function runPython() {
+            let fileName = document.getElementById("fileName").value;
+            if (!fileName.endsWith(".py")) {
+                fileName += ".py";
             }
+            let fileContent = editor.getValue();
+
+            // Save file temporarily
+            let blob = new Blob([fileContent], { type: "text/plain" });
+            let url = URL.createObjectURL(blob);
+
+            // Create a hidden download link
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            alert(`File "${fileName}" saved! Run it manually in Python.`);
         }
 
         function saveFile() {

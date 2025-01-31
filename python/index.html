@@ -4,65 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Python Editor & Runner</title>
+
+    <!-- CodeMirror for syntax highlighting -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    
+    <!-- Pyodide for running Python in browser -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: white;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
         }
+
+        /* Sidebar for file controls */
+        .sidebar {
+            width: 300px;
+            background: #333;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2);
+        }
+
         input, button {
             font-size: 16px;
-            margin: 10px;
             padding: 8px;
+            width: 100%;
         }
-        #editor {
-            width: 80%;
-            height: 300px;
-            border: 1px solid #ccc;
-            margin: auto;
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
-        #output {
-            width: 80%;
-            height: 100px;
-            border: 1px solid #000;
-            margin: auto;
-            background: #eee;
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* Code editor styling */
+        .editor-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
             padding: 10px;
-            text-align: left;
-            overflow-y: auto;
         }
+
+        #editor {
+            flex-grow: 1;
+            border: 1px solid #444;
+        }
+
+        /* Output box */
+        #output {
+            height: 120px;
+            border: 1px solid #555;
+            background: black;
+            color: lime;
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Python File Editor & Runner</h1>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Python Editor</h2>
+        <input type="file" id="fileInput" accept=".py">
+        <input type="text" id="fileName" value="script.py">
+        <button onclick="runPython()">Run</button>
+        <button onclick="saveFile()">Save</button>
+        <button onclick="exportFile()">Export</button>
+    </div>
 
-    <input type="file" id="fileInput" accept=".py">
-    <br>
-    <label>Filename:</label>
-    <input type="text" id="fileName" value="script.py">
-    <br>
-
-    <textarea id="editor"></textarea>
-    <br>
-
-    <button onclick="runPython()">Run</button>
-    <button onclick="saveFile()">Save</button>
-    <button onclick="exportFile()">Export</button>
-
-    <h3>Output:</h3>
-    <div id="output"></div>
+    <!-- Editor & Output -->
+    <div class="editor-container">
+        <textarea id="editor"></textarea>
+        <h3>Output:</h3>
+        <div id="output">Click "Run" to see output here...</div>
+    </div>
 
     <script>
         let editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
             mode: "python",
             lineNumbers: true,
-            theme: "default"
+            theme: "dracula",
+            lineWrapping: true
         });
+
+        // Load default example Python script
+        editor.setValue(`# Example Python script
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))`);
 
         document.getElementById("fileInput").addEventListener("change", function(event) {
             let file = event.target.files[0];

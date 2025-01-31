@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>History Flood</title>
+    <title>History Flooder</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,19 +26,25 @@
 <body>
 
     <h1>History Flooder</h1>
-    <p>Click the button below to flood your browser history!</p>
+    <p>Click the button below to flood your browser history with a website of your choice!</p>
     <button onclick="floodHistory()">Flood History</button>
 
     <script>
         function floodHistory() {
-            var num = prompt("How many times do you want this page to show up in your history?");
-            if (!num || isNaN(num) || num <= 0) return alert("Invalid input. Try again.");
-
-            var x = window.location.href;
-            for (var i = 1; i <= num; i++) {
-                history.pushState(0, 0, i == num ? x : i.toString());
+            var url = prompt("Enter the website URL you want to flood:");
+            if (!url || !url.startsWith("http")) {
+                return alert("Invalid URL. Make sure it starts with 'http'.");
             }
-            alert("Flooding Successful! " + window.location.href + " is now in your history " + num + " times.");
+
+            var num = prompt("How many times do you want this page to show up in your history?");
+            if (!num || isNaN(num) || num <= 0) {
+                return alert("Invalid number. Try again.");
+            }
+
+            for (var i = 1; i <= num; i++) {
+                history.pushState(0, 0, i == num ? url : url + "?flood=" + i);
+            }
+            alert("Flooding Successful! " + url + " is now in your history " + num + " times.");
         }
     </script>
 

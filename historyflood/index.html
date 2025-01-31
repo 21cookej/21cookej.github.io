@@ -10,9 +10,12 @@
             text-align: center;
             margin-top: 50px;
         }
+        input, button {
+            font-size: 16px;
+            padding: 10px;
+            margin: 10px;
+        }
         button {
-            font-size: 18px;
-            padding: 10px 20px;
             background-color: red;
             color: white;
             border: none;
@@ -21,44 +24,38 @@
         button:hover {
             background-color: darkred;
         }
-        input {
-            font-size: 16px;
-            padding: 8px;
-            width: 300px;
-            margin: 10px;
-        }
     </style>
 </head>
 <body>
 
     <h1>Custom History Flooder</h1>
-    <p>Enter a website and click "Flood History" to fill the browser history!</p>
-    
+    <p>Select a website and number of history entries:</p>
+
     <input type="text" id="urlInput" placeholder="Enter website URL (e.g., https://google.com)">
+    <br>
+    <input type="number" id="numInput" placeholder="Enter number of entries" min="1" value="10">
     <br>
     <button onclick="floodHistory()">Flood History</button>
 
     <script>
         function floodHistory() {
             var url = document.getElementById("urlInput").value;
+            var num = parseInt(document.getElementById("numInput").value);
+
             if (!url.startsWith("http")) {
                 alert("Please enter a valid URL including http:// or https://");
                 return;
             }
+            if (isNaN(num) || num <= 0) {
+                alert("Please enter a valid number of entries.");
+                return;
+            }
 
-            var num = prompt("How many times do you want this page to show up in history?");
-            if (!num || isNaN(num) || num <= 0) return alert("Invalid input. Try again.");
-
-            // Redirect to the chosen website
-            window.location.href = url;
+            for (var i = 1; i <= num; i++) {
+                history.pushState(0, 0, i == num ? url : i.toString());
+            }
             
-            // Wait a moment to ensure redirection, then flood history
-            setTimeout(() => {
-                for (var i = 1; i <= num; i++) {
-                    history.pushState(0, 0, i == num ? url : i.toString());
-                }
-                alert("Flooding Successful! " + url + " is now in your history " + num + " times.");
-            }, 2000);
+            alert("Flooding Successful! " + url + " is now in your history " + num + " times.");
         }
     </script>
 

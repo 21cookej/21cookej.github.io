@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Editor & Runner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input, button {
+            font-size: 16px;
+            margin: 10px;
+            padding: 8px;
+        }
+        #editor {
+            width: 80%;
+            height: 300px;
+            border: 1px solid #ccc;
+            margin: auto;
+        }
+        #output {
+            width: 80%;
+            height: 100px;
+            border: 1px solid #000;
+            margin: auto;
+            background: #eee;
+            padding: 10px;
+            text-align: left;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Python File Editor & Runner</h1>
+
+    <input type="file" id="fileInput" accept=".py">
+    <br>
+    <label>Filename:</label>
+    <input type="text" id="fileName" value="script.py">
+    <br>
+
+    <textarea id="editor"></textarea>
+    <br>
+
+    <button onclick="runPython()">Run</button>
+    <button onclick="saveFile()">Save</button>
+    <button onclick="exportFile()">Export</button>
+
+    <h3>Output:</h3>
+    <div id="output"></div>
+
+    <script>
+        let editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            mode: "python",
+            lineNumbers: true,
+            theme: "default"
+        });
+
+        document.getElementById("fileInput").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (file && file.name.endsWith(".py")) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    editor.setValue(e.target.result);
+                    document.getElementById("fileName").value = file.name;
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Please upload a .py file.");
+            }
+        });
+
+        async function runPython() {
+            let outputDiv = document.getElementById("output");
+            outputDiv.innerHTML = "Running...";
+
+            try {
+                let pyodide = await loadPyodide();
+                let code = editor.getValue();
+                let result = pyodide.runPython(code);
+                outputDiv.innerHTML = result;
+            } catch (error) {
+                outputDiv.innerHTML = "Error: " + error;
+            }
+        }
+
+        function saveFile() {
+            let fileName = document.getElementById("fileName").value;
+            if (!fileName.endsWith(".py")) {
+                fileName += ".py";
+            }
+            let fileContent = editor.getValue();
+            localStorage.setItem(fileName, fileContent);
+            alert("File saved!");
+        }
+
+        function exportFile() {
+            let fileName = document.getElementById("fileName").value;
+            if (!fileName.endsWith(".py")) {
+                fileName += ".py";
+            }
+            let fileContent = editor.getValue();
+            let blob = new Blob([fileContent], { type: "text/plain" });
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            a.click();
+        }
+    </script>
+
+</body>
+</html>

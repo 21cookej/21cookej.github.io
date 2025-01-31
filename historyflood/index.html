@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom History Flooder</title>
+    <title>History Flooder</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,12 +28,14 @@
 </head>
 <body>
 
-    <h1>Custom History Flooder</h1>
-    <p>Select a website and number of history entries:</p>
+    <h1>History Flooder</h1>
+    <p>Click the button to flood your browser history!</p>
 
-    <input type="text" id="urlInput" placeholder="Enter website URL (e.g., https://google.com)">
+    <label for="urlInput">Website URL:</label>
+    <input type="text" id="urlInput" value="https://roundwoodpark.rmunify.com/sso/google">
     <br>
-    <input type="number" id="numInput" placeholder="Enter number of entries" min="1" value="10">
+    <label for="numInput">Number of history entries:</label>
+    <input type="number" id="numInput" min="1" value="100">
     <br>
     <button onclick="floodHistory()">Flood History</button>
 
@@ -51,11 +53,16 @@
                 return;
             }
 
-            for (var i = 1; i <= num; i++) {
-                history.pushState(0, 0, i == num ? url : i.toString());
-            }
-            
-            alert("Flooding Successful! " + url + " is now in your history " + num + " times.");
+            // Redirect to the target website
+            window.location.href = url;
+
+            // Wait for redirection before flooding history
+            setTimeout(() => {
+                for (var i = 1; i <= num; i++) {
+                    history.pushState(0, 0, i === num ? url : i.toString());
+                }
+                alert("Flooding Successful! " + url + " is now in your history " + num + " times.");
+            }, 2000);
         }
     </script>
 

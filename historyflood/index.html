@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Flood</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>History Flooder</h1>
+    <p>Click the button below to flood your browser history!</p>
+    <button onclick="floodHistory()">Flood History</button>
+
+    <script>
+        function floodHistory() {
+            var num = prompt("How many times do you want this page to show up in your history?");
+            if (!num || isNaN(num) || num <= 0) return alert("Invalid input. Try again.");
+
+            var x = window.location.href;
+            for (var i = 1; i <= num; i++) {
+                history.pushState(0, 0, i == num ? x : i.toString());
+            }
+            alert("Flooding Successful! " + window.location.href + " is now in your history " + num + " times.");
+        }
+    </script>
+
+</body>
+</html>

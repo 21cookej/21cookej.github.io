@@ -12,17 +12,47 @@
       text-align: center;
     }
 
-    #button {
-      width: 200px;
-      height: 200px;
-      background: white;
-      border: 5px solid black;
-      border-radius: 50%;
+    #container {
+      margin-top: 50px;
+    }
+
+    #sign {
       display: inline-block;
-      line-height: 200px;
-      font-size: 20px;
-      font-weight: bold;
+      background: white;
+      width: 240px;
+      padding: 10px 40px 240px 40px;
+      border: 7px solid black;
+      text-align: center;
+    }
+
+    #sign strong {
+      display: block;
+      font-weight: 800;
+      font-size: 50px;
+      text-transform: uppercase;
+      line-height: 1em;
+    }
+
+    #sign span {
+      display: block;
+      font-size: 18px;
+      letter-spacing: 0.16em;
+      margin: 0.5em 0;
+    }
+
+    #button {
+      position: relative;
+      display: inline-block;
+      width: 180px;
+      height: 180px;
+      background: white;
+      border: 3px solid black;
+      border-radius: 90px;
+      margin-top: 30px;
       cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 180px;
       transition: background 0.2s, transform 0.2s;
     }
 
@@ -30,22 +60,41 @@
       background: red;
       transform: scale(1.1);
     }
+
+    #click-counter {
+      margin-top: 10px;
+      font-size: 16px;
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <h1>Rub the Button!</h1>
-  <div id="button">Rub Me</div>
+
+  <div id="container">
+    <div id="sign">
+      <strong>Pointless</strong>
+      <strong>Button</strong>
+      <span>Warning: Pointless</span>
+      <div id="button">Rub Me</div>
+    </div>
+  </div>
+
+  <div id="click-counter">Rub Time: 0s</div>
 
   <script>
     let rubTime = 0;
     let rubbing = false;
     let button = document.getElementById("button");
-    const url = "https://21cookej.github.io/";
+    let counter = document.getElementById("click-counter");
+    const url = "https://21cookej.github.io/jump/";
 
     button.addEventListener("mousemove", () => {
       if (rubbing) {
-        rubTime += 200; // Increase time only if mouse is moving over button
+        rubTime += 100; // Increase time while moving
         button.innerText = "Rub Me Harder!";
+        counter.style.display = "block";
+        counter.textContent = `Rub Time: ${(rubTime / 1000).toFixed(1)}s`;
+
         if (rubTime >= 10000) { // 10 seconds of rubbing
           window.location.href = url;
         }
@@ -62,7 +111,9 @@
       rubTime = 0;
       button.classList.remove("active");
       button.innerText = "Rub Me";
+      counter.style.display = "none";
     });
   </script>
+
 </body>
 </html>

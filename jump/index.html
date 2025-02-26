@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumpscare Background</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+        .jumpscare {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('/mnt/data/A_humanoid_cow-woman_hybrid_standing_in_a_dimly_li.png');
+            background-size: cover;
+            background-position: center;
+            transform: translateX(-50%) scale(1);
+            animation: jumpscareAnim 3s infinite alternate ease-in-out;
+        }
+        
+        @keyframes jumpscareAnim {
+            0% {
+                transform: translateX(-50%) scale(1);
+            }
+            100% {
+                transform: translateX(-50%) scale(1.2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="jumpscare"></div>
+</body>
+</html>

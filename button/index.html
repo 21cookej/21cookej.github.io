@@ -137,28 +137,31 @@
     let rubCounter = document.getElementById("rub-counter");
     const url = "https://21cookej.github.io/";
 
-    button.addEventListener("mousemove", () => {
+    function startRubbing() {
+      rubbing = true;
+    }
+
+    function stopRubbing() {
+      rubbing = false;
+      rubTime = 0;
+      rubCounter.style.display = "none";
+    }
+
+    button.addEventListener("mousedown", startRubbing);
+    button.addEventListener("mouseup", stopRubbing);
+    button.addEventListener("mouseleave", stopRubbing);
+
+    button.addEventListener("mousemove", (event) => {
       if (rubbing) {
-        rubTime += 100; // Increase time while rubbing
+        rubTime += 100; // Increase time while holding and moving
         rubCounter.style.display = "block";
         rubCounter.textContent = `Rub Time: ${(rubTime / 1000).toFixed(1)}s`;
 
-        if (rubTime >= 10000) { // 10 seconds of rubbing
+        if (rubTime >= 60000) { // 60 seconds of rubbing
           window.location.href = url;
         }
       }
     });
-
-    button.addEventListener("mouseenter", () => {
-      rubbing = true;
-    });
-
-    button.addEventListener("mouseleave", () => {
-      rubbing = false;
-      rubTime = 0;
-      rubCounter.style.display = "none";
-    });
   </script>
-
 </body>
 </html>

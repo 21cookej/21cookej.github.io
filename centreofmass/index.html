@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irregular Shape Mass Calculator</title>
+    <style>
+        canvas { border: 1px solid black; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1000" height="750"></canvas>
+    <button id="calculate">Calculate Center of Mass</button>
+    <button id="clear">Clear</button>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+        let points = [];
+        let centerOfMass = null;
+
+        canvas.addEventListener("mousedown", (e) => {
+            drawing = true;
+            points = [];
+        });
+        
+        canvas.addEventListener("mousemove", (e) => {
+            if (!drawing) return;
+            const x = e.offsetX;
+            const y = e.offsetY;
+            points.push({ x, y });
+            draw();
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            cleanUpLines();
+            fillShape();
+        });
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        function cleanUpLines() {
+            let cleanedPoints = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                if (distance(points[i], points[i + 1]) > 2) {
+                    cleanedPoints.push(points[i]);
+                }
+            }
+            points = cleanedPoints;
+        }
+
+        function distance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+
+        function fillShape() {
+            if (points.length < 3) return;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            points.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
+            ctx.fill();
+        }
+
+        function calculateCenterOfMass() {
+            if (points.length < 3) return;
+            let cx = 0, cy = 0, area = 0;
+            for (let i = 0; i < points.length; i++) {
+                let j = (i + 1) % points.length;
+                let cross = points[i].x * points[j].y - points[j].x * points[i].y;
+                area += cross;
+                cx += (points[i].x + points[j].x) * cross;
+                cy += (points[i].y + points[j].y) * cross;
+            }
+            area *= 0.5;
+            cx /= (6 * area);
+            cy /= (6 * area);
+            centerOfMass = { x: cx, y: cy };
+            drawCenterOfMass();
+        }
+
+        function drawCenterOfMass() {
+            if (!centerOfMass) return;
+            ctx.beginPath();
+            ctx.arc(centerOfMass.x, centerOfMass.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+        }
+
+        document.getElementById("calculate").addEventListener("click", calculateCenterOfMass);
+        document.getElementById("clear").addEventListener("click", () => {
+            points = [];
+            centerOfMass = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+    </script>
+</body>
+</html>

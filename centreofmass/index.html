@@ -5,12 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Irregular Shape Mass Calculator</title>
     <style>
-        canvas { border: 1px solid black; }
-        button { margin-top: 10px; }
+        /* Set up the canvas to be responsive to the viewport */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000; /* black background for body */
+        }
+
+        canvas {
+            border: 1px solid black;
+            background-color: black; /* canvas background */
+            width: 100%;
+            height: 100%;
+            max-width: 1100px; /* max width to keep it within reasonable bounds */
+            max-height: 750px; /* max height */
+        }
+
+        /* Style for buttons */
+        button {
+            position: fixed;
+            right: 10px;
+            margin: 5px;
+            padding: 10px;
+            background-color: white;
+            color: black;
+            border: 1px solid white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Position the Clear button above the Calculate button */
+        #clear {
+            bottom: 50px; /* Set this button to be 50px above the Calculate button */
+        }
+
+        #calculate {
+            bottom: 10px; /* Keep the Calculate button at the bottom-right */
+        }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="1100" height="750"></canvas>
+    <canvas id="canvas"></canvas>
     <button id="calculate">Calculate Center of Mass</button>
     <button id="clear">Clear</button>
     <script>
@@ -20,11 +62,20 @@
         let points = [];
         let centerOfMass = null;
 
+        // Resize canvas to match window size dynamically
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 60; // Adjust height to keep space for buttons
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Initial call to set the correct size
+
         canvas.addEventListener("mousedown", (e) => {
             drawing = true;
             points = [];
         });
-        
+
         canvas.addEventListener("mousemove", (e) => {
             if (!drawing) return;
             const x = e.offsetX;
@@ -47,6 +98,7 @@
                 ctx.lineTo(points[i].x, points[i].y);
             }
             ctx.closePath();
+            ctx.strokeStyle = "white";  // Set the line color to white
             ctx.stroke();
         }
 
@@ -70,7 +122,7 @@
             ctx.moveTo(points[0].x, points[0].y);
             points.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.closePath();
-            ctx.fillStyle = "rgba(0, 0, 0, 0)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0)"; // Transparent fill
             ctx.fill();
         }
 

@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="1000" height="750"></canvas>
+    <canvas id="canvas" width="1100" height="750"></canvas>
     <button id="calculate">Calculate Center of Mass</button>
     <button id="clear">Clear</button>
     <script>
@@ -70,7 +70,7 @@
             ctx.moveTo(points[0].x, points[0].y);
             points.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.closePath();
-            ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0)";
             ctx.fill();
         }
 

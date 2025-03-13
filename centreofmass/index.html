@@ -21,15 +21,21 @@
             background-color: black; /* canvas background */
             width: 100%;
             height: 100%;
-            max-width: 1100px; /* max width to keep it within reasonable bounds */
+            max-width: 1100px; /* max width */
             max-height: 750px; /* max height */
         }
 
         /* Style for buttons */
-        button {
+        .button-container {
             position: fixed;
+            bottom: 10px;
             right: 10px;
-            margin: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        button {
             padding: 10px;
             background-color: white;
             color: black;
@@ -40,21 +46,16 @@
         button:hover {
             background-color: rgba(255, 255, 255, 0.8);
         }
-
-        /* Position the Clear button above the Calculate button */
-        #clear {
-            bottom: 50px; /* Set this button to be 50px above the Calculate button */
-        }
-
-        #calculate {
-            bottom: 10px; /* Keep the Calculate button at the bottom-right */
-        }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <button id="calculate">Calculate Center of Mass</button>
-    <button id="clear">Clear</button>
+
+    <div class="button-container">
+        <button id="clear">Clear</button>
+        <button id="calculate">Calculate Center of Mass</button>
+    </div>
+
     <script>
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
@@ -62,14 +63,32 @@
         let points = [];
         let centerOfMass = null;
 
-        // Resize canvas to match window size dynamically
+        // Resize canvas to match window size while preserving drawing
         function resizeCanvas() {
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d");
+
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            tempCtx.drawImage(canvas, 0, 0);
+
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 60; // Adjust height to keep space for buttons
+            canvas.height = window.innerHeight - 60; // Adjust height for buttons
+
+            ctx.drawImage(tempCanvas, 0, 0);
         }
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas(); // Initial call to set the correct size
+
+        // Corrected Mouse Position
+        function getMousePos(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (event.clientX - rect.left) * (canvas.width / rect.width),
+                y: (event.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
 
         canvas.addEventListener("mousedown", (e) => {
             drawing = true;
@@ -78,9 +97,8 @@
 
         canvas.addEventListener("mousemove", (e) => {
             if (!drawing) return;
-            const x = e.offsetX;
-            const y = e.offsetY;
-            points.push({ x, y });
+            const pos = getMousePos(e);
+            points.push(pos);
             draw();
         });
 
@@ -98,7 +116,7 @@
                 ctx.lineTo(points[i].x, points[i].y);
             }
             ctx.closePath();
-            ctx.strokeStyle = "white";  // Set the line color to white
+            ctx.strokeStyle = "white";
             ctx.stroke();
         }
 
@@ -122,7 +140,7 @@
             ctx.moveTo(points[0].x, points[0].y);
             points.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.closePath();
-            ctx.fillStyle = "rgba(0, 0, 0, 0)"; // Transparent fill
+            ctx.fillStyle = "rgba(255, 255, 255, 0.3)"; // Semi-transparent fill
             ctx.fill();
         }
 

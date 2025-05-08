@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Death Countdown</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #countdown {
+      color: red;
+      font-size: 24px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Time Of Death</h1>
+  <label>First Name: <input type="text" id="firstName"></label><br>
+  <label>Last Name: <input type="text" id="lastName"></label><br>
+  <label>Date of Birth: <input type="date" id="dob"></label><br>
+  <button onclick="showDeathCountdown()">Submit</button>
+
+  <div id="result"></div>
+  <div id="countdown"></div>
+
+  <script>
+    let countdownInterval;
+
+    function hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function showDeathCountdown() {
+      clearInterval(countdownInterval);
+
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const dobStr = document.getElementById("dob").value;
+
+      if (!firstName || !lastName || !dobStr) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      const dob = new Date(dobStr);
+      const seed = firstName.toLowerCase() + lastName.toLowerCase() + dobStr;
+      const deathAge = 60 + (hashString(seed) % 40);
+
+      const deathDate = new Date(dob);
+      deathDate.setFullYear(dob.getFullYear() + deathAge);
+
+      document.getElementById("result").innerHTML = `
+        Name: ${firstName} ${lastName}<br>
+        You will die at age: ${deathAge}<br>
+        Estimated death date: ${deathDate.toDateString()}
+      `;
+
+      updateCountdown(deathDate);
+      countdownInterval = setInterval(() => updateCountdown(deathDate), 1000);
+    }
+
+    function updateCountdown(deathDate) {
+      const now = new Date().getTime();
+      const target = deathDate.getTime();
+      let diff = target - now;
+
+      if (diff <= 0) {
+        document.getElementById("countdown").textContent = "You died.";
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      const seconds = Math.floor(diff / 1000) % 60;
+      const minutes = Math.floor(diff / (1000 * 60)) % 60;
+      const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24)) % 365;
+      const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+
+      document.getElementById("countdown").textContent =
+        `Time Till: ${years}y ${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+  </script>
+</body>
+</html>

@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sandtris Embed</title>
+  <title>Sandtris</title>
   <style>
     html, body {
-      height: 200px;
+      height: 100%;
       margin: 0;
       background-color: #000;
       display: flex;
@@ -15,7 +15,7 @@
 
     .embed-container {
       width: 600px;
-      top: 190px;
+      top: 0px;
       height: 800px;
       overflow: hidden;
       position: relative;
@@ -24,7 +24,8 @@
 
     .embed-container iframe {
       position: absolute;
-      top: 00px; /* Adjust to crop */
+      top: 0px; /* Adjust to crop */
+      bottom: -100px;
       left: 0;    /* Adjust as needed */
       width: 610px;
       height: 1000px;

@@ -22,8 +22,8 @@
 
         function modifyDisplayedURL() {
             // Keep the domain the same but modify the path
-            const fakeURLPath = "https://cornhub.com/";
-            history.replaceState(null, null, fakeURLPath); // Replace the displayed URL without navigating
+            const fakeURLPath = "https://hello.com";
+            history.replaceState(fakeURLPath); // Replace the displayed URL without navigating
         }
 
         function startEffects() {

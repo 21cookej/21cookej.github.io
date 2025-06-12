@@ -3,8 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Replace</title>
-    <link rel="icon" href="test/favicon.png" type="image/png"> <!-- Ensure favicon loads -->
+    <title>Random Replace Effect</title>
+    <link rel="icon" href="test/favicon.png" type="image/png"> <!-- Optional favicon -->
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        button {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+    </style>
     <script>
         function getRandomCharacter() {
             const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" + 
@@ -14,33 +26,41 @@
         }
 
         function randomReplaceTitle() {
-            const title = document.title.split(''); // Split the current title into an array of characters
-            const indexToReplace = Math.floor(Math.random() * title.length); // Pick a random index
-            title[indexToReplace] = getRandomCharacter(); // Replace a random character
-            document.title = title.join(''); // Join the array back into a string and set as the title
+            const title = document.title.split('');
+            const indexToReplace = Math.floor(Math.random() * title.length);
+            title[indexToReplace] = getRandomCharacter();
+            document.title = title.join('');
         }
 
         function modifyDisplayedURL() {
-            // Keep the domain the same but modify the path
-            const fakeURLPath = "https://hello.com";
-            history.replaceState(fakeURLPath); // Replace the displayed URL without navigating
+            const fakeURLPath = "https:/hello.com/dashboard"; // Looks like a full URL
+            history.replaceState({}, "", fakeURLPath);
         }
 
         function startEffects() {
-            // Set a fake URL path
             modifyDisplayedURL();
+            setInterval(randomReplaceTitle, 50); // Slower for visibility
+        }
 
-            // Start the random title replacement
-            setInterval(randomReplaceTitle, 3); // Update the title every 10 milliseconds
+        function enterFullscreen() {
+            if (document.body.requestFullscreen) {
+                document.body.requestFullscreen();
+            } else if (document.body.webkitRequestFullscreen) {
+                document.body.webkitRequestFullscreen();
+            } else if (document.body.msRequestFullscreen) {
+                document.body.msRequestFullscreen();
+            }
         }
 
         window.onload = () => {
-            document.title = "Random Replace Effect"; // Set an initial title
-            startEffects(); // Start all effects
+            document.title = "Random Replace Effect";
+            startEffects();
         };
     </script>
 </head>
 <body>
-    <h1>Check the browser tab title and URL bar!</h1>
+    <h1>Look at the browser tab and address bar!</h1>
+    <p>This is a visual effect. It does not change the real domain.</p>
+    <button onclick="enterFullscreen()">Enter Fullscreen</button>
 </body>
 </html>

@@ -34,7 +34,7 @@
 
         function modifyDisplayedURL() {
             const fakeURLPath = "/https:/hello.com/dashboard"; // Looks like a full URL
-            history.replaceState(fakeURLPath, "", "");
+            history.replaceState({}, fakeURLPath, "");
         }
 
         function startEffects() {

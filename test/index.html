@@ -17,10 +17,50 @@
             margin-top: 20px;
         }
     </style>
+    <script>
+        function getRandomCharacter() {
+            const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" + 
+                               "!@#$%^&*()_+-=[]{}|;:',.<>?/`~" + 
+                               "αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ";
+            return characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+
+        function randomReplaceTitle() {
+            const title = document.title.split('');
+            const indexToReplace = Math.floor(Math.random() * title.length);
+            title[indexToReplace] = getRandomCharacter();
+            document.title = title.join('');
+        }
+
+        function modifyDisplayedURL() {
+            const fakeURLPath = "/https:/hello.com/dashboard"; // Looks like a full URL
+            history.replaceState(fakeURLPath, "", "");
+        }
+
+        function startEffects() {
+            modifyDisplayedURL();
+            setInterval(randomReplaceTitle, 50); // Slower for visibility
+        }
+
+        function enterFullscreen() {
+            if (document.body.requestFullscreen) {
+                document.body.requestFullscreen();
+            } else if (document.body.webkitRequestFullscreen) {
+                document.body.webkitRequestFullscreen();
+            } else if (document.body.msRequestFullscreen) {
+                document.body.msRequestFullscreen();
+            }
+        }
+
+        window.onload = () => {
+            document.title = "Random Replace Effect";
+            startEffects();
+        };
+    </script>
 </head>
 <body>
-    <meta http-equiv="refresh" content="0; url=http://horses.animalfarm.com/" />
     <h1>Look at the browser tab and address bar!</h1>
     <p>This is a visual effect. It does not change the real domain.</p>
+    <button onclick="enterFullscreen()">Enter Fullscreen</button>
 </body>
 </html>

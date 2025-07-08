@@ -16,7 +16,7 @@ var LEVELS = [
 		"  x           o            x                    !x                                                                       x   x",
 		"  xxxxwwwxxxxxxxxxxxxxxxxxxx                    ug                                                        xxx            x   x",
 		"  x                        k                    ug                                                                       x   x",
-		"  x           o            k        @          ux                                                                       x o x",
+		"  x           o            k        @           ux                                                                       x o x",
 		"  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppxxx     xxxxxxxx",
 		"                                                                                                                              ",
 		"                                                                                                                              ",

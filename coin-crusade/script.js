@@ -12,7 +12,7 @@ var LEVELS = [
 		"  x                                             !x                                                                            ",
 		"  x       o                          o          !x                                                                            ",
 		"  xxxxxxxxxxxxxxwwwxxxxxxxxxxxxxxxxxxxxxxxxxxxxx!x                                                                            ",
-		"  x                        x                    !x                                                               xxx     xgggx",
+		"  x                        x                    !x                                                               xxx     ggggx",
 		"  x           o            x                    !x                                                                       x   x",
 		"  xxxxwwwxxxxxxxxxxxxxxxxxxx                    ug                                                        xxx            x   x",
 		"  x                        k                    ug                                                                       x   x",
@@ -52,31 +52,47 @@ var LEVELS = [
 		"                 pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
 	],
 	[
-		"                                                                                ",
-		"                                                                                ",
-		"                                                                                ",
-		"                                                                                ",
-		"                                                                                ",
-		"  x     bbb                                      x                              ",
-		"  x       b                                      x                              ",
-		"  x     bbb                                      x                              ",
-		"  x       b                                      x                              ",
-		"  x     bbb                                      x                              ",
-		"  x                 o                            x                              ",
-		"  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx      x                              ",
-		"  x                                      x      xx                              ",
-		"  x                                      x       x                              ",
-		"  x                                      x       x                              ",
-		"  x                                      xx      x                              ",
-		"  x                                             xx                              ",
-		"  x        @                              o      x                              ",
-		"  xxxxxxxxxxxxxxxx     xxx     xxxxxxxxxxxxxxxxxxx                              ",
-		"                 x!!!!!x x!!!!!x                                                ",
-		"                 x!!!!!x x!!!!!x                                                ",
-		"                 x!!!!!x x!!!!!x                                                ",
-		"                 xxxxxxx xxxxxxx                                                ",
-		"                                                                                ",
-		"                                                                                "
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g m g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g m g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g m g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
+		"x   g   g   g   g   g   g   g   g   g   x",
+		"x o g o g o g o g o g o g o g o g o g o x",
+		"x @ g   g   g   g   g   g   g   g   g   x",
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 	],
 	[
 		"                                                                                ",
@@ -522,6 +538,7 @@ function Wall(pos) {
 Wall.prototype.type = "Wall";
 Wall.prototype.act = function (step) {};
 
+
 function Invis(pos) {
 	this.basePos = this.pos = pos;
 	this.size = new Vector(0.6, 0.6);
@@ -961,32 +978,10 @@ Level.prototype.playerTouched = function (type, actor) {
 			this.status = "won";
 			this.finishDelay = 1;
 		}
-	} else if (type === "button") {
-		if (!actor.used) {
-			actor.pressed = true;
-			actor.used = true; // Mark the button as used
-			actor.size = actor.size.times(1); // Halve the size of the button
-			this.activatePlatforms(); // Activate platforms
-		}
-	} else if (type === "platform") {
-		// Handle collision logic with platforms here
-		// Example: Moving the player accordingly
-		var player = this.player;
-		if (actor.pos.y + actor.size.y < player.pos.y + player.size.y) {
-			player.pos = player.pos.plus(new Vector(0, -0.05));
-			player.speed.y = -jumpSpeed;
-		} else if (actor.pos.y > player.pos.y) {
-			player.pos = player.pos.plus(new Vector(0, 0.05));
-			player.speed.y = jumpSpeed;
-		} else if (actor.pos.x > player.pos.x) {
-			player.pos = player.pos.plus(new Vector(0.05, 0));
-		} else {
-			player.pos = player.pos.plus(new Vector(-0.05, 0));
-		}
 	} else if (type === "Door") {
 		// Add this block
 		this.status = "won";
-		this.finishDelay = 0.2;
+		this.finishDelay = 0;
 	}
 };
 
@@ -1145,7 +1140,7 @@ Player2.prototype.act = function (step, level, keys) {
 
 	if (level.status == "lost") {
 		// Remove the dying animation by commenting out or deleting the lines below
-		// this.pos.y += step;
-		// this.size.y -= step;
+		//this.pos.y += step;
+		//this.size.y -= step;
 	}
 };

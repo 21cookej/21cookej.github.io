@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Name Match Test</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      text-align: center;
+      background: #111;
+      color: white;
+      padding: 2rem;
+    }
+
+    input, select, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.5rem;
+    }
+
+    .result {
+      font-size: 2rem;
+      margin-top: 2rem;
+      padding: 1rem;
+      border-radius: 10px;
+      transition: all 0.5s ease;
+    }
+
+    .low { background: #800000; }
+    .medium { background: #ffaa00; }
+    .high { background: #00cc44; }
+    .perfect { background: #ff69b4; animation: glow 1s infinite alternate; }
+    .ultimate { background: linear-gradient(45deg, red, orange, yellow, green, cyan, blue, violet); color: black; animation: rainbow 3s linear infinite; }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 10px #ff69b4; }
+      to { box-shadow: 0 0 20px #ff1493; }
+    }
+
+    @keyframes rainbow {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Name Match Test</h1>
+  <p>Enter names and genders to calculate your match!</p>
+
+  <input id="name1" placeholder="Your Name">
+  <select id="gender1">
+    <option value="unspecified">--</option>
+    <option value="male">♂ Male</option>
+    <option value="female">♀ Female</option>
+  </select>
+  <br>
+  <input id="name2" placeholder="Crush's Name">
+  <select id="gender2">
+    <option value="unspecified">--</option>
+    <option value="male">♂ Male</option>
+    <option value="female">♀ Female</option>
+  </select>
+  <br>
+  <button onclick="calculate()">Match Names</button>
+
+  <div id="result" class="result"></div>
+
+  <script>
+    // ✅ CUSTOM MATCHES — use lowercase + first names only + sorted alphabetically
+    const customMatches = {
+      "louis+toby": {
+        percent: 1000,
+        message: "🍆 Meant to be inside each other. Get the pregnacey test NOW!"
+      },
+      "yves+toby": {
+        percent: 100,
+        message: "💑 A classic fairytale couple!"
+      },
+      "dan+toby": {
+        percent: 5,
+        message: "😬 Oof... maybe stick to being friends."
+      }
+    };
+
+    function normalize(name) {
+      // Lowercase, trim, remove non-letters, get first name only
+      return name.trim().toLowerCase().split(/\s+/)[0].replace(/[^a-z]/g, "");
+    }
+
+    function hashPair(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function calculate() {
+      const rawName1 = document.getElementById("name1").value;
+      const rawName2 = document.getElementById("name2").value;
+      const resultDiv = document.getElementById("result");
+
+      const name1 = normalize(rawName1);
+      const name2 = normalize(rawName2);
+
+      if (!name1 || !name2) {
+        resultDiv.className = "result low";
+        resultDiv.innerHTML = "❗ Please enter both names!";
+        return;
+      }
+
+      const key = [name1, name2].sort().join("+");
+
+      let percent, message;
+
+      if (customMatches[key]) {
+        percent = customMatches[key].percent;
+        message = customMatches[key].message;
+      } else {
+        const hash = hashPair(key);
+        percent = hash % 101;
+        message = getDefaultMessage(percent);
+      }
+
+      resultDiv.className = "result";
+      if (percent >= 1000) {
+        resultDiv.classList.add("ultimate");
+      } else if (percent === 100) {
+        resultDiv.classList.add("perfect");
+      } else if (percent >= 61) {
+        resultDiv.classList.add("high");
+      } else if (percent >= 31) {
+        resultDiv.classList.add("medium");
+      } else {
+        resultDiv.classList.add("low");
+      }
+
+      resultDiv.innerHTML = `<strong>${percent}% Compatible</strong><br>${message}`;
+    }
+
+    function getDefaultMessage(percent) {
+      if (percent === 100) return "💖 Absolutely perfect match!";
+      if (percent > 80) return "😍 You two are a fantastic match!";
+      if (percent > 60) return "😊 Looks pretty good!";
+      if (percent > 40) return "😐 Could be something there...";
+      if (percent > 20) return "😕 Not really feeling it.";
+      return "💀 Yikes. This might not work out...";
+    }
+  </script>
+</body>
+</html>

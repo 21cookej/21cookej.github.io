@@ -13,7 +13,7 @@
     }
 
     input, select, button {
-      font-size: 1rem;
+      font-size: 1.5rem;
       padding: 0.5rem;
       margin: 0.5rem;
     }
@@ -30,7 +30,11 @@
     .medium { background: #ffaa00; }
     .high { background: #00cc44; }
     .perfect { background: #ff69b4; animation: glow 1s infinite alternate; }
-    .ultimate { background: linear-gradient(45deg, red, orange, yellow, green, cyan, blue, violet); color: black; animation: rainbow 3s linear infinite; }
+    .ultimate {
+      background: linear-gradient(45deg, red, orange, yellow, green, cyan, blue, violet);
+      color: black;
+      animation: rainbow 3s linear infinite;
+    }
 
     @keyframes glow {
       from { box-shadow: 0 0 10px #ff69b4; }
@@ -54,7 +58,7 @@
     <option value="female">♀ Female</option>
   </select>
   <br>
-  <input id="name2" placeholder="Crush's Name">
+  <input id="name2" placeholder="Other Name">
   <select id="gender2">
     <option value="unspecified">--</option>
     <option value="male">♂ Male</option>
@@ -66,7 +70,6 @@
   <div id="result" class="result"></div>
 
   <script>
-    // ✅ CUSTOM MATCHES — use lowercase + first names only + sorted alphabetically
     const customMatches = {
       "louis+toby": {
         percent: 1000,
@@ -87,6 +90,10 @@
       "dan+toby": {
         percent: 5,
         message: "😬 Oof... maybe stick to being friends."
+      },
+      "laoura+sonny": {
+        percent: 10000,
+        message: "🍆 Stick it in me when it's hard."
       }
     };
 
@@ -118,7 +125,6 @@
       }
 
       const key = [name1, name2].sort().join("+");
-      console.log("Checking match key:", key); // 👈 helpful debug line
 
       let percent, message;
 
@@ -131,6 +137,7 @@
         message = getDefaultMessage(percent);
       }
 
+      // Set background class
       resultDiv.className = "result";
       if (percent >= 1000) {
         resultDiv.classList.add("ultimate");
@@ -144,7 +151,34 @@
         resultDiv.classList.add("low");
       }
 
-      resultDiv.innerHTML = `<strong>${percent}% Compatible</strong><br>${message}`;
+      // Animate percentage
+      let displayPercent = 0;
+      const targetPercent = percent;
+      const isLow = targetPercent < 31;
+      const peak = isLow ? targetPercent + 20 : targetPercent;
+      const duration = 1500;
+      const startTime = performance.now();
+
+      function animatePercent(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        if (isLow && progress > 0.6) {
+          displayPercent = Math.floor(peak - (peak - targetPercent) * ((progress - 0.6) / 0.4));
+        } else {
+          displayPercent = Math.floor(peak * progress);
+        }
+
+        resultDiv.innerHTML = `<strong>${displayPercent}% Compatible</strong><br>${message}`;
+
+        if (progress < 1) {
+          requestAnimationFrame(animatePercent);
+        } else {
+          resultDiv.innerHTML = `<strong>${targetPercent}% Compatible</strong><br>${message}`;
+        }
+      }
+
+      requestAnimationFrame(animatePercent);
     }
 
     function getDefaultMessage(percent) {

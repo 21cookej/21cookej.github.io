@@ -70,28 +70,27 @@
     const customMatches = {
       "louis+toby": {
         percent: 1000,
-        message: "🍆 Meant to be inside each other. Get the pregnacey test NOW!"
+        message: "🍆 Meant to be inside each other. Get the pregnancy test NOW!"
       },
-      "yves+toby": {
+      "georgia+yves": {
+        percent: 999,
+        message: "🍆 Let's do it in a bathroom stall."
+      },
+      "toby+yves": {
         percent: 100,
         message: "💑 A classic fairytale couple!"
+      },
+      "dan+louis": {
+        percent: 69,
+        message: "💨 Creative thinking with that pose."
       },
       "dan+toby": {
         percent: 5,
         message: "😬 Oof... maybe stick to being friends."
-      },
-      "louis+dan": {
-        percent: 69,
-        message: "💨 Creative thinking with that pose."
-      },
-      "yves+georgia": {
-        percent: 1000,
-        message: "🍆 Lets do it in a bath room stall."
       }
     };
 
     function normalize(name) {
-      // Lowercase, trim, remove non-letters, get first name only
       return name.trim().toLowerCase().split(/\s+/)[0].replace(/[^a-z]/g, "");
     }
 
@@ -119,10 +118,11 @@
       }
 
       const key = [name1, name2].sort().join("+");
+      console.log("Checking match key:", key); // 👈 helpful debug line
 
       let percent, message;
 
-      if (customMatches[key]) {
+      if (customMatches.hasOwnProperty(key)) {
         percent = customMatches[key].percent;
         message = customMatches[key].message;
       } else {

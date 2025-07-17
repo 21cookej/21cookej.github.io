@@ -70,35 +70,39 @@
   <div id="result" class="result"></div>
 
   <script>
-    const customMatches = {
-      "louis+toby": {
-        percent: 1000,
-        message: "🍆 Meant to be inside each other. Get the pregnancy test NOW!"
-      },
-      "georgia+yves": {
-        percent: 999,
-        message: "🍆 Let's do it in a bathroom stall."
-      },
-      "toby+yves": {
-        percent: 100,
-        message: "💑 A classic fairytale couple!"
-      },
-      "dan+louis": {
-        percent: 69,
-        message: "💨 Creative thinking with that pose."
-      },
-      "dan+toby": {
-        percent: 5,
-        message: "😬 Oof... maybe stick to being friends."
-      },
-      "laoura+sonny": {
-        percent: 10000,
-        message: "🍆 Stick it in me when it's hard."
-      }
-    };
+    const customMatches = [
+      { names: ["louis", "toby"], percent: 1000, message: "🍆 Meant to be inside each other. Get the pregnancy test NOW!", color: "rainbow" },
+      { names: ["chloe", "james"], gender1: "female", gender2: "male", percent: 1000, message: "🌹 get the roses", color: "rainbow" },
+      { names: ["james", "james"], gender1: "male", gender2: "male", percent: 1000, message: "You can cope with your self", color: "rainbow" },
+      { names: ["georgia", "yves"], percent: 999, message: "🍆 Let's do it in a bathroom stall.", color: "#ff00ff" },
+      { names: ["toby", "yves"], percent: 100, message: "💑 A classic fairytale couple!" },
+      { names: ["dan", "louis"], percent: 69, message: "💨 Creative thinking with that pose.", color: "#69f0ae" },
+      { names: ["dan", "toby"], percent: 5, message: "😬 Oof... maybe stick to being friends." },
+      { names: ["laoura", "sonny"], percent: 10000, message: "🍆 Stick it in me when it's hard." },
+      { names: ["sid", "null"], percent: 100, message: "🚫 skibidy sigma.", color: "red" },
+      { names: ["dave", "hello"], gender1: "female", gender2: "male", percent: 90, message: "Hello", color: "#3399ff" }
+    ];
 
     function normalize(name) {
       return name.trim().toLowerCase().split(/\s+/)[0].replace(/[^a-z]/g, "");
+    }
+
+    function matchCustom(name1, name2, gender1, gender2) {
+      for (const match of customMatches) {
+        const [m1, m2] = match.names;
+        const normalizedM1 = m1.toLowerCase();
+        const normalizedM2 = m2.toLowerCase();
+
+        const n1Match = normalizedM1 === "null" || normalizedM1 === name1 || normalizedM1 === name2;
+        const n2Match = normalizedM2 === "null" || normalizedM2 === name1 || normalizedM2 === name2;
+
+        if (n1Match && n2Match) {
+          if (match.gender1 && match.gender1 !== "any" && match.gender1 !== gender1) continue;
+          if (match.gender2 && match.gender2 !== "any" && match.gender2 !== gender2) continue;
+          return match;
+        }
+      }
+      return null;
     }
 
     function hashPair(str) {
@@ -113,6 +117,8 @@
     function calculate() {
       const rawName1 = document.getElementById("name1").value;
       const rawName2 = document.getElementById("name2").value;
+      const gender1 = document.getElementById("gender1").value;
+      const gender2 = document.getElementById("gender2").value;
       const resultDiv = document.getElementById("result");
 
       const name1 = normalize(rawName1);
@@ -124,22 +130,28 @@
         return;
       }
 
-      const key = [name1, name2].sort().join("+");
+      const match = matchCustom(name1, name2, gender1, gender2);
 
-      let percent, message;
+      let percent, message, colorClass = "", inlineStyle = "";
 
-      if (customMatches.hasOwnProperty(key)) {
-        percent = customMatches[key].percent;
-        message = customMatches[key].message;
+      if (match) {
+        percent = match.percent;
+        message = match.message;
+        if (match.color === "rainbow") {
+          colorClass = "ultimate";
+        } else if (match.color) {
+          inlineStyle = `background: ${match.color};`;
+        }
       } else {
-        const hash = hashPair(key);
+        const hash = hashPair([name1, name2].sort().join("+"));
         percent = hash % 101;
         message = getDefaultMessage(percent);
       }
 
-      // Set background class
       resultDiv.className = "result";
-      if (percent >= 1000) {
+      if (colorClass) {
+        resultDiv.classList.add(colorClass);
+      } else if (percent >= 1000) {
         resultDiv.classList.add("ultimate");
       } else if (percent === 100) {
         resultDiv.classList.add("perfect");
@@ -151,7 +163,9 @@
         resultDiv.classList.add("low");
       }
 
-      // Animate percentage
+      if (inlineStyle) resultDiv.setAttribute("style", inlineStyle);
+      else resultDiv.removeAttribute("style");
+
       let displayPercent = 0;
       const targetPercent = percent;
       const isLow = targetPercent < 31;

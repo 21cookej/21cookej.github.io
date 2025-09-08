@@ -1,0 +1,107 @@
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hand Gesture Detection</title>
+<style>
+  body { margin:0; background:#111; overflow:hidden; }
+  #container { position:relative; width:100vw; height:100vh; }
+  #video, #overlay { position:absolute; top:0; left:0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="overlay"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+<script>
+(async ()=>{
+  const video = document.getElementById('video');
+  const overlay = document.getElementById('overlay');
+  const ctx = overlay.getContext('2d');
+
+  const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+  hands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+  });
+
+  function resizeCanvas(){
+    overlay.width = 670;
+    overlay.height = 670;
+    video.width = 670;
+    video.height = 670;
+  }
+
+  hands.onResults(results=>{
+    if(!video.videoWidth || !video.videoHeight) return;
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+
+    if(!results.multiHandLandmarks) return;
+
+    for(const handLandmarks of results.multiHandLandmarks){
+      // Draw skeleton
+      ctx.strokeStyle = "blue";
+      ctx.lineWidth = 1;
+      const connections = [
+        [0,1],[1,2],[2,3],[3,4],
+        [0,5],[5,6],[6,7],[7,8],
+        [0,9],[9,10],[10,11],[11,12],
+        [0,13],[13,14],[14,15],[15,16],
+        [0,17],[17,18],[18,19],[19,20]
+      ];
+      for(const [i,j] of connections){
+        ctx.beginPath();
+        ctx.moveTo(handLandmarks[i].x*overlay.width, handLandmarks[i].y*overlay.height);
+        ctx.lineTo(handLandmarks[j].x*overlay.width, handLandmarks[j].y*overlay.height);
+        ctx.stroke();
+      }
+
+      // Draw joints
+      ctx.fillStyle = "blue";
+      for(const lm of handLandmarks){
+        ctx.beginPath();
+        ctx.arc(lm.x*overlay.width, lm.y*overlay.height, 3, 0, 2*Math.PI);
+        ctx.fill();
+      }
+
+      // Gesture recognition
+      const thumb = handLandmarks[4];
+      const index = handLandmarks[8];
+      const middle = handLandmarks[12];
+      const ring = handLandmarks[16];
+      const pinky = handLandmarks[20];
+      const wrist = handLandmarks[0];
+
+      let emoji = "";
+      if(thumb.y < wrist.y && index.y > wrist.y && middle.y > wrist.y && ring.y > wrist.y && pinky.y > wrist.y){
+        emoji = "👍";
+      } else if(index.y < wrist.y && middle.y < wrist.y && thumb.y > wrist.y && ring.y > wrist.y && pinky.y > wrist.y){
+        emoji = "✌️";
+      } else if(middle.y < wrist.y && thumb.y > wrist.y && index.y > wrist.y && ring.y > wrist.y && pinky.y > wrist.y){
+        emoji = "🖕";
+      }
+
+      if(emoji){
+        ctx.font = `${overlay.height/6}px Arial`;
+        ctx.textAlign = "center";
+        ctx.fillText(emoji, wrist.x*overlay.width, wrist.y*overlay.height - 80);
+      }
+    }
+  });
+
+  // Start video
+  const mpCamera = new Camera(video, { onFrame: async()=>{ await hands.send({image:video}); }, width:1600, height:1600, left:300 });
+  await mpCamera.start();
+
+  video.addEventListener('loadeddata', resizeCanvas);
+})();
+</script>
+</body>
+</html>

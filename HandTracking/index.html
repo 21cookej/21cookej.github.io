@@ -33,10 +33,10 @@
   });
 
   function resizeCanvas(){
-    overlay.width = 670;
-    overlay.height = 670;
-    video.width = 670;
-    video.height = 670;
+    overlay.width = 1340;
+    overlay.height = 800;
+    video.width = 1340;
+    video.height = 800;
   }
 
   hands.onResults(results=>{
@@ -97,7 +97,7 @@
   });
 
   // Start video
-  const mpCamera = new Camera(video, { onFrame: async()=>{ await hands.send({image:video}); }, width:1600, height:1600, left:300 });
+  const mpCamera = new Camera(video, { onFrame: async()=>{ await hands.send({image:video}); }, width:1600, height:1600 });
   await mpCamera.start();
 
   video.addEventListener('loadeddata', resizeCanvas);

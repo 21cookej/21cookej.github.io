@@ -11,7 +11,37 @@
       overflow-x: hidden;
       font-family: sans-serif;
     }
-
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background: #222;
+      color: black;
+      padding: 20px;
+      box-sizing: border-box;
+      transition: left 0.3s ease;
+      z-index: 1001;
+      overflow-y: auto;
+    }
+    
+    #sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #sidebar::-webkit-scrollbar-track {
+      background: #333;
+    }
+    
+    #sidebar::-webkit-scrollbar-thumb {
+      background: #666;
+      border-radius: 4px;
+    }
+    
+    #sidebar::-webkit-scrollbar-thumb:hover {
+      background: #888;
+    }
     #navbar {
       background: #000;
       height: 50px;
@@ -150,6 +180,7 @@
 
 </body>
 </html>
+
 
 
 

@@ -3,18 +3,21 @@
 <head>
   <style>
     html, body {
-
-      background: black;
-
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
       height: 100%;
+      background: black;
     }
 
-    #target {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border: 2px solid white;
+    #camouflage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       overflow: hidden;
+      z-index: 1;
     }
 
     video {
@@ -29,7 +32,7 @@
       position: fixed;
       top: 10px;
       left: 10px;
-      z-index: 10;
+      z-index: 2;
       padding: 8px 12px;
       background: white;
       border: none;
@@ -39,13 +42,13 @@
 </head>
 <body>
   <button id="startBtn">Start Camouflage</button>
-  <div id="target">
+  <div id="camouflage">
     <video id="screen" autoplay muted></video>
   </div>
 
   <script>
     const video = document.getElementById("screen");
-    const target = document.getElementById("target");
+    const container = document.getElementById("camouflage");
     const startBtn = document.getElementById("startBtn");
 
     startBtn.onclick = async () => {
@@ -56,13 +59,13 @@
       video.srcObject = stream;
 
       function updateCrop() {
-        const rect = target.getBoundingClientRect();
+        const rect = container.getBoundingClientRect();
 
         video.style.width = `${screen.width}px`;
         video.style.height = `${screen.height}px`;
 
-        const offsetX = rect.left + window.screenX;
-        const offsetY = rect.top + window.screenY;
+        const offsetX = window.screenX + rect.left;
+        const offsetY = window.screenY + rect.top;
 
         video.style.transform = `translate(${-offsetX}px, ${-offsetY}px)`;
 

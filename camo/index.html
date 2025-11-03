@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    html, body {
+
+      background: black;
+
+      height: 100%;
+    }
+
+    #target {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 2px solid white;
+      overflow: hidden;
+    }
+
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      transform-origin: top left;
+    }
+
+    #startBtn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      padding: 8px 12px;
+      background: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="startBtn">Start Camouflage</button>
+  <div id="target">
+    <video id="screen" autoplay muted></video>
+  </div>
+
+  <script>
+    const video = document.getElementById("screen");
+    const target = document.getElementById("target");
+    const startBtn = document.getElementById("startBtn");
+
+    startBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: "window" }
+      });
+
+      video.srcObject = stream;
+
+      function updateCrop() {
+        const rect = target.getBoundingClientRect();
+
+        video.style.width = `${screen.width}px`;
+        video.style.height = `${screen.height}px`;
+
+        const offsetX = rect.left + window.screenX;
+        const offsetY = rect.top + window.screenY;
+
+        video.style.transform = `translate(${-offsetX}px, ${-offsetY}px)`;
+
+        requestAnimationFrame(updateCrop);
+      }
+
+      updateCrop();
+      startBtn.style.display = "none";
+    };
+  </script>
+</body>
+</html>

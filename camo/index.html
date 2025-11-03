@@ -22,10 +22,10 @@
 
     video {
       position: absolute;
-      top: -120px;
+      top: 0;
       left: 0;
       pointer-events: none;
-      transform-origin: center;
+      transform-origin: top left;
     }
 
     #startBtn {
@@ -58,21 +58,29 @@
 
       video.srcObject = stream;
 
+      let lastX = 0, lastY = 0;
+
       function updateCrop() {
         const rect = container.getBoundingClientRect();
-
-        video.style.width = `${screen.width}px`;
-        video.style.height = `${screen.height}px`;
-
         const offsetX = window.screenX + rect.left;
-        const offsetY = window.screenY + rect.top;
+        const chromeHeight = screen.height - window.innerHeight;
+        const offsetY = window.screenY + chromeHeight + rect.top;
 
-        video.style.transform = `translate(${-offsetX}px, ${-offsetY}px)`;
+        // Only update if values changed
+        if (offsetX !== lastX || offsetY !== lastY) {
+          video.style.width = `${screen.width}px`;
+          video.style.height = `${screen.height}px`;
+          video.style.transform = `translate3d(${-offsetX}px, ${-offsetY}px, 0)`;
+          lastX = offsetX;
+          lastY = offsetY;
+        }
 
         requestAnimationFrame(updateCrop);
       }
 
       updateCrop();
+      new ResizeObserver(updateCrop).observe(container);
+      window.addEventListener("resize", updateCrop);
       startBtn.style.display = "none";
     };
   </script>

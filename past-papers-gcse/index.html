@@ -1,0 +1,196 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Categories & Links</title>
+  <style>
+    :root{ --bg:#0f1724; --card:#111827; --muted:#9ca3af; --accent:#60a5fa; --glass: rgba(255,255,255,0.03);} 
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+    body{margin:0;background:linear-gradient(180deg,#07102a 0%, #071828 100%);color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .app{width:100%;max-width:980px;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    h1{font-size:18px;margin:0}
+    .controls{display:flex;gap:8px;align-items:center}
+    input,button,select,textarea{font:inherit}
+    .grid{display:grid;grid-template-columns:260px 1fr;gap:14px;margin-top:14px}
+
+    /* left */
+    .panel{background:var(--glass);padding:12px;border-radius:10px}
+    .categories{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:6px}
+    .cat{padding:8px 10px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
+    .cat.selected{background:linear-gradient(90deg, rgba(96,165,250,0.12), rgba(96,165,250,0.06));box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+    .cat .meta{display:flex;gap:8px;align-items:center}
+    .cat .count{color:var(--muted);font-size:13px}
+
+    .small{font-size:13px;color:var(--muted)}
+
+    /* right */
+    .content{background:var(--glass);padding:14px;border-radius:10px;min-height:300px}
+    .links{display:flex;flex-direction:column;gap:8px}
+    .link{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent)}
+    .link .left{display:flex;gap:12px;align-items:center}
+    .favicon{width:36px;height:36px;border-radius:6px;background:#0b1220;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .title{font-weight:600}
+    .url{font-size:13px;color:var(--muted)}
+
+    footer{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px}
+    .muted{color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:700px){.grid{grid-template-columns:1fr;}.panel{order:2}}
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <header>
+      <h1>Categories & Links</h1>
+      <div class="controls"></div>
+    </header>
+
+    <div class="grid">
+      <aside class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <strong>Categories</strong>
+          <span class="small muted" id="totalCats">0</span>
+        </div>
+
+        <div class="categories" id="categories" aria-live="polite"></div>
+
+      </aside>
+
+      <main class="content">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <strong id="selectedTitle">(no category)</strong>
+            <div class="small muted">Click a category to view links</div>
+          </div>
+          <div class="small muted">Links: <span id="linksCount">0</span></div>
+        </div>
+
+        <div class="links" id="linksArea" style="margin-top:12px"></div>
+
+        <footer>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      categories: [
+        {
+          id: 'school-revision',
+          name: 'School Revision Past Papers GCSE',
+          links: [
+            { id: 'l1', title: 'Maths Higher AQA GCSE Past Papers', url: 'https://revisionmaths.com/gcse-maths/gcse-maths-past-papers/aqa-gcse-maths-past-papers' },
+            { id: 'l2', title: 'Computing Higher AQA GCSE Past Papers', url: 'https://revisionworld.com/gcse-revision/ict/past-papers/aqa-gcse-computer-science-past-papers' },
+            { id: 'l3', title: 'Biology Higher AQA GCSE Past Papers', url: 'https://revisionscience.com/gcse-revision/biology/biology-gcse-past-papers/aqa-gcse-biology-past-papers' },
+            { id: 'l4', title: 'English Liturature AQA GCSE Past Papers', url: 'https://revisionworld.com/a2-level-level-revision/english-literature-gcse-level/english-literature-gcse-past-papers/aqa-gcse-english-literature-past-papers' },
+            { id: 'l5', title: 'English Language AQA GCSE Past Papers', url: 'https://revisionworld.com/a2-level-level-revision/english-language-gcse-level/english-language-gcse-past-papers/aqa-gcse-english-language-past-papers' },
+            { id: 'l6', title: 'Physics Higher AQA GCSE Past Papers', url: 'https://revisionscience.com/gcse-revision/physics/physics-gcse-past-papers/aqa-gcse-physics-past-papers' },
+            { id: 'l7', title: 'Economics AQA GCSE Past Papers', url: 'https://www.savemyexams.com/gcse/economics/aqa/past-papers/' }
+          ]
+        }
+      ]
+    }
+
+    // State
+    let selectedId = data.categories.length ? data.categories[0].id : null
+
+    // Helpers
+    const el = id => document.getElementById(id)
+
+    // Render functions
+    function render(){
+      const cats = el('categories')
+      cats.innerHTML = ''
+      el('totalCats').textContent = data.categories.length
+
+      data.categories.forEach(cat => {
+        const div = document.createElement('div')
+        div.className = 'cat' + (cat.id === selectedId ? ' selected' : '')
+        div.tabIndex = 0
+
+        const meta = document.createElement('div')
+        meta.className = 'meta'
+        const name = document.createElement('div')
+        name.textContent = cat.name
+        const count = document.createElement('div')
+        count.className = 'count'
+        count.textContent = cat.links.length
+
+        meta.appendChild(name)
+        meta.appendChild(count)
+
+        div.appendChild(meta)
+        div.addEventListener('click', () => { selectedId = cat.id; renderSelected() })
+        div.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { selectedId = cat.id; renderSelected() } })
+
+        cats.appendChild(div)
+      })
+
+      renderSelected()
+    }
+
+    function renderSelected(){
+      const title = el('selectedTitle')
+      const linksArea = el('linksArea')
+      const linksCount = el('linksCount')
+
+      const cat = data.categories.find(c => c.id === selectedId)
+      if(!cat){
+        title.textContent = '(no category)'
+        linksArea.innerHTML = ''
+        linksCount.textContent = 0
+        return
+      }
+
+      title.textContent = cat.name
+      linksArea.innerHTML = ''
+      linksCount.textContent = cat.links.length
+
+      cat.links.forEach(link => {
+        const row = document.createElement('div')
+        row.className = 'link'
+
+        const left = document.createElement('div')
+        left.className = 'left'
+
+        const fav = document.createElement('div')
+        fav.className = 'favicon'
+        fav.textContent = link.title.slice(0,2).toUpperCase()
+
+        const meta = document.createElement('div')
+        const t = document.createElement('div')
+        t.className = 'title'
+        t.textContent = link.title
+        const u = document.createElement('div')
+        u.className = 'url'
+        u.textContent = link.url
+
+        meta.appendChild(t)
+        meta.appendChild(u)
+        left.appendChild(fav)
+        left.appendChild(meta)
+
+        const actions = document.createElement('div')
+        actions.className = 'actions'
+
+        const open = document.createElement('button')
+        open.textContent = 'Open'
+        open.addEventListener('click', () => { window.open(link.url, '_blank') })
+
+        actions.appendChild(open)
+
+        row.appendChild(left)
+        row.appendChild(actions)
+
+        linksArea.appendChild(row)
+      })
+    }
+
+    // initial render
+    render()
+  </script>
+</body>
+</html>

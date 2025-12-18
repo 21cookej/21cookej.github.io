@@ -1,4 +1,4 @@
-var LEVELS = [
+var MAIN_LEVELS = [
 	[
 		"                                                                                ",
 		"                                                                                ",
@@ -8,22 +8,22 @@ var LEVELS = [
 		"                                                                 x!!!x          ",
 		"                                                                 xx!xx          ",
 		"                                                   xx      xx     xvx           ",
-		"                                    o o      xx                                 ",
-		"  x                                                                            x",
+		"                                             xx                                 ",
+		"  x                                  o                                         x",
 		"  x                                xxxxx                                       x",
 		"  x                                                                            x",
-		"  x                                       o o                                  x",
 		"  x                                                                            x",
-		"  x                                      xxxxx                             o   x",
-		"  x          xxxx       o                                                      x",
-		"  x  @       x  x                                                xxxxx         x",
+		"  x                                                                            x",
+		"  x                       o              xxxxx                                 x",
+		"  x          xxxx                                                    P         x",
+		"  xB @    G  x  x                                                xxxxx    o   Ox",
 		"  xxxxxxxxxxxx  xxxxxxxxxxxxxxx   xxxxxxxxxxxxxxxxxxxx     xxxxxxx   xxxxxxxxxxx",
 		"                              x   x                  x     x                    ",
 		"                              x!!!x                  x!!!!!x                    ",
 		"                              x!!!x                  x!!!!!x                    ",
 		"                              xxxxx                  xxxxxxx                    ",
 		"                                                                                ",
-		"                                                                                "
+		"                                                                                " //0
 	],
 	[
 		"                                                                              ",
@@ -34,34 +34,33 @@ var LEVELS = [
 		"                                                                              ",
 		"                         o        o                                           ",
 		"                      xxxxxxxxxxxxxxx                                         ",
-		"                                                                              ",
+		"               B                                                              ",
 		"             xxxxxx                      xxxxxx                               ",
 		"                                                                              ",
 		"                                                                              ",
 		"                     o           xxxxx         o                              ",
 		"          @        xxxx   o                  xxxxx                            ",
 		"      xxxxxxxxxxxxxx  xxxxxxxxxxxxxxx      xxx   xx                           ",
-		"      x                             xxxxxxxx      xxx        xxx              ",
+		"      x                             xxxxxxxx      xxx     G  xxx              ",
 		"      x                                                 xxxxxxxx              ",
-		"      x  o         o                                   xx                     ",
+		"      xO o         o                                   xx                     ",
 		"      xxxxxxx    xxxxx    xxx  xxxxxxxxxxxxxxxxxxxxxxxxx                      ",
 		"            x              x                       x                          ",
 		"            x!!!!!!!!!!!!!!x                       x!!!!!!!!!!!!!!!!!!!!!!!!!!",
 		"            x!!!!!!!!!!!!!!x                       x!!!!!!!!!!!!!!!!!!!!!!!!!!",
 		"            xxxxxxxxxxxxxxxx                       xxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"                                                                                "
+		"                                                                              " //1
 	],
-
 	[
 		"                                                                                                                              ",
 		"                                                                                                                              ",
 		"                                                                                                                              ",
 		"                                                                                                                              ",
-		"         b                                                                                                                    ",
-		"        bb                                      !!                                                                            ",
-		"  x      b                                o     !x                                                                            ",
-		"  x      b                              xxxxx   !x                                                                            ",
-		"  x     bbb                                     !x                                                                            ",
+		"                                                                                                                              ",
+		"                                                !!                                                                            ",
+		"  x                                       o     !x                                                                            ",
+		"  x                                     xxxxx   !x                                                                            ",
+		"  x                                             !x                                                                            ",
 		"  x                            xxxx             !x                                                                            ",
 		"  x       o                                     !x                                                                            ",
 		"  xxxxxxxxxxxxxxwwwxxxxxxxxx                    !x                                                                            ",
@@ -76,7 +75,7 @@ var LEVELS = [
 		"                                                                                                                              ",
 		"                                                                                                                              ",
 		"                                                                                                                              ",
-		"                                                                                                                              "
+		"                                                                                                                              " //2
 	],
 	[
 		"                                                                                                        ",
@@ -86,11 +85,11 @@ var LEVELS = [
 		"                                                                                                        ",
 		"                                                                                                        ",
 		"                                                                                                        ",
-		"  x      bbb                                                        o                      x            ",
-		"  x        b                                                     xxxxxx                    x            ",
-		"  x      bbb                              xxxxx      o          !!!!!!!!                   x            ",
-		"  x      b                                         xxxxx       vxxxxxxxxv                  x            ",
-		"  x      bbb                    xxxxx                                                      x            ",
+		"  x                                                                 o                      x            ",
+		"  x                                                              xxxxxx                    x            ",
+		"  x                                       xxxxx      o          !!!!!!!!                   x            ",
+		"  x                                                xxxxx       vxxxxxxxxv                  x            ",
+		"  x                             xxxxx                                                      x            ",
 		"  x                                                                             o          x            ",
 		"  x                       xxxxx                                               xxxxx        x            ",
 		"  x                                                  o               o                     x            ",
@@ -102,54 +101,7 @@ var LEVELS = [
 		"                                                                                                        ",
 		"                                                                                                        ",
 		"                                                                                                        ",
-		"                                                                                                        "
-	],
-	[
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g o g o g o g o g o x",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g o g o g o g o g o x",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g o g o g o g o g o x",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g!!!g   g   g   g   g   g   g   g   x",
-		"x o g!!!g o g o g o g o g o g m g o g o x",
-		"x   g!!!g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g!!!g   g   g   g   x",
-		"x o g o g o g m g o g!!!g o g o g o g o x",
-		"x   g   g   g   g   g!!!g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g m g o g o g o g o x",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g o g o g o g o g o x",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   x   g   g   g   x",
-		"x o g o g o g o g o g o x o g o g o g o x",
-		"x   g   g   g   g   g   x   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g o g o g o g o g o x",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"xwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxwwwxyyyx",
-		"x   g   g   g   g   g   g   g   g   g   x",
-		"x o g o g o g o g o g o g o g o g o g o x",
-		"x @ g   g   g   g   g   g   g   g   g   x",
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"                                         ",
-		"                                         ",
-		"                                         ",
-		"                                         "
+		"                                                                                                        " //3
 	],
 	[
 		"                                                                                ",
@@ -157,11 +109,11 @@ var LEVELS = [
 		"                                                                                ",
 		"                                                                                ",
 		"                                                                                ",
-		"  x       b b                                    x                              ",
-		"  x       b b                                    x                              ",
-		"  x       bbb       o                            x                              ",
-		"  x         b                                    x                              ",
-		"  x         b                                    x                              ",
+		"  x                                              x                              ",
+		"  x                                              x                              ",
+		"  x                 o                            x                              ",
+		"  x                                              x                              ",
+		"  x                                              x                              ",
 		"  x                                              x                              ",
 		"  xxxxxxxxxxxxxxx!!!!!!!xxxxppppppppxxxxxxx      x                              ",
 		"  x              xxxxxxx                 x      xx                              ",
@@ -176,17 +128,17 @@ var LEVELS = [
 		"                 xuuuudx x!!!!!x                                                ",
 		"                 xxxxxxx xxxxxxx                                                ",
 		"                                                                                ",
-		"                                                                                "
+		"                                                                                " //4
 	],
 	[
 		"                                                                                                  ",
 		"                                                                                                  ",
 		"                                                                                                  ",
-		"          bbb                                                                                     ",
-		"          b                                                                                       ",
-		"          bbb                                                                                     ",
-		"            b                                                                                     ",
-		"          bbb                                                                                     ",
+		"                                                                                                  ",
+		"                                                                                                  ",
+		"                                                                                                  ",
+		"                                                                                                  ",
+		"                                                                                                  ",
 		"  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                                ",
 		"  x!                                            !x                                                ",
 		"  x!     o                        o             !x                                                ",
@@ -202,9 +154,8 @@ var LEVELS = [
 		"                                                                                                  ",
 		"                                                                                                  ",
 		"                                                                                                  ",
-		"                                                                                                  "
+		"                                                                                                  " //5
 	],
-
 	[
 		"                                      x!!x                        xxxxxxx                                    x!x  ",
 		"                                      x!!x                     xxxx     xxxx                                 x!x  ",
@@ -220,11 +171,11 @@ var LEVELS = [
 		"                                               x     x            xxxxxxx        xxx         xxx                  ",
 		"                                               x     x                           x x         x x                  ",
 		"                                               x     x                             x         x                    ",
-		"      bbb                                      xo    x                             xx        x                    ",
-		"      b                                        xx    x                             x         x                    ",
-		"      bbb                                      x     x      o  o     x   x         x         x                    ",
-		"      b b      xxxxxxx        xxx o xxx        x     x               x   x         x         x                    ",
-		"      bbb     xx     xx         x   x          x    ox     xxxxxx    x   x   xxxxxxxxx       x                    ",
+		"                                               xo    x                             xx        x                    ",
+		"                                               xx    x                             x         x                    ",
+		"                                               x     x      o  o     x   x         x         x                    ",
+		"               xxxxxxx        xxx o xxx        x     x               x   x         x         x                    ",
+		"              xx     xx         x   x          x    ox     xxxxxx    x   x   xxxxxxxxx       x                    ",
 		"             xx       xx        x o x          x    xx               x   x   x               x                    ",
 		"     @       x         x        x   x          x     x               x   x   x               x                    ",
 		"    xxx      x         x        x o x          x     x               x   xxxxx   xxxxxx      x                    ",
@@ -235,7 +186,7 @@ var LEVELS = [
 		"!!!!x x!!!!!!x         x!!!!!x                     xx!!!!!!xx  !                     xxxxxxx                      ",
 		"!!!!x x!!!!!!x         x!!!!!xx       xxxxxxxxxxxxxx!!!!!!xx   !                                                  ",
 		"!!!!x x!!!!!!x         x!!!!!!xxxxxxxxx!!!!!!!!!!!!!!!!!!xx    !                                                  ",
-		"xxxxx xxxxxxxx         x!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!xx     !                                                  "
+		"xxxxx xxxxxxxx         x!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!xx     !                                                  " //6
 	],
 	[
 		"                                                                                                              ",
@@ -274,17 +225,17 @@ var LEVELS = [
 		"  xxx                         x     x     x                                         x!!!x                xxx  ",
 		"  x x                         x    xxx    x                                          xxx                 x x  ",
 		"  x                           x    xxx    xxxxxxx                        xxxxx                             x  ",
-		"  x      bbb                  xo          x                              x   x                             x  ",
-		"  x        b                  xx          x                              x x x                             x  ",
-		"  x        b                              x       |xxxx|    |xxxx|     xxx xxx                             x  ",
-		"  x        b       xxx                    x                              x         xxx                     x  ",
-		"  x        b      xxxxx       xx          x                             xxx       x!!!x          x         x  ",
+		"  x                           xo          x                              x   x                             x  ",
+		"  x                           xx          x                              x x x                             x  ",
+		"  x                                       x       |xxxx|    |xxxx|     xxx xxx                             x  ",
+		"  x                xxx                    x                              x         xxx                     x  ",
+		"  x               xxxxx       xx          x                             xxx       x!!!x          x         x  ",
 		"  x               oxxxo       x    xxx    x       o    o    o    o      x x        xxx          xxx        x  ",
 		"  x                xxx        xxxxxxxxxxxxx  x    x    x    x    x     xx xx                    xxx        x  ",
 		"  x      @          x         x           x!!x    x!!!!x    x!!!!x    xx   xx                    x         x  ",
 		"  xxxxxxxxxxxxxxxxxxxxxxxxxxxxx           xxxxxxxxxxxxxxxxxxxxxxxxxxxxx     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  ",
 		"                                                                                                              ",
-		"                                                                                                              "
+		"                                                                                                              " //7
 	],
 	[
 		"                                                                                                  xxx x       ",
@@ -307,11 +258,11 @@ var LEVELS = [
 		"                                                      xx                                                      ",
 		"                   xxx         xxx                                                                            ",
 		"                                                                                                              ",
-		"      bbb                                                                       x      x                      ",
-		"      b b                                                 xx     xx                                           ",
-		"      bbb    xxx         xxx         xxx                                 x                  x                 ",
-		"      b b                                                                                                     ",
-		"      bbb                                                        ||                                           ",
+		"                                                                                x      x                      ",
+		"                                                          xx     xx                                           ",
+		"             xxx         xxx         xxx                                 x                  x                 ",
+		"                                                                                                              ",
+		"                                                                 ||                                           ",
 		"  xxxxxxxxxxx       o           o                                                                             ",
 		"  x         x   xxxxxxxxx   xxxxxxxxx   xx                                                x                   ",
 		"  x         x   x       x   x       x   x                 ||                  x     x                         ",
@@ -320,15 +271,15 @@ var LEVELS = [
 		"        x           o=          o=            x   x                     xxx                                   ",
 		"        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   x!!!!!!!!!!!!!!!!!!!!!xxx!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
 		"                                                  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"                                                                                                              "
+		"                                                                                                              " //8
 	],
 	[
 		"                                                ",
-		"    bbb                    o                    ",
-		"    b b                   xxx        x          ",
-		"    bbb                                         ",
-		"      b                                   x     ",
-		"    bbb          o          o      x            ",
+		"                           o                    ",
+		"                          xxx        x          ",
+		"                                                ",
+		"                                          x     ",
+		"                 o          o      x            ",
 		"                 xxx       xxx                  ",
 		"                 xxx       xxx                  ",
 		"                 xxxx      xxxx                 ",
@@ -338,14 +289,14 @@ var LEVELS = [
 		"xxxxxxxxxxxxxxxx    xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxx!!!!xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"                                                "
+		"                                                " //9
 	],
 	[
-		"   b  bbb                                       ",
-		"   b  b b                                       ",
-		"   b  b b                                       ",
-		"   b  b b                                       ",
-		"   b  bbb                                       ",
+		"                                                ",
+		"                                                ",
+		"                                                ",
+		"                                                ",
+		"                                                ",
 		"                                                ",
 		"                                                ",
 		"    o      o       o      m     o    o          ",
@@ -358,15 +309,15 @@ var LEVELS = [
 		"             @                                  ",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" //10
 	],
 	[
 		"                                               ",
-		"    b   b                                      ",
-		"   bb  bb                                      ",
-		"    b   b                                      ",
-		"    b   b                                      ",
-		"   bbb bbb                                     ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
 		"              o                  o             ",
 		"     o       xxx        o       xxx            ",
 		"    xxx     xxxxx      xxx     xxxxx           ",
@@ -377,15 +328,15 @@ var LEVELS = [
 		"xxxxxxxxxxxxxxxxxxxx      xxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxx      xxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxx!!!!!!xxxxxxxxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxxxxxxuuuuuuxxxxxxxxxxxxxxxxxxxxx"
+		"xxxxxxxxxxxxxxxxxxxxuuuuuuxxxxxxxxxxxxxxxxxxxxx" //11
 	],
 	[
 		"                                                ",
-		"    b  bbb                                      ",
-		"   bb    b                                      ",
-		"    b  bbb                                      ",
-		"    b  b                                        ",
-		"   bbb bbb                                      ",
+		"                                                ",
+		"                                                ",
+		"                                                ",
+		"                                                ",
+		"                                                ",
 		"                                                ",
 		"   o        o        o                          ",
 		"  xxx      xxxppppppxxxppppppppp                ",
@@ -396,15 +347,15 @@ var LEVELS = [
 		"      @                xxxxxx   xxxxxx     m    ",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" //12
 	],
 	[
 		"                                               ",
-		"     b   bbb                                   ",
-		"    bb     b                                   ",
-		"     b   bbb                                   ",
-		"     b     b                                   ",
-		"    bbb  bbb                                   ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
 		"                  o                            ",
 		"      o          xxx          o                ",
 		"      xxx       xxxxx        xxx               ",
@@ -414,52 +365,299 @@ var LEVELS = [
 		"         @                                     ",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" //13
 	],
 	[
 		"                                               ",
-		"     b  b b                                    ",
-		"    bb  b b                                    ",
-		"     b  bbb                                    ",
-		"     b    b                                    ",
-		"    bbb  pb    p        uuu                    ",
-		"xxx      p     p                               ",
-		"        op     puuu                            ",
-		"       xxx     p                               ",
-		"         p  o  p         o                     ",
-		"         xxxxxxx       xxxx                    ",
-		"   xxx                                         ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"                                               ",
+		"    o                                          ",
+		"   xxx                          o              ",
 		"                              xxxx             ",
 		"       xxx                                     ",
 		"                                      xxxx     ",
 		"         @           @                         ",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxx!!!!xxxxxxxxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxx!!!!xxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" //14
 	],
 	[
 		"                                                x",
-		"      b  bbb                                    x",
-		"     bb  b                         x            x",
-		"      b  bbb                       x          o x",
-		"      b    b                       x         xxxx",
-		"     bbb bbb     o          o      x            x",
-		"                 xxx       xxx     x m          x",
-		"                 xxx       xxx     xxxx       m x",
+		"                                                x",
+		"                                   x            x",
+		"                                   x          o x",
+		"                                   x         xxxx",
+		"                 o          o      x            x",
+		"                 xxx       xxx     x o          x",
+		"                 xxx       xxx     xxxx       o x",
 		"                    x      xxxx    x         xxxx",
 		"                                   x            x",
 		"         @                         x      @     x",
-		"xxxxxxxxxxxxxxxx    xxxxxx    xxxxxxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxx    xxxxxx    xxxxxxxxxxxxxxxxxxx",
-		"xxxxxxxxxxxxxxxx!!!!xxxxxx!!!!xxxxxxxxxxxxxxxxxxx",
+		"x    xxxxxxxxxxx    xxxxxx    xxxxxx    xxxxxxxxx",
+		"x    xxxxxxxxxxx    xxxxxx    xxxxxx    xxxxxxxxx",
+		"x!!!!xxxxxxxxxxx!!!!xxxxxx!!!!xxxxxx!!!!xxxxxxxxx",
 		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		"                                                 "
+		"                                                 " //15
+	],
+	[
+		"                                                                                     ",
+		"                                                                                     ",
+		"                                                                      o              ",
+		"                                                                     xxx             ",
+		"                                                                                     ",
+		"                                            o                                        ",
+		"                                           xxx                                       ",
+		"                                  xxx                                                ",
+		"                                    x                         o                      ",
+		"                xxx      o         ox       o         o     xxxxx   x                ",
+		"                      xxxxxx      xxx     xxxxx     xxxxx           |                ",
+		"              o            x      x                 x   x     o                      ",
+		"   o         xxx       o   x o    x     o    o      x   x   xxxxx      o             ",
+		"  xxx                xxx   xxxx   xxx  xxx  xxx     x   x             xxx            ",
+		"                       x      x     x    x    x     x   x                            ",
+		"                     !!!      x     x    x    xxxx  x   xxxxx!!!xxx    o             ",
+		"              xxx    !!!      x!!!!!x!!!!x!!!!x     x       x!!!x xxxxxxx            ",
+		"                    xxxx      x!!!!!x!!!!x!!!!x     x       x!!!x                    ",
+		"          o                   x!!!!!x!!!!x!!!!x     x       x!!!x     o              ",
+		"         xxx                  x!!!!!x!!!!x!!!!x  xxxx       x!!!x    xxx             ",
+		"                              x!!!!!x!!!!x!!!!x     x       x!!!x                  o ",
+		"                              x!!!!!x!!!!x!!!!x     x       x!!!x               xxxxx",
+		"       @          o           x!!!!!x!!!!x!!!!x     x       x!!!x                    ",
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+		"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" //16
 	]
 ];
-
 function Vector(x, y) {
 	this.x = x;
 	this.y = y;
+}
+
+var PART2_LEVELS = {
+	0: [
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                   o            ",
+		"                                                                  xxx           ",
+		"                                                                 xx!xx          ",
+		"                                                                 !!!!x          ",
+		"                                                                 !x!xx          ",
+		"                                                   xx       x    !xvx           ",
+		"                                              x                  !              ",
+		"  x                                  o                           !             x",
+		"  x                                 xxxx                         !             x",
+		"  x                                                              !             x",
+		"  x                                                              !             x",
+		"  x                                                              !             x",
+		"  x                       o              x xxx                   v             x",
+		"  x   @      xx                                                      P         x",
+		"  xB      G  x  x                                                x xxx    o   Ox",
+		"  xxxxx xxxxxx   xxx  xx x xxx    x  xxx x  x xx   xx      x  xx x   xx  xxx  xx",
+		"                                  x                  x     x                    ",
+		"                              x!!!x                  x!!!!!x                    ",
+		"                              x!!!x                  !!!!!!x                    ",
+		"                              x!xxx                  !xxx!xx                    ",
+		"                               !                     !   !                      ",
+		"                               !                     !   !                      " //Part 2 For Level 0
+	],
+	1: [
+		"                                                                              ",
+		"                                                                              ",
+		"                                                                              ",
+		"                   o o                                                        ",
+		"                 x xxxx                                                       ",
+		"                                                                              ",
+		"                         o        o                                           ",
+		"                        xxxx     xx x                                         ",
+		"               B                                                              ",
+		"              xxx x                      xxxxxx                               ",
+		"                                                                              ",
+		"                                                                              ",
+		"                     o           xxxxx         o                              ",
+		"                    xxx   o                  xxxxx                            ",
+		"        xxxx xxx xxx  xxxxx   xxxxxxx       xx   xx      @                    ",
+		"      x                             xxx  xxx     xx      G  xxx               ",
+		"      x                                                 xxx x  x              ",
+		"      xO o         o                                   xx                     ",
+		"      xxxxxxx    xxxxx    xxxxxxxxxx x xxxxxxxxxxxxxxxxx                      ",
+		"            x              x                       x                          ",
+		"            x!!!!!!!!!!!!!!x                      !!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+		"            x!!!!!!!!!!!!!!!!                     !x!!!!!!!!!!!!!!!!!!!!!!!!!!",
+		"            xxxxxxxxxxxxxxxx!                     !xxxxxxx!!xxxxxxxxxxxxxxxxxx",
+		"                            !                             !!                  " //Part 2 For Level 1
+	],
+	4: [
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"  x                                              x                              ",
+		"  x                                              x                              ",
+		"  x                 o                            x                              ",
+		"  x                                              x                              ",
+		"  x                                              x                              ",
+		"  x                                              x                              ",
+		"  xxxxxxxxxxxxxxx!!!!!!!xxxxppppppppxxxxxxx      x                              ",
+		"  x              xxxxxxx                 x      xx                              ",
+		"  x                                      x       x                              ",
+		"  x                                      x       x                              ",
+		"  x                                      xx      x                              ",
+		"  x                                             xx                              ",
+		"  x        @                              o      x                              ",
+		"  xxxxxxxxxxxxxxxx     xxx     xxxxxxxxxxxxxxxxxxx                              ",
+		"                 x!!u!!x x!!!!!x                                                ",
+		"                 xuuuuux x!!!!!x                                                ",
+		"                 xuuuudx x!!!!!x                                                ",
+		"                 xxxxxxx xxxxxxx                                                ",
+		"                                                                                ",
+		"                                                                                " //Part 2 For Level 4
+	]
+};
+
+var greenPortalPairs = {};
+
+var purplePortalPairs = {};
+
+function isPart2Index(idx) {
+	return typeof idx === "string" && idx.endsWith("b");
+}
+
+function getMainIndex(idx) {
+	return isPart2Index(idx) ? parseInt(idx) : idx;
+}
+
+function getPart2Index(idx) {
+	return idx + "b";
+}
+
+// Check if a level has a green portal connection to part 2
+function hasGreenPortalConnection(mainIdx) {
+	// Check if part 2 exists for this level
+	if (!PART2_LEVELS.hasOwnProperty(mainIdx)) {
+		return false;
+	}
+
+	// Check if main level has a green portal
+	let mainPlan = MAIN_LEVELS[mainIdx];
+	let mainHasGreen = findGreenPortalPos(mainPlan) !== null;
+
+	// Check if part 2 has a green portal
+	let part2Plan = PART2_LEVELS[mainIdx];
+	let part2HasGreen = findGreenPortalPos(part2Plan) !== null;
+
+	// Both must have green portals for them to be connected
+	return mainHasGreen && part2HasGreen;
+}
+
+// Check if a level has a green portal connection to part 2
+function hasPurplePortalConnection(mainIdx) {
+	// Check if part 2 exists for this level
+	if (!PART2_LEVELS.hasOwnProperty(mainIdx)) {
+		return false;
+	}
+	// Check if main level has a purple portal
+	let mainPlan = MAIN_LEVELS[mainIdx];
+	let mainHasPurple = findPurplePortalPos(mainPlan) !== null;
+
+	// Check if part 2 has a purple portal
+	let part2Plan = PART2_LEVELS[mainIdx];
+	let part2HasPurple = findPurplePortalPos(part2Plan) !== null;
+
+	// Both must have purple portals for them to be connected
+	return mainHasPurple && part2HasPurple;
+}
+
+function handleProgression(level, startLevelFunc) {
+	var idx = getMainIndex(level.index);
+
+	var mainCoins = coinTracker.main[idx] || 0;
+	var part2Coins = coinTracker.part2[idx] || 0;
+
+	var totalMainCoins = countCoinsInLevel(MAIN_LEVELS[idx]);
+
+	// Check if this level has a connected part 2 (via green portals)
+	var hasConnectedPart2 = hasGreenPortalConnection(idx);
+
+	// Check if this level has a connected part 2 (via green portals)
+	var hasConnectedPart2 = hasPurplePortalConnection(idx);
+
+	// Determine if we can progress
+	var canProgress = false;
+
+	if (hasConnectedPart2) {
+		// Both main and part 2 must have all coins collected
+		let totalPart2Coins = countCoinsInLevel(PART2_LEVELS[idx]);
+		canProgress = mainCoins >= totalMainCoins && part2Coins >= totalPart2Coins;
+
+		console.log("Level " + idx + " has connected part 2:");
+		console.log("Main coins: " + mainCoins + "/" + totalMainCoins);
+		console.log("Part 2 coins: " + part2Coins + "/" + totalPart2Coins);
+		console.log("Can progress: " + canProgress);
+	} else {
+		// Only main level coins needed
+		canProgress = mainCoins >= totalMainCoins;
+
+		console.log("Level " + idx + " has no connected part 2:");
+		console.log("Main coins: " + mainCoins + "/" + totalMainCoins);
+		console.log("Can progress: " + canProgress);
+	}
+
+	if (canProgress) {
+		// Progress to next level
+		console.log("Progressing to level " + (idx + 1));
+		startLevelFunc(idx + 1);
+	} else {
+		// Return to main level to collect remaining coins
+		console.log("Returning to level " + idx);
+		startLevelFunc(idx);
+	}
+}
+
+function findGreenParent(index) {
+	for (var key in greenPortalPairs) {
+		if (greenPortalPairs.hasOwnProperty(key)) {
+			if (greenPortalPairs[key] === index) return parseInt(key, 10);
+		}
+	}
+	return null;
+}
+
+function findGreenPortalPos(plan) {
+	for (let y = 0; y < plan.length; y++) {
+		for (let x = 0; x < plan[y].length; x++) {
+			if (plan[y][x] === "G") {
+				return { x, y };
+			}
+		}
+	}
+	return null;
+}
+
+function findPurpleParent(index) {
+	for (var key in purplePortalPairs) {
+		if (purplePortalPairs.hasOwnProperty(key)) {
+			if (purplePortalPairs[key] === index) return parseInt(key, 10);
+		}
+	}
+	return null;
+}
+
+function findPurplePortalPos(plan) {
+	for (let y = 0; y < plan.length; y++) {
+		for (let x = 0; x < plan[y].length; x++) {
+			if (plan[y][x] === "P") {
+				return { x, y };
+			}
+		}
+	}
+	return null;
 }
 
 Vector.prototype.plus = function (other) {
@@ -484,16 +682,17 @@ var actorchars = {
 	h: Wall,
 	b: whiteGhost,
 	i: Invis,
-	A: Platform,
-	B: Platform,
-	C: Platform,
-	D: Platform,
-	1: Button,
-	2: Button,
-	3: Button,
-	4: Button,
 	d: Door,
-	"&": Player2 // Add this line
+	"&": Player2,
+
+	// === PORTAL ADDITIONS START ===
+	O: OrangePortal,
+	B: BluePortal,
+	8: FakeOrangePortal,
+	9: FakeBluePortal,
+	G: GreenPortal,
+	P: PurplePortal
+	// === PORTAL ADDITIONS END ===
 };
 
 function Door(pos) {
@@ -536,7 +735,9 @@ function Player(pos) {
 	this.pos = pos.plus(new Vector(0, -0.4));
 	this.size = new Vector(0.85, 0.85);
 	this.speed = new Vector(0, 0);
+	this.lastPortalTouched = null; // Track which portal was last touched
 }
+
 Player.prototype.type = "player";
 
 function Lava(pos, ch) {
@@ -544,12 +745,11 @@ function Lava(pos, ch) {
 	this.size = new Vector(1, 1);
 	if (ch === "!") this.speed = new Vector(0, 0);
 	else if (ch === "=") this.speed = new Vector(2, 0);
-	else if (ch === "|") this.speed = new Vector(0, 2);
+	else if (ch === "|") this.speed = new Vector(0, 8);
 	else if (ch === ":") this.speed = new Vector(0, 0);
 	else if (ch === "/") this.speed = new Vector(0, 0);
 	else if (ch === "v") {
 		this.speed = new Vector(0, 3);
-
 		this.repeatPos = pos;
 	}
 }
@@ -567,18 +767,14 @@ function Ghost(pos) {
 	this.size = new Vector(0.75, 0.75);
 }
 Ghost.prototype.type = "ghost";
-Ghost.prototype.act = function (step) {
-	// Add behavior if necessary
-};
+Ghost.prototype.act = function (step) {};
 
 function whiteGhost(pos) {
 	this.pos = pos;
 	this.size = new Vector(0.7, 0.7);
 }
 whiteGhost.prototype.type = "whiteghost";
-whiteGhost.prototype.act = function (step) {
-	// Add behavior if necessary
-};
+whiteGhost.prototype.act = function (step) {};
 
 function Lavawall(pos) {
 	this.basePos = this.pos = pos;
@@ -602,84 +798,60 @@ function Invis(pos) {
 Invis.prototype.type = "Invis";
 Invis.prototype.act = function (step) {};
 
-function Platform(pos) {
-	this.pos = pos;
-	this.size = new Vector(5.6, 1.6); // Adjust size as needed
-	this.speed = new Vector(0, 0);
-	this.direction = new Vector(0, 0); // Placeholder for movement direction
-	this.moveSteps = 0; // Counter for movement steps
-}
-
-Platform.prototype.type = "platform";
-
-Platform.prototype.act = function (step, level) {
-	if (this.moveSteps > 0) {
-		var newPos = this.pos.plus(this.speed.times(step));
-		// Check collision with the player
-		var player = level.player;
-		if (
-			newPos.x < player.pos.x + player.size.x &&
-			newPos.x + this.size.x > player.pos.x &&
-			newPos.y < player.pos.y + player.size.y &&
-			newPos.y + this.size.y > player.pos.y
-		) {
-			// Handle collision response
-			var playerBottom = player.pos.y + player.size.y;
-			var platformTop = newPos.y;
-			var playerTop = player.pos.y;
-			var platformBottom = newPos.y + this.size.y;
-
-			// Player on top of platform
-			if (playerBottom > platformTop && playerTop < platformTop) {
-				player.pos.y = platformTop - player.size.y;
-				if (this.speed.y < 0) player.speed.y = this.speed.y; // Match platform vertical speed
-			}
-			// Player below platform
-			else if (playerTop < platformBottom && playerBottom > platformBottom) {
-				player.pos.y = platformBottom;
-				if (this.speed.y > 0) player.speed.y = this.speed.y; // Match platform vertical speed
-			}
-			// Player collides from sides
-			else {
-				if (player.pos.x > this.pos.x) {
-					player.pos.x = this.pos.x + this.size.x;
-				} else {
-					player.pos.x = this.pos.x - player.size.x;
-				}
-				player.speed.x = 0;
-			}
-		}
-		this.pos = newPos;
-		this.moveSteps -= step;
-	}
-};
-
-function Button(pos) {
+// === PORTAL ADDITIONS START ===
+function OrangePortal(pos) {
 	this.pos = pos;
 	this.size = new Vector(1, 1);
-	this.pressed = false;
-	this.used = false; // Track if the button has been used
 }
+OrangePortal.prototype.type = "orangePortal";
+OrangePortal.prototype.act = function () {};
 
-Button.prototype.type = "button";
+function BluePortal(pos) {
+	this.pos = pos;
+	this.size = new Vector(1, 1);
+}
+BluePortal.prototype.type = "bluePortal";
+BluePortal.prototype.act = function () {};
 
-Button.prototype.act = function (step, level) {
-	// Check if the button is already used
-	if (this.used) return;
+function FakeOrangePortal(pos) {
+	this.pos = pos;
+	this.size = new Vector(1, 1);
+}
+FakeOrangePortal.prototype.type = "fakeOrangePortal";
+FakeOrangePortal.prototype.act = function () {};
 
-	// Add any necessary behavior for the button itself
-	if (this.pressed) {
-		this.used = true; // Mark the button as used
-		this.size = this.size.times(0.5); // Halve the size of the button
-		this.activatePlatforms(level);
-	}
-};
+function FakeBluePortal(pos) {
+	this.pos = pos;
+	this.size = new Vector(1, 1);
+}
+FakeBluePortal.prototype.type = "fakeBluePortal";
+FakeBluePortal.prototype.act = function () {};
+
+function GreenPortal(pos) {
+	this.pos = pos;
+	this.size = new Vector(1, 1);
+}
+GreenPortal.prototype.type = "greenPortal";
+GreenPortal.prototype.act = function () {};
+
+function PurplePortal(pos) {
+	this.pos = pos;
+	this.size = new Vector(1, 1);
+}
+PurplePortal.prototype.type = "purplePortal";
+PurplePortal.prototype.act = function () {};
+
+// === PORTAL ADDITIONS END ===
 
 function Level(plan) {
 	this.width = plan[0].length;
 	this.height = plan.length;
 	this.grid = [];
 	this.actors = [];
+
+	this.levelChangeRequested = false;
+	this.levelChangeTarget = null;
+	this.index = null;
 
 	for (var y = 0; y < this.height; y++) {
 		var line = plan[y],
@@ -690,7 +862,6 @@ function Level(plan) {
 			var Actor = actorchars[ch];
 			if (Actor) this.actors.push(new Actor(new Vector(x, y), ch));
 			else if (ch === "x") fieldType = "wall";
-			else if (ch === "A") fieldType = "platform";
 			else if (ch === "!") fieldType = "lava";
 			else if (ch === "/") fieldType = "lava-slope-down";
 			else if (ch === ":") fieldType = "lava-slope-up";
@@ -761,11 +932,9 @@ DOMDisplay.prototype.centerPlayer = function () {
 	let width = this.wrap.clientWidth;
 	let height = this.wrap.clientHeight;
 
-	// Calculate the center of the player
 	let centerX = player.pos.x * scale + (player.size.x * scale) / 2;
 	let centerY = player.pos.y * scale + (player.size.y * scale) / 2;
 
-	// Scroll the display to center the player
 	this.wrap.scrollLeft = centerX - width / 2;
 	this.wrap.scrollTop = centerY - height / 2;
 };
@@ -939,6 +1108,8 @@ Coin.prototype.act = function (step) {
 };
 
 var playerXSpeed = 10;
+var gravity = 30;
+var jumpSpeed = 17;
 
 Player.prototype.moveX = function (step, level, keys) {
 	this.speed.x = 0;
@@ -952,32 +1123,11 @@ Player.prototype.moveX = function (step, level, keys) {
 	else this.pos = newPos;
 };
 
-var gravity = 30;
-var jumpSpeed = 17;
-
 Player.prototype.moveY = function (step, level, keys) {
 	this.speed.y += step * gravity;
 	var motion = new Vector(0, this.speed.y * step);
 	var newPos = this.pos.plus(motion);
 	var obstacle = level.obstacleAt(newPos, this.size);
-
-	// Check if standing on a platform
-	var standingOnPlatform = false;
-	var platform = level.actorAt(this);
-	if (
-		platform &&
-		platform.type === "platform" &&
-		newPos.y <= this.pos.y &&
-		this.speed.y > 0
-	) {
-		// Check if player is on top of the platform
-		if (
-			newPos.x + this.size.x > platform.pos.x &&
-			newPos.x < platform.pos.x + platform.size.x
-		) {
-			standingOnPlatform = true;
-		}
-	}
 
 	if (obstacle) {
 		level.playerTouched(obstacle);
@@ -986,10 +1136,6 @@ Player.prototype.moveY = function (step, level, keys) {
 		} else {
 			this.speed.y = 0;
 		}
-	} else if (standingOnPlatform && keys.up) {
-		// Jump off the platform
-		this.pos = newPos;
-		this.speed.y = -jumpSpeed;
 	} else {
 		this.pos = newPos;
 	}
@@ -1000,16 +1146,19 @@ Player.prototype.act = function (step, level, keys) {
 	this.moveY(step, level, keys);
 
 	var otherActor = level.actorAt(this);
-	if (otherActor) level.playerTouched(otherActor.type, otherActor);
+	if (otherActor) {
+		level.playerTouched(otherActor.type, otherActor);
+	} else {
+		// Player is not touching any actor, reset portal tracking
+		this.lastPortalTouched = null;
+	}
 
 	if (level.status == "lost") {
-		// Remove the dying animation by commenting out or deleting the lines below
-		// this.pos.y += step;
-		// this.size.y -= step;
+		// No dying animation
 	}
 
 	if (keys.r) {
-		this.kill(level); // Kill the player and reload the level
+		this.kill(level);
 	}
 };
 
@@ -1023,43 +1172,148 @@ Level.prototype.playerTouched = function (type, actor) {
 		this.status = "lost";
 		this.finishDelay = 0.1;
 	} else if (type === "coin") {
-		this.actors = this.actors.filter(function (other) {
-			return other !== actor;
-		});
-		if (
-			!this.actors.some(function (actor) {
-				return actor.type === "coin";
-			})
-		) {
+		// Remove coin from level
+		this.actors = this.actors.filter((a) => a !== actor);
+
+		let idx = this.index;
+
+		// MAIN level
+		if (!isPart2Index(idx)) {
+			if (!coinTracker.main[idx]) coinTracker.main[idx] = 0;
+			coinTracker.main[idx]++;
+		}
+
+		// PART 2 level
+		else {
+			let mainIdx = getMainIndex(idx);
+			if (!coinTracker.part2[mainIdx]) coinTracker.part2[mainIdx] = 0;
+			coinTracker.part2[mainIdx]++;
+		}
+
+		// Check if all coins are collected for progression
+		let mainIdx = getMainIndex(idx);
+		let mainCoins = coinTracker.main[mainIdx] || 0;
+		let part2Coins = coinTracker.part2[mainIdx] || 0;
+		let totalMainCoins = countCoinsInLevel(MAIN_LEVELS[mainIdx]);
+		let hasConnectedPart2 = hasGreenPortalConnection(mainIdx);
+
+		let allCoinsCollected = false;
+
+		if (hasConnectedPart2) {
+			let totalPart2Coins = countCoinsInLevel(PART2_LEVELS[mainIdx]);
+			allCoinsCollected =
+				mainCoins >= totalMainCoins && part2Coins >= totalPart2Coins;
+		} else {
+			allCoinsCollected = mainCoins >= totalMainCoins;
+		}
+
+		// If all coins collected, trigger level completion
+		if (allCoinsCollected) {
 			this.status = "won";
 			this.finishDelay = 1;
 		}
 	} else if (type === "Door") {
-		// Add this block
 		this.status = "won";
 		this.finishDelay = 0;
-	}
-};
-
-Level.prototype.activatePlatforms = function () {
-	this.actors.forEach(function (actor) {
-		if (actor.type === "platform" && actor.speed.x === 0 && actor.speed.y === 0) {
-			actor.speed = new Vector(0, -6); // Start by moving up
-			actor.moveSteps = 6; // Move 2 units
-			setTimeout(function () {
-				actor.speed = new Vector(-3, 0); // Then move left
-				actor.moveSteps = 1;
-				setTimeout(function () {
-					actor.speed = new Vector(0, 1); // Finally move down
-					actor.moveSteps = 2;
-					setTimeout(function () {
-						actor.speed = new Vector(0, 0); // Then move left
-						actor.moveSteps = 1000000;
-					}, 1000); // Adjust delay as needed
-				}, 1000); // Adjust delay as needed
-			}, 1000);
+	} else if (type === "orangePortal") {
+		// Check if this is a different portal than last touched
+		if (this.player.lastPortalTouched !== actor) {
+			var blue = this.actors.find(function (a) {
+				return a.type === "bluePortal";
+			});
+			if (blue) {
+				this.player.pos = blue.pos.plus(new Vector(0, 0));
+				this.player.lastPortalTouched = blue;
+			}
 		}
-	});
+	} else if (type === "bluePortal") {
+		// Check if this is a different portal than last touched
+		if (this.player.lastPortalTouched !== actor) {
+			var orange = this.actors.find(function (a) {
+				return a.type === "orangePortal";
+			});
+			if (orange) {
+				this.player.pos = orange.pos.plus(new Vector(0, 0));
+				this.player.lastPortalTouched = orange;
+			}
+		}
+	} else if (type === "fakeOrangePortal" || type === "fakeBluePortal") {
+		// fake portals do nothing
+	} else if (type === "greenPortal") {
+		if (this.player.lastPortalTouched !== actor) {
+			let idx = this.index;
+
+			// MAIN → PART 2
+			if (!isPart2Index(idx)) {
+				if (PART2_LEVELS.hasOwnProperty(idx)) {
+					let targetPlan = PART2_LEVELS[idx];
+					let targetPos = findGreenPortalPos(targetPlan);
+
+					this.levelChangeRequested = true;
+					this.levelChangeTarget = {
+						index: idx + "b",
+						spawn: targetPos,
+						markPortalTouched: true
+					};
+
+					this.player.lastPortalTouched = actor;
+				}
+			}
+
+			// PART 2 → MAIN
+			else {
+				let mainIdx = getMainIndex(idx);
+				let targetPlan = MAIN_LEVELS[mainIdx];
+				let targetPos = findGreenPortalPos(targetPlan);
+
+				this.levelChangeRequested = true;
+				this.levelChangeTarget = {
+					index: mainIdx,
+					spawn: targetPos,
+					markPortalTouched: true
+				};
+
+				this.player.lastPortalTouched = actor;
+			}
+		}
+	} else if (type === "purplePortal") {
+		if (this.player.lastPortalTouched !== actor) {
+			let idx = this.index;
+
+			// MAIN → PART 2
+			if (!isPart2Index(idx)) {
+				if (PART2_LEVELS.hasOwnProperty(idx)) {
+					let targetPlan = PART2_LEVELS[idx];
+					let targetPos = findPurplePortalPos(targetPlan);
+
+					this.levelChangeRequested = true;
+					this.levelChangeTarget = {
+						index: idx + "b",
+						spawn: targetPos,
+						markPortalTouched: true
+					};
+
+					this.player.lastPortalTouched = actor;
+				}
+			}
+
+			// PART 2 → MAIN
+			else {
+				let mainIdx = getMainIndex(idx);
+				let targetPlan = MAIN_LEVELS[mainIdx];
+				let targetPos = findPurplePortalPos(targetPlan);
+
+				this.levelChangeRequested = true;
+				this.levelChangeTarget = {
+					index: mainIdx,
+					spawn: targetPos,
+					markPortalTouched: true
+				};
+
+				this.player.lastPortalTouched = actor;
+			}
+		}
+	}
 };
 
 function runAnimation(frameFunc) {
@@ -1083,26 +1337,161 @@ function runLevel(level, Display, andThen) {
 	runAnimation(function (step) {
 		level.animate(step, arrows);
 		display.drawFrame(step);
-		if (level.isFinished()) {
+
+		if (level.isFinished() || level.levelChangeRequested) {
 			display.clear();
-			if (andThen) andThen(level.status);
+			if (andThen) andThen(level);
 			return false;
 		}
 	});
 }
 
 function runGame(plans, Display) {
-	function startLevel(n) {
-		runLevel(new Level(plans[n]), Display, function (status) {
-			if (status == "lost") startLevel(n);
-			else if (n < plans.length - 1) startLevel(n + 1);
-			else alert("You win!");
+	function startLevel(target) {
+		let index, spawnPos, cooldown, markPortalTouched;
+
+		if (typeof target === "object") {
+			index = target.index;
+			spawnPos = target.spawn;
+			cooldown = target.cooldown || 0;
+			markPortalTouched = target.markPortalTouched || false;
+		} else {
+			index = target;
+			spawnPos = null;
+			cooldown = 0;
+			markPortalTouched = false;
+		}
+
+		let plan;
+
+		if (isPart2Index(index)) {
+			plan = PART2_LEVELS[getMainIndex(index)];
+		} else {
+			plan = MAIN_LEVELS[index];
+		}
+
+		let level = new Level(plan);
+		level.index = index;
+		// Remove coins already collected
+		let mainIdx = getMainIndex(index);
+
+		if (!isPart2Index(index)) {
+			let collected = coinTracker.main[mainIdx] || 0;
+			let total = countCoinsInLevel(plan);
+
+			if (collected > 0) {
+				level.actors = level.actors.filter((a) => a.type !== "coin");
+				// Re-add only the remaining coins
+				let remaining = total - collected;
+				if (remaining > 0) {
+					// Rebuild coins from plan
+					for (let y = 0; y < plan.length; y++) {
+						for (let x = 0; x < plan[y].length; x++) {
+							if (plan[y][x] === "o" && remaining > 0) {
+								level.actors.push(new Coin(new Vector(x, y)));
+								remaining--;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// PART 2
+		else {
+			let collected = coinTracker.part2[mainIdx] || 0;
+			let total = countCoinsInLevel(plan);
+
+			if (collected > 0) {
+				level.actors = level.actors.filter((a) => a.type !== "coin");
+				let remaining = total - collected;
+				if (remaining > 0) {
+					for (let y = 0; y < plan.length; y++) {
+						for (let x = 0; x < plan[y].length; x++) {
+							if (plan[y][x] === "o" && remaining > 0) {
+								level.actors.push(new Coin(new Vector(x, y)));
+								remaining--;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Apply spawn position
+		if (spawnPos) {
+			level.player.pos.x = spawnPos.x;
+			level.player.pos.y = spawnPos.y;
+		}
+
+		// If spawning from a portal, mark the portal we're spawning on as already touched
+		if (markPortalTouched) {
+			// Find the green portal at spawn position and mark it as touched
+			let greenPortal = level.actors.find(function (actor) {
+				return (
+					actor.type === "greenPortal" &&
+					Math.abs(actor.pos.x - level.player.pos.x) < 1 &&
+					Math.abs(actor.pos.y - level.player.pos.y) < 1
+				);
+			});
+			if (greenPortal) {
+				level.player.lastPortalTouched = greenPortal;
+			}
+		}
+
+		if (markPortalTouched) {
+			// Find the green portal at spawn position and mark it as touched
+			let purplePortal = level.actors.find(function (actor) {
+				return (
+					actor.type === "purplePortal" &&
+					Math.abs(actor.pos.x - level.player.pos.x) < 1 &&
+					Math.abs(actor.pos.y - level.player.pos.y) < 1
+				);
+			});
+			if (purplePortal) {
+				level.player.lastPortalTouched = purplePortal;
+			}
+		}
+
+		runLevel(level, DOMDisplay, function (finishedLevel) {
+			if (finishedLevel.levelChangeRequested) {
+				startLevel(finishedLevel.levelChangeTarget);
+				return;
+			}
+
+			if (finishedLevel.status === "lost") {
+				// Reset coins when player dies
+				let mainIdx = getMainIndex(index);
+				coinTracker.main[mainIdx] = 0;
+				coinTracker.part2[mainIdx] = 0;
+				startLevel(index);
+				return;
+			}
+
+			if (finishedLevel.status === "won" || finishedLevel.status === "cleared") {
+				handleProgression(finishedLevel, startLevel);
+			}
 		});
 	}
 	startLevel(0);
 }
 
-runGame(LEVELS, DOMDisplay);
+var coinTracker = {
+	main: {},
+	part2: {}
+};
+
+function countCoinsInLevel(plan) {
+	let count = 0;
+	for (let y = 0; y < plan.length; y++) {
+		for (let x = 0; x < plan[y].length; x++) {
+			if (plan[y][x] === "o") count++;
+		}
+	}
+	return count;
+}
+
+runGame(MAIN_LEVELS, DOMDisplay);
 
 function Fakecoin(pos) {
 	this.basePos = this.pos = pos;
@@ -1120,13 +1509,10 @@ Fakecoin.prototype.act = function (step) {
 function Fakelava(pos) {
 	this.pos = pos;
 	this.size = new Vector(1, 1);
-	this.speed = new Vector(0, 0); // You can define movement if needed
+	this.speed = new Vector(0, 0);
 }
 Fakelava.prototype.type = "Fakelava";
-
-Fakelava.prototype.act = function (step) {
-	// Add behavior if necessary
-};
+Fakelava.prototype.act = function (step) {};
 
 function Player2(pos) {
 	this.pos = pos.plus(new Vector(0, -0.4));
@@ -1153,24 +1539,6 @@ Player2.prototype.moveY = function (step, level, keys) {
 	var newPos = this.pos.plus(motion);
 	var obstacle = level.obstacleAt(newPos, this.size);
 
-	// Check if standing on a platform
-	var standingOnPlatform = false;
-	var platform = level.actorAt(this);
-	if (
-		platform &&
-		platform.type === "platform" &&
-		newPos.y <= this.pos.y &&
-		this.speed.y > 0
-	) {
-		// Check if player is on top of the platform
-		if (
-			newPos.x + this.size.x > platform.pos.x &&
-			newPos.x < platform.pos.x + platform.size.x
-		) {
-			standingOnPlatform = true;
-		}
-	}
-
 	if (obstacle) {
 		level.playerTouched(obstacle);
 		if (keys.w && this.speed.y > 0) {
@@ -1178,10 +1546,6 @@ Player2.prototype.moveY = function (step, level, keys) {
 		} else {
 			this.speed.y = 0;
 		}
-	} else if (standingOnPlatform && keys.w) {
-		// Jump off the platform
-		this.pos = newPos;
-		this.speed.y = -jumpSpeed;
 	} else {
 		this.pos = newPos;
 	}
@@ -1195,8 +1559,6 @@ Player2.prototype.act = function (step, level, keys) {
 	if (otherActor) level.playerTouched(otherActor.type, otherActor);
 
 	if (level.status == "lost") {
-		// Remove the dying animation by commenting out or deleting the lines below
-		//this.pos.y += step;
-		//this.size.y -= step;
+		// no dying animation
 	}
 };

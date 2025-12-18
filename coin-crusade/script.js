@@ -745,7 +745,7 @@ function Lava(pos, ch) {
 	this.size = new Vector(1, 1);
 	if (ch === "!") this.speed = new Vector(0, 0);
 	else if (ch === "=") this.speed = new Vector(2, 0);
-	else if (ch === "|") this.speed = new Vector(0, 8);
+	else if (ch === "|") this.speed = new Vector(0, 4);
 	else if (ch === ":") this.speed = new Vector(0, 0);
 	else if (ch === "/") this.speed = new Vector(0, 0);
 	else if (ch === "v") {

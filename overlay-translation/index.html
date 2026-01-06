@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: black;
+    }
+    #camouflage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 1;
+    }
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      display: none;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      color: #00ff00;
+      text-shadow: 0 0 3px black, 0 0 5px black;
+      white-space: pre;
+      z-index: 3;
+    }
+    #startBtn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      padding: 8px 12px;
+      background: white;
+      border: none;
+      cursor: pointer;
+    }
+    .translation {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ff00;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 14px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="startBtn">Start Translation Overlay</button>
+  <div id="camouflage">
+    <video id="screen" autoplay muted></video>
+    <canvas id="canvas"></canvas>
+    <div id="overlay"></div>
+  </div>
+  <script>
+    const enchantedToEnglish = {
+      "ᔑ": "a", "ʖ": "b", "ᓵ": "c", "↸": "d", "ᒷ": "e",
+      "⎓": "f", "⊣": "g", "⍑": "h", "╎": "i", "⋮": "j",
+      "ꖌ": "k", "ꖎ": "l", "ᒲ": "m", "リ": "n", "𝙹": "o",
+      "!¡": "p", "ᑑ": "q", "∷": "r", "ᓭ": "s", "ℸ": "t",
+      "⚍": "u", "⍊": "v", "∴": "w", "̇/": "x", "||": "y", "⨅": "z", " ": " "
+    };
+
+    const video = document.getElementById("screen");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const overlay = document.getElementById("overlay");
+    const startBtn = document.getElementById("startBtn");
+
+    let isRunning = false;
+
+    startBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: "monitor" }
+      });
+      video.srcObject = stream;
+      
+      video.onloadedmetadata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        isRunning = true;
+        processFrame();
+      };
+      
+      startBtn.style.display = "none";
+    };
+
+    function translateText(text) {
+      let result = "";
+      let buffer = "";
+
+      for (const char of text) {
+        buffer += char;
+        
+        if (enchantedToEnglish[buffer]) {
+          result += enchantedToEnglish[buffer];
+          buffer = "";
+        } else if (buffer.length > 2) {
+          result += enchantedToEnglish[buffer[0]] || buffer[0];
+          buffer = buffer.slice(1);
+        }
+      }
+
+      if (buffer) {
+        result += Array.from(buffer).map(char => enchantedToEnglish[char] || char).join("");
+      }
+
+      return result;
+    }
+
+    function containsEnchantedText(text) {
+      return Object.keys(enchantedToEnglish).some(symbol => text.includes(symbol));
+    }
+
+    async function processFrame() {
+      if (!isRunning) return;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Use Tesseract.js or simple OCR simulation
+        // For now, we'll simulate by checking clipboard or using a different approach
+        // In a real implementation, you'd use OCR here
+        
+        // Simple approach: overlay instructions
+        overlay.innerHTML = '';
+        const instructions = document.createElement('div');
+        instructions.className = 'translation';
+        instructions.style.top = '50%';
+        instructions.style.left = '50%';
+        instructions.style.transform = 'translate(-50%, -50%)';
+        instructions.textContent = 'Monitoring screen for enchanted text...';
+        overlay.appendChild(instructions);
+        
+      } catch (e) {
+        console.error('OCR error:', e);
+      }
+
+      setTimeout(() => requestAnimationFrame(processFrame), 1000);
+    }
+
+    // Alternative approach using manual text input for demonstration
+    let manualMode = false;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        const text = prompt('Paste enchanted text to translate:');
+        if (text && containsEnchantedText(text)) {
+          const translated = translateText(text);
+          
+          overlay.innerHTML = '';
+          const result = document.createElement('div');
+          result.className = 'translation';
+          result.style.top = '50%';
+          result.style.left = '50%';
+          result.style.transform = 'translate(-50%, -50%)';
+          result.style.fontSize = '20px';
+          result.style.padding = '10px 20px';
+          result.innerHTML = `<strong>Original:</strong> ${text}<br><strong>Translation:</strong> ${translated}`;
+          overlay.appendChild(result);
+          
+          setTimeout(() => {
+            overlay.innerHTML = '';
+          }, 5000);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

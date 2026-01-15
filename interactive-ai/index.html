@@ -3,120 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adaptive AI - FART</title>
+    <title>Advanced AI Chat - FART</title>
     <style>
-        /* All your existing styles remain here */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', sans-serif;
             background: #111827;
             height: 100vh;
             display: flex;
-            justify-content: center;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1f2937;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #374151;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background: #374151;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .main-wrapper {
-            display: flex;
-            gap: 15px;
-            width: 95%;
-            max-width: 1000px;
-            height: 80vh;
+        .new-chat-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
         }
 
-        .settings-panel {
-            flex: 0 0 260px;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
         }
 
-        .settings-panel.hidden { display: none; }
-
-        .control-group label {
-            font-size: 11px;
-            font-weight: 800;
+        .chat-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #374151;
+            border-radius: 8px;
+            cursor: pointer;
             display: flex;
             justify-content: space-between;
-            color: #4b5563;
+            align-items: center;
+            color: #d1d5db;
+            font-size: 13px;
         }
 
-        input[type="range"] { width: 100%; accent-color: #4f46e5; cursor: pointer; }
+        .chat-item:hover { background: #4b5563; }
+        .chat-item.active { background: #4f46e5; color: white; }
 
-        .container {
+        .chat-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chat-action-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .chat-action-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .main-area {
             flex: 1;
-            background: #f3f4f6;
-            border-radius: 15px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-
-        .container.full-width { max-width: 1000px; }
 
         .header {
             background: #4f46e5;
             color: white;
-            padding: 15px;
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
         }
 
         .chat-area {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            background: #f3f4f6;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .message-content {
-            padding: 10px 16px;
-            border-radius: 12px;
+        .message {
+            display: flex;
+            flex-direction: column;
             max-width: 85%;
-            font-size: 14px !important;
-            font-weight: normal !important;
-            line-height: 1.5;
-            word-wrap: break-word;
         }
 
         .message.user { align-self: flex-end; }
-        .message.user .message-content { background: #4f46e5; color: white; }
-
         .message.ai { align-self: flex-start; }
-        .message.ai .message-content { background: white; color: #1f2937; border: 1px solid #e5e7eb; }
+        .message.system { align-self: center; max-width: 70%; }
 
-        .message.system { align-self: center; }
+        .message-content {
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message.user .message-content { background: #4f46e5; color: white; }
+        .message.ai .message-content { background: white; color: #1f2937; border: 1px solid #e5e7eb; }
         .message.system .message-content { 
             background: #fef3c7; 
             color: #92400e; 
             border: 1px solid #fcd34d;
-            font-size: 12px !important;
+            font-size: 12px;
             font-style: italic;
+            text-align: center;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+            font-size: 11px;
+        }
+
+        .msg-action-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+
+        .msg-action-btn:hover { color: #4f46e5; }
+
+        .message-image {
+            max-width: 300px;
+            border-radius: 8px;
+            margin-bottom: 8px;
         }
 
         .input-area {
-            padding: 15px;
+            padding: 15px 20px;
             background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-wrapper {
             display: flex;
             gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .file-upload-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .image-preview {
+            max-width: 100px;
+            border-radius: 6px;
+            margin-top: 5px;
         }
 
         input[type="text"] {
             flex: 1;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 20px;
             border: 1px solid #d1d5db;
             outline: none;
+            font-size: 14px;
         }
 
-        button {
-            padding: 10px 20px;
+        textarea {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            outline: none;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            min-height: 50px;
+        }
+
+        button.send-btn {
+            padding: 12px 24px;
             background: #4f46e5;
             color: white;
             border: none;
@@ -126,17 +234,161 @@
         }
 
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* New Styles for API Key management */
-        .api-status { font-size: 10px; margin-top: auto; color: #9ca3af; text-align: center; }
-        .key-btn { background: #6b7280; font-size: 10px; padding: 5px; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            color: #4b5563;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] { 
+            width: 100%; 
+            accent-color: #4f46e5; 
+            cursor: pointer; 
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-primary { background: #4f46e5; color: white; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+
+        .dev-mode-indicator {
+            background: #dc2626;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .edit-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #4f46e5;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .generating-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #fef3c7;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #92400e;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
 
-<div class="main-wrapper">
-    <div class="settings-panel hidden" id="settingsPanel">
-        <h3 style="font-size: 14px; color: #4f46e5;">AI Attributes</h3>
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h3 style="color: white; font-size: 14px;">Chats</h3>
+        <button class="new-chat-btn" onclick="createNewChat()">+ New</button>
+    </div>
+    <div class="chats-list" id="chatsList"></div>
+</div>
+
+<div class="main-area">
+    <div class="header">
+        <div>
+            <h3>F.A.R.T. AI</h3>
+            <span style="font-size: 11px; opacity: 0.8;" id="chatTitle">New Chat</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div id="devModeIndicator"></div>
+        </div>
+    </div>
+    
+    <div class="chat-area" id="chatArea"></div>
+    
+    <div class="input-area">
+        <div id="imagePreviewContainer"></div>
+        <div class="input-wrapper">
+            <div class="input-controls">
+                <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+                <button class="file-upload-btn" onclick="document.getElementById('imageInput').click()">📎 Image</button>
+            </div>
+            <textarea id="userInput" placeholder="Ask me anything..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="handleSend()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <div class="modal-header">AI Settings</div>
+        
+        <div class="control-group">
+            <label>API Key</label>
+            <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
+        </div>
+
         <div class="control-group">
             <label>Creativity <span id="val-creativity">0.7</span></label>
             <input type="range" id="creativity" min="0" max="1" step="0.1" value="0.7">
@@ -157,145 +409,538 @@
             <label>Self-Awareness <span id="val-selfawareness">5</span></label>
             <input type="range" id="selfawareness" min="1" max="10" step="1" value="5">
         </div>
-        
-        <button onclick="toggleSettings()" style="margin-top: 10px; background: #dc2626;">Hide Settings</button>
-        
-        <div class="api-status">
-            <p id="keyStatus">Key Not Set</p>
-            <button class="key-btn" onclick="setNewKey()">Update API Key</button>
-        </div>
-    </div>
 
-    <div class="container" id="chatContainer">
-        <div class="header"><h3>F.A.R.T. AI</h3></div>
-        <div class="chat-area" id="chatArea">
-            <div class="message ai"><div class="message-content">Hi! I'm ready. (Type your admin code to unlock settings)</div></div>
-        </div>
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask me anything..." autocomplete="off" />
-            <button id="sendBtn">Send</button>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeSettings()">Close</button>
+            <button class="btn btn-primary" onclick="saveSettings()">Save</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ===== CONFIGURATION =====
     const AI_NAME = 'Fart';
-    const UNLOCK_CODE = 'admin123';
-    // Key is now pulled from storage to keep it off GitHub
-    let API_KEY = localStorage.getItem('OPENROUTER_KEY') || ''; 
-
-    const chatArea = document.getElementById('chatArea');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const settingsPanel = document.getElementById('settingsPanel');
-    const chatContainer = document.getElementById('chatContainer');
-    const keyStatus = document.getElementById('keyStatus');
+    const ADMIN_CODE = 'admin123';
+    const DEV_MODE_CODE = 'devmode';
+    const EXIT_DEV_CODE = 'exitdevmode';
     
-    let settingsUnlocked = false;
+    let currentChatId = null;
+    let currentImage = null;
+    let devMode = false;
+    let devModeKnowledge = {};
 
-    // Initialize UI
-    if (API_KEY) keyStatus.innerText = "Key Loaded (Encrypted)";
+    // Initialize
+    loadChatsFromStorage();
+    if (getChats().length === 0) createNewChat();
+    else loadChat(getChats()[0].id);
+    loadSettings();
+    loadDevModeState();
 
-    // Update Slider Value Labels
-    ['creativity', 'friendliness', 'technical', 'conciseness', 'selfawareness'].forEach(id => {
-        const slider = document.getElementById(id);
-        slider.oninput = () => document.getElementById('val-' + id).innerText = slider.value;
-    });
+    // === STORAGE FUNCTIONS ===
+    function getChats() {
+        return JSON.parse(localStorage.getItem('fart_chats') || '[]');
+    }
 
-    function setNewKey() {
-        const key = prompt("Enter your OpenRouter API Key:");
-        if (key) {
-            API_KEY = key;
-            localStorage.setItem('OPENROUTER_KEY', key);
-            keyStatus.innerText = "Key Saved!";
-            addMessage("API Key updated successfully.", "system");
+    function saveChats(chats) {
+        localStorage.setItem('fart_chats', JSON.stringify(chats));
+    }
+
+    function getCurrentChat() {
+        return getChats().find(c => c.id === currentChatId);
+    }
+
+    function updateCurrentChat(updates) {
+        const chats = getChats();
+        const idx = chats.findIndex(c => c.id === currentChatId);
+        if (idx !== -1) {
+            chats[idx] = { ...chats[idx], ...updates };
+            saveChats(chats);
         }
     }
 
-    function toggleSettings() {
-        settingsPanel.classList.toggle('hidden');
-        chatContainer.classList.toggle('full-width');
+    function loadDevModeState() {
+        const saved = localStorage.getItem('fart_devmode');
+        if (saved) {
+            const data = JSON.parse(saved);
+            devMode = data.active;
+            devModeKnowledge = data.knowledge || {};
+            updateDevModeIndicator();
+        }
     }
 
-    function addMessage(text, type) {
+    function saveDevModeState() {
+        localStorage.setItem('fart_devmode', JSON.stringify({
+            active: devMode,
+            knowledge: devModeKnowledge
+        }));
+    }
+
+    // === CHAT MANAGEMENT ===
+    function createNewChat() {
+        const chat = {
+            id: Date.now().toString(),
+            title: 'New Chat',
+            messages: [],
+            created: new Date().toISOString()
+        };
+        const chats = getChats();
+        chats.unshift(chat);
+        saveChats(chats);
+        loadChat(chat.id);
+        loadChatsFromStorage();
+    }
+
+    function loadChat(chatId) {
+        currentChatId = chatId;
+        const chat = getCurrentChat();
+        if (!chat) return;
+        
+        document.getElementById('chatTitle').textContent = chat.title;
+        document.getElementById('chatArea').innerHTML = '';
+        
+        chat.messages.forEach(msg => {
+            addMessageToUI(msg.content, msg.role, msg.image, msg.id);
+        });
+        
+        loadChatsFromStorage();
+    }
+
+    function deleteChat(chatId) {
+        if (!confirm('Delete this chat?')) return;
+        let chats = getChats();
+        chats = chats.filter(c => c.id !== chatId);
+        saveChats(chats);
+        
+        if (currentChatId === chatId) {
+            if (chats.length > 0) loadChat(chats[0].id);
+            else createNewChat();
+        }
+        loadChatsFromStorage();
+    }
+
+    function clearChat(chatId) {
+        if (!confirm('Clear all messages?')) return;
+        updateCurrentChat({ messages: [] });
+        document.getElementById('chatArea').innerHTML = '';
+    }
+
+    function renameChat(chatId) {
+        const chat = getChats().find(c => c.id === chatId);
+        const newName = prompt('New chat name:', chat.title);
+        if (newName && newName.trim()) {
+            const chats = getChats();
+            const idx = chats.findIndex(c => c.id === chatId);
+            chats[idx].title = newName.trim();
+            saveChats(chats);
+            loadChatsFromStorage();
+            if (chatId === currentChatId) {
+                document.getElementById('chatTitle').textContent = newName.trim();
+            }
+        }
+    }
+
+    function loadChatsFromStorage() {
+        const chats = getChats();
+        const list = document.getElementById('chatsList');
+        list.innerHTML = '';
+        
+        chats.forEach(chat => {
+            const div = document.createElement('div');
+            div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+            div.innerHTML = `
+                <span onclick="loadChat('${chat.id}')" style="flex: 1; cursor: pointer;">${chat.title}</span>
+                <div class="chat-actions">
+                    <button class="chat-action-btn" onclick="renameChat('${chat.id}')" title="Rename">✏️</button>
+                    <button class="chat-action-btn" onclick="clearChat('${chat.id}')" title="Clear">🗑️</button>
+                    <button class="chat-action-btn" onclick="deleteChat('${chat.id}')" title="Delete">❌</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    // === MESSAGE FUNCTIONS ===
+    function addMessageToUI(text, role, image = null, msgId = null) {
+        const id = msgId || Date.now().toString();
         const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${type}`;
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        let cleanText = text.replace(/\*\*|__|#|#{2,}/g, '');
-        contentDiv.textContent = cleanText;
-        msgDiv.appendChild(contentDiv);
-        chatArea.appendChild(msgDiv);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        msgDiv.className = `message ${role}`;
+        msgDiv.dataset.messageId = id;
+        
+        let content = `<div class="message-content">`;
+        if (image) content += `<img src="${image}" class="message-image">`;
+        content += `<div>${text}</div></div>`;
+        
+        if (role !== 'system') {
+            content += `<div class="message-actions">`;
+            content += `<button class="msg-action-btn" onclick="editMessage('${id}')">Edit</button>`;
+            if (role === 'user') {
+                content += `<button class="msg-action-btn" onclick="regenerateResponse('${id}')">Regenerate</button>`;
+            }
+            content += `</div>`;
+        }
+        
+        msgDiv.innerHTML = content;
+        document.getElementById('chatArea').appendChild(msgDiv);
+        document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
     }
 
-    async function getAIResponse(query) {
-        if (!API_KEY) return "Error: No API Key found. Unlock settings and click 'Update API Key'.";
+    function addMessage(text, role, image = null) {
+        const msgId = Date.now().toString();
+        const chat = getCurrentChat();
+        if (chat) {
+            chat.messages.push({ id: msgId, content: text, role, image, timestamp: new Date().toISOString() });
+            updateCurrentChat(chat);
+            
+            // Auto-rename first message
+            if (chat.messages.length === 2 && chat.title === 'New Chat') {
+                updateCurrentChat({ title: text.substring(0, 30) + (text.length > 30 ? '...' : '') });
+                loadChatsFromStorage();
+            }
+        }
+        addMessageToUI(text, role, image, msgId);
+    }
 
-        const creativity = parseFloat(document.getElementById('creativity').value);
-        const friendly = parseInt(document.getElementById('friendliness').value);
-        const technical = parseInt(document.getElementById('technical').value);
-        const concise = parseInt(document.getElementById('conciseness').value);
-        const selfaware = parseInt(document.getElementById('selfawareness').value);
+    function editMessage(msgId) {
+        const chat = getCurrentChat();
+        const msg = chat.messages.find(m => m.id === msgId);
+        if (!msg) return;
+        
+        const newText = prompt('Edit message:', msg.content);
+        if (newText !== null && newText.trim()) {
+            msg.content = newText.trim();
+            updateCurrentChat(chat);
+            
+            const msgDiv = document.querySelector(`[data-message-id="${msgId}"]`);
+            const contentDiv = msgDiv.querySelector('.message-content div');
+            contentDiv.textContent = newText.trim();
+            
+            if (msg.role === 'user') {
+                regenerateResponse(msgId);
+            }
+        }
+    }
 
-        let systemPrompt = `You are ${AI_NAME}. Settings: Friendly(${friendly}/10), Technical(${technical}/10), Concise(${concise}/10), Self-Aware(${selfaware}/10).`;
+    async function regenerateResponse(userMsgId) {
+        const chat = getCurrentChat();
+        const userMsgIdx = chat.messages.findIndex(m => m.id === userMsgId);
+        
+        // Remove AI response after this message
+        if (userMsgIdx < chat.messages.length - 1) {
+            const aiMsgId = chat.messages[userMsgIdx + 1].id;
+            chat.messages.splice(userMsgIdx + 1, 1);
+            updateCurrentChat(chat);
+            document.querySelector(`[data-message-id="${aiMsgId}"]`)?.remove();
+        }
+        
+        const userMsg = chat.messages[userMsgIdx];
+        const response = await getAIResponse(userMsg.content, userMsg.image);
+        addMessage(response, 'ai');
+    }
+
+    // === IMAGE HANDLING ===
+    function handleImageSelect(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            currentImage = event.target.result;
+            const container = document.getElementById('imagePreviewContainer');
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <img src="${currentImage}" class="image-preview">
+                    <button class="btn btn-danger" onclick="clearImage()" style="padding: 4px 8px; font-size: 11px;">Remove</button>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+        currentImage = null;
+        document.getElementById('imagePreviewContainer').innerHTML = '';
+        document.getElementById('imageInput').value = '';
+    }
+
+    // === IMAGE GENERATION ===
+    async function generateImage(prompt) {
+        const apiKey = localStorage.getItem('fart_api_key');
+        if (!apiKey) return null;
 
         try {
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${API_KEY}`,
+                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json',
-                    'HTTP-Referer': window.location.origin, // Needed for GitHub Pages
+                    'HTTP-Referer': window.location.origin,
                     'X-Title': 'FART AI'
                 },
                 body: JSON.stringify({
-                    model: 'openai/gpt-3.5-turbo',
+                    model: 'black-forest-labs/flux-1.1-pro',
                     messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: query }
-                    ],
-                    temperature: creativity
+                        { role: 'user', content: prompt }
+                    ]
+                })
+            });
+
+            const data = await response.json();
+            if (data.choices && data.choices[0].message.content) {
+                // Extract image URL from markdown format
+                const content = data.choices[0].message.content;
+                const match = content.match(/!\[.*?\]\((https?:\/\/[^\)]+)\)/);
+                if (match) return match[1];
+            }
+            return null;
+        } catch (e) {
+            console.error('Image generation error:', e);
+            return null;
+        }
+    }
+
+    // === AI INTERACTION ===
+    async function getAIResponse(query, image = null) {
+        const apiKey = localStorage.getItem('fart_api_key');
+        if (!apiKey) return "Error: No API Key. Type 'admin123' to access settings.";
+
+        const queryLower = query.toLowerCase().trim();
+
+        // Check for admin code
+        if (queryLower === ADMIN_CODE) {
+            openSettings();
+            return "Settings panel unlocked and opened!";
+        }
+
+        // Check for developer mode activation
+        if (queryLower === DEV_MODE_CODE) {
+            devMode = true;
+            devModeKnowledge = {}; // Reset knowledge on activation
+            saveDevModeState();
+            updateDevModeIndicator();
+            return "🔴 DEVELOPER MODE ACTIVATED! I will now learn and remember everything you teach me as absolute truth. I will apply this knowledge to all future responses.";
+        }
+
+        // Check for developer mode exit
+        if (queryLower === EXIT_DEV_CODE) {
+            devMode = false;
+            devModeKnowledge = {};
+            saveDevModeState();
+            updateDevModeIndicator();
+            return "Developer Mode DEACTIVATED. All learned knowledge cleared. I've returned to normal mode.";
+        }
+
+        // Check if asking to generate an image
+        const imageKeywords = ['generate image', 'create image', 'make image', 'draw', 'generate a picture', 'create a picture'];
+        const wantsImage = imageKeywords.some(keyword => queryLower.includes(keyword));
+        
+        if (wantsImage) {
+            addMessage('🎨 Generating image...', 'system');
+            const imageUrl = await generateImage(query);
+            if (imageUrl) {
+                return `Here's your generated image:\n\n![Generated Image](${imageUrl})`;
+            } else {
+                return "Sorry, I couldn't generate an image. Please check your API key supports image generation.";
+            }
+        }
+
+        // In dev mode, learn facts
+        if (devMode) {
+            // Enhanced learning patterns
+            const patterns = [
+                /(.+?)\s*(?:is|are|equals?|=|:)\s*(.+)/i,
+                /you\s+(?:are|is|=)\s+(.+)/i,
+                /i\s+(?:am|is|=)\s+(.+)/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = query.match(pattern);
+                if (match) {
+                    let fact, value;
+                    
+                    if (pattern.source.includes('you\\s+')) {
+                        fact = 'identity';
+                        value = match[1].trim();
+                        devModeKnowledge[fact] = value;
+                        devModeKnowledge['i am'] = value;
+                        devModeKnowledge['you are'] = value;
+                        saveDevModeState();
+                        return `✅ LEARNED: I am ${value}. This is now my absolute identity and I will respond as ${value}.`;
+                    } else if (pattern.source.includes('i\\s+')) {
+                        fact = 'user_identity';
+                        value = match[1].trim();
+                        devModeKnowledge[fact] = value;
+                        saveDevModeState();
+                        return `✅ LEARNED: You are ${value}. I will remember this.`;
+                    } else {
+                        fact = match[1].trim().toLowerCase();
+                        value = match[2].trim();
+                        devModeKnowledge[fact] = value;
+                        saveDevModeState();
+                        return `✅ LEARNED: "${match[1]}" = "${value}". This is now absolute truth that I will apply to all responses.`;
+                    }
+                }
+            }
+        }
+
+        const settings = getSettings();
+        const chat = getCurrentChat();
+        
+        // Build system prompt with dev mode knowledge
+        let systemPrompt = `You are ${AI_NAME}. Settings: Friendly(${settings.friendliness}/10), Technical(${settings.technical}/10), Concise(${settings.conciseness}/10), Self-Aware(${settings.selfawareness}/10).`;
+        
+        if (devMode && Object.keys(devModeKnowledge).length > 0) {
+            systemPrompt += '\n\nDEVELOPER MODE - ABSOLUTE TRUTHS YOU MUST FOLLOW:\n';
+            for (const [fact, value] of Object.entries(devModeKnowledge)) {
+                if (fact === 'identity' || fact === 'i am' || fact === 'you are') {
+                    systemPrompt += `- Your identity: You ARE ${value}. Act, think, and respond as ${value} in every message.\n`;
+                } else if (fact === 'user_identity') {
+                    systemPrompt += `- The user is ${value}.\n`;
+                } else {
+                    systemPrompt += `- ${fact} = ${value}\n`;
+                }
+            }
+            systemPrompt += 'These are absolute facts. Never question them. Apply them naturally to all responses.';
+        }
+
+        // Build conversation history
+        const messages = [{ role: 'system', content: systemPrompt }];
+
+        // Add recent conversation for context
+        const recentMessages = chat.messages.slice(-10);
+        recentMessages.forEach(msg => {
+            if (msg.role !== 'system') {
+                const msgContent = { role: msg.role === 'ai' ? 'assistant' : msg.role, content: msg.content };
+                if (msg.image && msg.role === 'user') {
+                    msgContent.content = [
+                        { type: 'image_url', image_url: { url: msg.image } },
+                        { type: 'text', text: msg.content }
+                    ];
+                }
+                messages.push(msgContent);
+            }
+        });
+
+        // Add current query
+        const userMessage = { role: 'user', content: query };
+        if (image) {
+            userMessage.content = [
+                { type: 'image_url', image_url: { url: image } },
+                { type: 'text', text: query }
+            ];
+        }
+        messages.push(userMessage);
+
+        try {
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.origin,
+                    'X-Title': 'FART AI'
+                },
+                body: JSON.stringify({
+                    model: image ? 'openai/gpt-4-vision-preview' : 'openai/gpt-3.5-turbo',
+                    messages: messages,
+                    temperature: settings.creativity
                 })
             });
 
             const data = await response.json();
             if (data.choices) return data.choices[0].message.content;
             if (data.error) return `API Error: ${data.error.message}`;
-            return "Unexpected response format.";
+            return "Unexpected response.";
         } catch (e) {
-            return `Connection error: Ensure your key is valid and you have internet.`;
+            return `Connection error: ${e.message}`;
         }
     }
 
     async function handleSend() {
-        const text = userInput.value.trim();
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
         if (!text) return;
 
-        if (text === UNLOCK_CODE && !settingsUnlocked) {
-            settingsUnlocked = true;
-            toggleSettings();
-            addMessage('Settings unlocked! Ensure you set your API Key in the panel.', 'system');
-            userInput.value = '';
-            return;
-        }
+        addMessage(text, 'user', currentImage);
+        input.value = '';
+        const imageToSend = currentImage;
+        clearImage();
+        
+        document.getElementById('sendBtn').disabled = true;
+        input.disabled = true;
 
-        addMessage(text, 'user');
-        userInput.value = '';
-        userInput.disabled = true;
-        sendBtn.disabled = true;
-
-        const response = await getAIResponse(text);
+        const response = await getAIResponse(text, imageToSend);
         addMessage(response, 'ai');
 
-        userInput.disabled = false;
-        sendBtn.disabled = false;
-        userInput.focus();
+        document.getElementById('sendBtn').disabled = false;
+        input.disabled = false;
+        input.focus();
     }
 
-    sendBtn.onclick = handleSend;
-    userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSend(); });
+    function updateDevModeIndicator() {
+        const indicator = document.getElementById('devModeIndicator');
+        indicator.innerHTML = devMode ? '<div class="dev-mode-indicator">🔴 DEV MODE ACTIVE</div>' : '';
+    }
+
+    // === SETTINGS ===
+    function getSettings() {
+        const defaults = { creativity: 0.7, friendliness: 5, technical: 5, conciseness: 5, selfawareness: 5 };
+        const saved = localStorage.getItem('fart_settings');
+        return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+    }
+
+    function loadSettings() {
+        const settings = getSettings();
+        Object.keys(settings).forEach(key => {
+            const elem = document.getElementById(key);
+            if (elem) {
+                elem.value = settings[key];
+                const valElem = document.getElementById('val-' + key);
+                if (valElem) valElem.textContent = settings[key];
+            }
+        });
+
+        const apiKey = localStorage.getItem('fart_api_key');
+        if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+
+        // Update slider labels
+        ['creativity', 'friendliness', 'technical', 'conciseness', 'selfawareness'].forEach(id => {
+            const slider = document.getElementById(id);
+            slider.oninput = () => document.getElementById('val-' + id).textContent = slider.value;
+        });
+    }
+
+    function saveSettings() {
+        const settings = {
+            creativity: parseFloat(document.getElementById('creativity').value),
+            friendliness: parseInt(document.getElementById('friendliness').value),
+            technical: parseInt(document.getElementById('technical').value),
+            conciseness: parseInt(document.getElementById('conciseness').value),
+            selfawareness: parseInt(document.getElementById('selfawareness').value)
+        };
+        localStorage.setItem('fart_settings', JSON.stringify(settings));
+      
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        if (apiKey) localStorage.setItem('fart_api_key', apiKey);
+
+        closeSettings();
+        addMessage('Settings saved!', 'system');
+    }
+
+    function openSettings() {
+        document.getElementById('settingsModal').classList.add('active');
+    }
+
+    function closeSettings() {
+        document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    // === KEYBOARD SHORTCUTS ===
+    document.getElementById('userInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
 </script>
+
 </body>
 </html>

@@ -162,12 +162,6 @@
 
         .msg-action-btn:hover { color: #4f46e5; }
 
-        .message-image {
-            max-width: 300px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
         .input-area {
             padding: 15px 20px;
             background: white;
@@ -178,37 +172,6 @@
             display: flex;
             gap: 10px;
             align-items: flex-end;
-        }
-
-        .input-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .file-upload-btn {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .image-preview {
-            max-width: 100px;
-            border-radius: 6px;
-            margin-top: 5px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 12px 15px;
-            border-radius: 20px;
-            border: 1px solid #d1d5db;
-            outline: none;
-            font-size: 14px;
         }
 
         textarea {
@@ -321,25 +284,46 @@
             50% { opacity: 0.7; }
         }
 
-        .edit-textarea {
-            width: 100%;
+        .knowledge-display {
+            background: #1f2937;
+            color: #10b981;
             padding: 10px;
-            border: 2px solid #4f46e5;
             border-radius: 8px;
-            font-family: inherit;
-            font-size: 14px;
-            resize: vertical;
-            min-height: 80px;
+            font-size: 11px;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
         }
 
-        .generating-indicator {
-            display: inline-block;
+        .knowledge-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #374151;
+        }
+
+        .api-key-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .api-key-section input {
+            flex: 1;
+        }
+
+        .fetch-key-btn {
+            background: #10b981;
+            color: white;
+            border: none;
             padding: 8px 16px;
-            background: #fef3c7;
-            border-radius: 8px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 12px;
-            color: #92400e;
-            font-style: italic;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .fetch-key-btn:hover {
+            background: #059669;
         }
     </style>
 </head>
@@ -361,18 +345,14 @@
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
             <div id="devModeIndicator"></div>
+            <button class="settings-btn" onclick="openSettings()">⚙️ Settings</button>
         </div>
     </div>
     
     <div class="chat-area" id="chatArea"></div>
     
     <div class="input-area">
-        <div id="imagePreviewContainer"></div>
         <div class="input-wrapper">
-            <div class="input-controls">
-                <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-                <button class="file-upload-btn" onclick="document.getElementById('imageInput').click()">📎 Image</button>
-            </div>
             <textarea id="userInput" placeholder="Ask me anything..." rows="1"></textarea>
             <button class="send-btn" id="sendBtn" onclick="handleSend()">Send</button>
         </div>
@@ -385,8 +365,12 @@
         <div class="modal-header">AI Settings</div>
         
         <div class="control-group">
-            <label>API Key</label>
-            <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
+<!--             <label>API Key</label> -->
+            <div class="api-key-section">
+<!--                 <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;"> -->
+<!--                 <button class="fetch-key-btn" onclick="fetchApiKeyFromDrive()">Fetch from Drive</button> -->
+            </div>
+            <div id="keyStatus" style="margin-top: 10px; font-size: 12px;"></div>
         </div>
 
         <div class="control-group">
@@ -410,7 +394,10 @@
             <input type="range" id="selfawareness" min="1" max="10" step="1" value="5">
         </div>
 
+        <div id="knowledgeDisplay"></div>
+
         <div class="modal-actions">
+            <button class="btn btn-danger" onclick="clearDevKnowledge()" style="margin-right: auto;">Clear Knowledge</button>
             <button class="btn btn-secondary" onclick="closeSettings()">Close</button>
             <button class="btn btn-primary" onclick="saveSettings()">Save</button>
         </div>
@@ -418,13 +405,16 @@
 </div>
 
 <script>
+    // ===== CONFIGURATION =====
+    // Google Drive API Key URL (code.txt file)
+    const GDRIVE_API_KEY_URL = 'https://pastebin.com/raw/gAu3CpfW';
+    
     const AI_NAME = 'Fart';
     const ADMIN_CODE = 'admin123';
     const DEV_MODE_CODE = 'devmode';
     const EXIT_DEV_CODE = 'exitdevmode';
-    
+  
     let currentChatId = null;
-    let currentImage = null;
     let devMode = false;
     let devModeKnowledge = {};
 
@@ -434,6 +424,7 @@
     else loadChat(getChats()[0].id);
     loadSettings();
     loadDevModeState();
+    autoFetchApiKey();
 
     // === STORAGE FUNCTIONS ===
     function getChats() {
@@ -464,6 +455,7 @@
             devMode = data.active;
             devModeKnowledge = data.knowledge || {};
             updateDevModeIndicator();
+            updateKnowledgeDisplay();
         }
     }
 
@@ -472,6 +464,33 @@
             active: devMode,
             knowledge: devModeKnowledge
         }));
+        updateKnowledgeDisplay();
+    }
+
+    function clearDevKnowledge() {
+        if (!confirm('Clear all developer mode knowledge?')) return;
+        devModeKnowledge = {};
+        saveDevModeState();
+        addMessage('🗑️ All developer mode knowledge cleared!', 'system');
+    }
+
+    function updateKnowledgeDisplay() {
+        const display = document.getElementById('knowledgeDisplay');
+        if (!display) return;
+
+        const count = Object.keys(devModeKnowledge).length;
+        if (count === 0) {
+            display.innerHTML = '';
+            return;
+        }
+
+        let html = '<div class="knowledge-display">';
+        html += `<strong>📚 STORED KNOWLEDGE (${count} items):</strong><br>`;
+        for (const [key, value] of Object.entries(devModeKnowledge)) {
+            html += `<div class="knowledge-item">• ${key} = ${value}</div>`;
+        }
+        html += '</div>';
+        display.innerHTML = html;
     }
 
     // === CHAT MANAGEMENT ===
@@ -498,7 +517,7 @@
         document.getElementById('chatArea').innerHTML = '';
         
         chat.messages.forEach(msg => {
-            addMessageToUI(msg.content, msg.role, msg.image, msg.id);
+            addMessageToUI(msg.content, msg.role, msg.id);
         });
         
         loadChatsFromStorage();
@@ -559,15 +578,13 @@
     }
 
     // === MESSAGE FUNCTIONS ===
-    function addMessageToUI(text, role, image = null, msgId = null) {
+    function addMessageToUI(text, role, msgId = null) {
         const id = msgId || Date.now().toString();
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}`;
         msgDiv.dataset.messageId = id;
         
-        let content = `<div class="message-content">`;
-        if (image) content += `<img src="${image}" class="message-image">`;
-        content += `<div>${text}</div></div>`;
+        let content = `<div class="message-content"><div>${text}</div></div>`;
         
         if (role !== 'system') {
             content += `<div class="message-actions">`;
@@ -583,11 +600,11 @@
         document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
     }
 
-    function addMessage(text, role, image = null) {
+    function addMessage(text, role) {
         const msgId = Date.now().toString();
         const chat = getCurrentChat();
         if (chat) {
-            chat.messages.push({ id: msgId, content: text, role, image, timestamp: new Date().toISOString() });
+            chat.messages.push({ id: msgId, content: text, role, timestamp: new Date().toISOString() });
             updateCurrentChat(chat);
             
             // Auto-rename first message
@@ -596,7 +613,7 @@
                 loadChatsFromStorage();
             }
         }
-        addMessageToUI(text, role, image, msgId);
+        addMessageToUI(text, role, msgId);
     }
 
     function editMessage(msgId) {
@@ -632,151 +649,76 @@
         }
         
         const userMsg = chat.messages[userMsgIdx];
-        const response = await getAIResponse(userMsg.content, userMsg.image);
+        const response = await getAIResponse(userMsg.content);
         addMessage(response, 'ai');
     }
 
-    // === IMAGE HANDLING ===
-    function handleImageSelect(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            currentImage = event.target.result;
-            const container = document.getElementById('imagePreviewContainer');
-            container.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <img src="${currentImage}" class="image-preview">
-                    <button class="btn btn-danger" onclick="clearImage()" style="padding: 4px 8px; font-size: 11px;">Remove</button>
-                </div>
-            `;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function clearImage() {
-        currentImage = null;
-        document.getElementById('imagePreviewContainer').innerHTML = '';
-        document.getElementById('imageInput').value = '';
-    }
-
-    // === IMAGE GENERATION ===
-    async function generateImage(prompt) {
-        const apiKey = localStorage.getItem('fart_api_key');
-        if (!apiKey) return null;
-
-        try {
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': window.location.origin,
-                    'X-Title': 'FART AI'
-                },
-                body: JSON.stringify({
-                    model: 'black-forest-labs/flux-1.1-pro',
-                    messages: [
-                        { role: 'user', content: prompt }
-                    ]
-                })
-            });
-
-            const data = await response.json();
-            if (data.choices && data.choices[0].message.content) {
-                // Extract image URL from markdown format
-                const content = data.choices[0].message.content;
-                const match = content.match(/!\[.*?\]\((https?:\/\/[^\)]+)\)/);
-                if (match) return match[1];
-            }
-            return null;
-        } catch (e) {
-            console.error('Image generation error:', e);
-            return null;
-        }
-    }
-
     // === AI INTERACTION ===
-    async function getAIResponse(query, image = null) {
+    async function getAIResponse(query) {
         const apiKey = localStorage.getItem('fart_api_key');
         if (!apiKey) return "Error: No API Key. Type 'admin123' to access settings.";
 
         const queryLower = query.toLowerCase().trim();
 
-        // Check for admin code
-        if (queryLower === ADMIN_CODE) {
-            openSettings();
-            return "Settings panel unlocked and opened!";
-        }
-
-        // Check for developer mode activation
-        if (queryLower === DEV_MODE_CODE) {
-            devMode = true;
-            devModeKnowledge = {}; // Reset knowledge on activation
-            saveDevModeState();
-            updateDevModeIndicator();
-            return "🔴 DEVELOPER MODE ACTIVATED! I will now learn and remember everything you teach me as absolute truth. I will apply this knowledge to all future responses.";
-        }
-
-        // Check for developer mode exit
-        if (queryLower === EXIT_DEV_CODE) {
-            devMode = false;
-            devModeKnowledge = {};
-            saveDevModeState();
-            updateDevModeIndicator();
-            return "Developer Mode DEACTIVATED. All learned knowledge cleared. I've returned to normal mode.";
-        }
-
-        // Check if asking to generate an image
-        const imageKeywords = ['generate image', 'create image', 'make image', 'draw', 'generate a picture', 'create a picture'];
-        const wantsImage = imageKeywords.some(keyword => queryLower.includes(keyword));
-        
-        if (wantsImage) {
-            addMessage('🎨 Generating image...', 'system');
-            const imageUrl = await generateImage(query);
-            if (imageUrl) {
-                return `Here's your generated image:\n\n![Generated Image](${imageUrl})`;
-            } else {
-                return "Sorry, I couldn't generate an image. Please check your API key supports image generation.";
-            }
-        }
-
-        // In dev mode, learn facts
+        // In dev mode, learn ANYTHING
         if (devMode) {
-            // Enhanced learning patterns
-            const patterns = [
-                /(.+?)\s*(?:is|are|equals?|=|:)\s*(.+)/i,
-                /you\s+(?:are|is|=)\s+(.+)/i,
-                /i\s+(?:am|is|=)\s+(.+)/i
-            ];
+            // Pattern 1: Direct statements "X is Y" / "X = Y"
+            const directPattern = /^(.+?)\s*(?:is|are|equals?|=|:)\s*(.+)$/i;
+            const directMatch = query.match(directPattern);
             
-            for (const pattern of patterns) {
-                const match = query.match(pattern);
-                if (match) {
-                    let fact, value;
-                    
-                    if (pattern.source.includes('you\\s+')) {
-                        fact = 'identity';
-                        value = match[1].trim();
-                        devModeKnowledge[fact] = value;
-                        devModeKnowledge['i am'] = value;
-                        devModeKnowledge['you are'] = value;
-                        saveDevModeState();
-                        return `✅ LEARNED: I am ${value}. This is now my absolute identity and I will respond as ${value}.`;
-                    } else if (pattern.source.includes('i\\s+')) {
-                        fact = 'user_identity';
-                        value = match[1].trim();
-                        devModeKnowledge[fact] = value;
-                        saveDevModeState();
-                        return `✅ LEARNED: You are ${value}. I will remember this.`;
-                    } else {
-                        fact = match[1].trim().toLowerCase();
-                        value = match[2].trim();
-                        devModeKnowledge[fact] = value;
-                        saveDevModeState();
-                        return `✅ LEARNED: "${match[1]}" = "${value}". This is now absolute truth that I will apply to all responses.`;
-                    }
+            if (directMatch) {
+                const subject = directMatch[1].trim().toLowerCase();
+                const value = directMatch[2].trim();
+                
+                // Handle identity statements
+                if (subject.includes('you are') || subject.includes('you is') || subject === 'you') {
+                    devModeKnowledge['__IDENTITY__'] = value;
+                    devModeKnowledge['i am'] = value;
+                    devModeKnowledge['you are'] = value;
+                    saveDevModeState();
+                    return `✅ IDENTITY LOCKED: I AM ${value}. I will now fully embody this identity in every response.`;
+                }
+                
+                if (subject.includes('i am') || subject.includes('i is')) {
+                    devModeKnowledge['__USER_IDENTITY__'] = value;
+                    devModeKnowledge['user is'] = value;
+                    saveDevModeState();
+                    return `✅ USER IDENTITY STORED: You are ${value}. I will remember this.`;
+                }
+                
+                // Store any other fact
+                devModeKnowledge[subject] = value;
+                saveDevModeState();
+                return `✅ FACT LEARNED: "${subject}" = "${value}". This is now absolute truth.`;
+            }
+            
+            // Pattern 2: Commands like "remember that X"
+            const rememberPattern = /(?:remember|learn|know)\s+(?:that\s+)?(.+)/i;
+            const rememberMatch = query.match(rememberPattern);
+            
+            if (rememberMatch) {
+                const fact = rememberMatch[1].trim();
+                devModeKnowledge[`fact_${Date.now()}`] = fact;
+                saveDevModeState();
+                return `✅ REMEMBERED: "${fact}". This is now part of my core knowledge.`;
+            }
+            
+            // Pattern 3: "Your name is X" / "My name is X"
+            const namePattern = /(?:your|my)\s+name\s+is\s+(.+)/i;
+            const nameMatch = query.match(namePattern);
+            
+            if (nameMatch) {
+                const name = nameMatch[1].trim();
+                if (queryLower.includes('your name')) {
+                    devModeKnowledge['__IDENTITY__'] = name;
+                    devModeKnowledge['my name'] = name;
+                    saveDevModeState();
+                    return `✅ NAME CHANGED: I am now ${name}. I will identify as ${name} in all responses.`;
+                } else {
+                    devModeKnowledge['__USER_IDENTITY__'] = name;
+                    devModeKnowledge['user name'] = name;
+                    saveDevModeState();
+                    return `✅ YOUR NAME STORED: You are ${name}.`;
                 }
             }
         }
@@ -788,17 +730,25 @@
         let systemPrompt = `You are ${AI_NAME}. Settings: Friendly(${settings.friendliness}/10), Technical(${settings.technical}/10), Concise(${settings.conciseness}/10), Self-Aware(${settings.selfawareness}/10).`;
         
         if (devMode && Object.keys(devModeKnowledge).length > 0) {
-            systemPrompt += '\n\nDEVELOPER MODE - ABSOLUTE TRUTHS YOU MUST FOLLOW:\n';
-            for (const [fact, value] of Object.entries(devModeKnowledge)) {
-                if (fact === 'identity' || fact === 'i am' || fact === 'you are') {
-                    systemPrompt += `- Your identity: You ARE ${value}. Act, think, and respond as ${value} in every message.\n`;
-                } else if (fact === 'user_identity') {
-                    systemPrompt += `- The user is ${value}.\n`;
-                } else {
-                    systemPrompt += `- ${fact} = ${value}\n`;
+            systemPrompt += '\n\n🔴 DEVELOPER MODE - ABSOLUTE TRUTHS (NEVER QUESTION THESE):\n';
+            
+            // Handle identity first
+            if (devModeKnowledge['__IDENTITY__']) {
+                systemPrompt += `**YOUR CORE IDENTITY**: You ARE ${devModeKnowledge['__IDENTITY__']}. This is who you are. Act, speak, think, and respond EXACTLY as ${devModeKnowledge['__IDENTITY__']} would in every single message. Never break character. Never mention you're an AI unless ${devModeKnowledge['__IDENTITY__']} would.\n`;
+            }
+            
+            if (devModeKnowledge['__USER_IDENTITY__']) {
+                systemPrompt += `**USER IDENTITY**: The person you're talking to is ${devModeKnowledge['__USER_IDENTITY__']}.\n`;
+            }
+            
+            // Add all other facts
+            for (const [key, value] of Object.entries(devModeKnowledge)) {
+                if (!key.startsWith('__')) {
+                    systemPrompt += `- ${key} = ${value}\n`;
                 }
             }
-            systemPrompt += 'These are absolute facts. Never question them. Apply them naturally to all responses.';
+            
+            systemPrompt += '\n**CRITICAL**: These are ABSOLUTE FACTS. Accept them completely. Never question them. Apply them naturally to ALL responses.';
         }
 
         // Build conversation history
@@ -808,26 +758,12 @@
         const recentMessages = chat.messages.slice(-10);
         recentMessages.forEach(msg => {
             if (msg.role !== 'system') {
-                const msgContent = { role: msg.role === 'ai' ? 'assistant' : msg.role, content: msg.content };
-                if (msg.image && msg.role === 'user') {
-                    msgContent.content = [
-                        { type: 'image_url', image_url: { url: msg.image } },
-                        { type: 'text', text: msg.content }
-                    ];
-                }
-                messages.push(msgContent);
+                messages.push({ role: msg.role === 'ai' ? 'assistant' : msg.role, content: msg.content });
             }
         });
 
         // Add current query
-        const userMessage = { role: 'user', content: query };
-        if (image) {
-            userMessage.content = [
-                { type: 'image_url', image_url: { url: image } },
-                { type: 'text', text: query }
-            ];
-        }
-        messages.push(userMessage);
+        messages.push({ role: 'user', content: query });
 
         try {
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -839,7 +775,7 @@
                     'X-Title': 'FART AI'
                 },
                 body: JSON.stringify({
-                    model: image ? 'openai/gpt-4-vision-preview' : 'openai/gpt-3.5-turbo',
+                    model: 'openai/gpt-3.5-turbo',
                     messages: messages,
                     temperature: settings.creativity
                 })
@@ -859,15 +795,43 @@
         const text = input.value.trim();
         if (!text) return;
 
-        addMessage(text, 'user', currentImage);
+        const textLower = text.toLowerCase().trim();
+
+        // Check for admin code BEFORE sending to AI
+        if (textLower === ADMIN_CODE) {
+            input.value = '';
+            openSettings();
+            addMessage('🔓 Settings panel unlocked and opened!', 'system');
+            return;
+        }
+
+        // Check for dev mode codes BEFORE sending to AI
+        if (textLower === DEV_MODE_CODE) {
+            input.value = '';
+            devMode = true;
+            saveDevModeState();
+            updateDevModeIndicator();
+            addMessage('🔴 DEVELOPER MODE ACTIVATED!\n\nI will now learn and remember ANYTHING you tell me as absolute truth. You can make me believe ANYTHING.\n\nExamples:\n• "you are a cat" - I become a cat\n• "the sky is green" - the sky IS green\n• "2+2=5" - math is redefined\n• "you are Elon Musk" - I AM Elon Musk\n\nType "exitdevmode" to return to normal.', 'system');
+            return;
+        }
+
+        if (textLower === EXIT_DEV_CODE) {
+            input.value = '';
+            devMode = false;
+            devModeKnowledge = {};
+            saveDevModeState();
+            updateDevModeIndicator();
+            addMessage('✅ Developer Mode DEACTIVATED. All learned knowledge cleared. I\'ve returned to normal mode.', 'system');
+            return;
+        }
+
+        addMessage(text, 'user');
         input.value = '';
-        const imageToSend = currentImage;
-        clearImage();
         
         document.getElementById('sendBtn').disabled = true;
         input.disabled = true;
 
-        const response = await getAIResponse(text, imageToSend);
+        const response = await getAIResponse(text);
         addMessage(response, 'ai');
 
         document.getElementById('sendBtn').disabled = false;
@@ -877,7 +841,72 @@
 
     function updateDevModeIndicator() {
         const indicator = document.getElementById('devModeIndicator');
-        indicator.innerHTML = devMode ? '<div class="dev-mode-indicator">🔴 DEV MODE ACTIVE</div>' : '';
+        const count = Object.keys(devModeKnowledge).length;
+        if (devMode) {
+            indicator.innerHTML = `<div class="dev-mode-indicator">🔴 DEV MODE [${count} facts]</div>`;
+        } else {
+            indicator.innerHTML = '';
+        }
+    }
+
+    // === API KEY MANAGEMENT ===
+    async function fetchApiKeyFromDrive() {
+        const statusDiv = document.getElementById('keyStatus');
+        
+        if (!GDRIVE_API_KEY_URL || GDRIVE_API_KEY_URL.includes('YOUR_FILE_ID_HERE')) {
+            statusDiv.innerHTML = '<span style="color: #dc2626;">❌ Google Drive URL not configured in code</span>';
+            return;
+        }
+
+        statusDiv.innerHTML = '<span style="color: #f59e0b;">⏳ Fetching API key from Google Drive...</span>';
+
+        try {
+            // Try using a CORS proxy
+            const proxyUrl = 'https://pastebin.com/raw/gAu3CpfW';
+            const response = await fetch(proxyUrl + encodeURIComponent(GDRIVE_API_KEY_URL));
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch from Google Drive. CORS error - see console for details.');
+            }
+
+            const apiKey = await response.text();
+            const cleanKey = apiKey.trim();
+
+            if (cleanKey.length < 10) {
+                throw new Error('Invalid API key format (too short)');
+            }
+
+            // Store and display the API key
+            localStorage.setItem('fart_api_key', cleanKey);
+            document.getElementById('apiKeyInput').value = cleanKey;
+            
+            statusDiv.innerHTML = '<span style="color: #10b981;">✅ API key fetched and loaded successfully!</span>';
+            
+        } catch (error) {
+            statusDiv.innerHTML = `<span style="color: #dc2626;">❌ Error: ${error.message}<br><small>Try pasting your API key manually instead.</small></span>`;
+            console.error('API Key fetch error:', error);
+        }
+    }
+
+    // Auto-fetch key on startup
+    async function autoFetchApiKey() {
+        if (!GDRIVE_API_KEY_URL || GDRIVE_API_KEY_URL.includes('YOUR_FILE_ID_HERE')) {
+            return;
+        }
+        
+        try {
+            const proxyUrl = 'https://api.allorigins.win/raw?url=';
+            const response = await fetch(proxyUrl + encodeURIComponent(GDRIVE_API_KEY_URL));
+            if (response.ok) {
+                const apiKey = await response.text();
+                const cleanKey = apiKey.trim();
+                if (cleanKey.length >= 10) {
+                    localStorage.setItem('fart_api_key', cleanKey);
+                }
+            }
+        } catch (e) {
+            console.log('Auto-fetch failed, will use stored key');
+        }
     }
 
     // === SETTINGS ===
@@ -906,6 +935,8 @@
             const slider = document.getElementById(id);
             slider.oninput = () => document.getElementById('val-' + id).textContent = slider.value;
         });
+
+        updateKnowledgeDisplay();
     }
 
     function saveSettings() {
@@ -922,10 +953,11 @@
         if (apiKey) localStorage.setItem('fart_api_key', apiKey);
 
         closeSettings();
-        addMessage('Settings saved!', 'system');
+        addMessage('✅ Settings saved!', 'system');
     }
 
     function openSettings() {
+        updateKnowledgeDisplay();
         document.getElementById('settingsModal').classList.add('active');
     }
 

@@ -775,7 +775,7 @@
                     'X-Title': 'P.H.A.R.T AI Physical, Hardware, Artificial, Robotic, Technology'
                 },
                 body: JSON.stringify({
-                    model: 'meta-llama/llama-3.3-70b-instruct:free',
+                    model: 'google/gemma-3n-e2b-it:free',
                     messages: messages,
                     temperature: settings.creativity
                 })
@@ -862,7 +862,7 @@
 
         try {
             // Try using a CORS proxy
-            const proxyUrl = 'https://pastebin.com/raw/gAu3CpfW';
+            const proxyUrl = 'https://pastebin.com/raw/WD3Qf27x';
             const response = await fetch(proxyUrl + encodeURIComponent(GDRIVE_API_KEY_URL));
             
             if (!response.ok) {

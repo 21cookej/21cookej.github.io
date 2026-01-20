@@ -367,7 +367,7 @@
         <div class="control-group">
 <!--             <label>API Key</label> -->
             <div class="api-key-section">
-                <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
+<!--                 <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;"> -->
 <!--                 <button class="fetch-key-btn" onclick="fetchApiKeyFromDrive()">Fetch from Drive</button> -->
             </div>
             <div id="keyStatus" style="margin-top: 10px; font-size: 12px;"></div>
@@ -407,7 +407,7 @@
 <script>
     // ===== CONFIGURATION =====
     // Google Drive API Key URL (code.txt file)
-    const GDRIVE_API_KEY_URL = 'https://pastebin.com/raw/46Awef7k';
+    const GDRIVE_API_KEY_URL = 'https://pastebin.com/raw/TyvBg7CQ';
     
     const AI_NAME = 'P.H.A.R.T. AI Physical, Hardware, Artificial, Robotic, Technology';
     const ADMIN_CODE = 'admin123';
@@ -775,7 +775,7 @@
                     'X-Title': 'P.H.A.R.T AI Physical, Hardware, Artificial, Robotic, Technology'
                 },
                 body: JSON.stringify({
-                    model: 'xiaomi/mimo-v2-flash:free',
+                    model: 'meta-llama/llama-3.3-70b-instruct:free',
                     messages: messages,
                     temperature: settings.creativity
                 })
@@ -862,7 +862,7 @@
 
         try {
             // Try using a CORS proxy
-            const proxyUrl = 'https://pastebin.com/raw/46Awef7k';
+            const proxyUrl = 'https://pastebin.com/raw/gAu3CpfW';
             const response = await fetch(proxyUrl + encodeURIComponent(GDRIVE_API_KEY_URL));
             
             if (!response.ok) {

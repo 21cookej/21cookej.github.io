@@ -407,7 +407,7 @@
 <script>
     // ===== CONFIGURATION =====
     // Google Drive API Key URL (code.txt file)
-    const GDRIVE_API_KEY_URL = 'https://pastebin.com/raw/WD3Qf27x';
+    const GDRIVE_API_KEY_URL = 'https://pastebin.com/raw/46Awef7k';
     
     const AI_NAME = 'P.H.A.R.T. AI Physical, Hardware, Artificial, Robotic, Technology';
     const ADMIN_CODE = 'admin123';
@@ -775,7 +775,7 @@
                     'X-Title': 'P.H.A.R.T AI Physical, Hardware, Artificial, Robotic, Technology'
                 },
                 body: JSON.stringify({
-                    model: 'google/gemma-3n-e2b-it:free',
+                    model: 'xiaomi/mimo-v2-flash:free',
                     messages: messages,
                     temperature: settings.creativity
                 })
@@ -862,7 +862,7 @@
 
         try {
             // Try using a CORS proxy
-            const proxyUrl = 'https://pastebin.com/raw/WD3Qf27x';
+            const proxyUrl = 'https://pastebin.com/raw/46Awef7k';
             const response = await fetch(proxyUrl + encodeURIComponent(GDRIVE_API_KEY_URL));
             
             if (!response.ok) {

@@ -325,6 +325,74 @@
         .fetch-key-btn:hover {
             background: #059669;
         }
+
+        /* CODE BLOCK STYLES */
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+            border: 1px solid #374151;
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #374151;
+        }
+
+        .code-language {
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .code-copy-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .code-copy-btn:hover {
+            background: #4338ca;
+        }
+
+        .code-content {
+            padding: 0;
+            overflow-x: auto;
+            background: #1e1e1e;
+        }
+
+        .code-content pre {
+            margin: 0;
+            padding: 12px;
+            color: #e5e7eb;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            tab-size: 4;
+        }
+
+        .inline-code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            color: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -365,10 +433,8 @@
         <div class="modal-header">AI Settings</div>
         
         <div class="control-group">
-<!--             <label>API Key</label> -->
             <div class="api-key-section">
-<!--                 <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;"> -->
-<!--                 <button class="fetch-key-btn" onclick="fetchApiKeyFromDrive()">Fetch from Drive</button> -->
+                <input type="password" id="apiKeyInput" placeholder="Enter OpenRouter API Key" style="padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
             </div>
             <div id="keyStatus" style="margin-top: 10px; font-size: 12px;"></div>
         </div>
@@ -406,7 +472,6 @@
 
 <script>
     // ===== CONFIGURATION =====
-    // Google Drive API Key URL (code.txt file)
     const GDRIVE_API_KEY_URL = 'https://pastebin.com/raw/TyvBg7CQ';
     
     const AI_NAME = 'P.H.A.R.T. AI Physical, Hardware, Artificial, Robotic, Technology';
@@ -577,14 +642,93 @@
         });
     }
 
+    // === CODE FORMATTING ===
+    function formatCodeBlocks(text) {
+        // Match code blocks with ```language or just ```
+        const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
+        
+        let formattedText = text;
+        const matches = [];
+        let match;
+        
+        // Collect all matches first
+        while ((match = codeBlockRegex.exec(text)) !== null) {
+            matches.push(match);
+        }
+        
+        // Replace in reverse order to maintain correct positions
+        for (let i = matches.length - 1; i >= 0; i--) {
+            match = matches[i];
+            const language = match[1] || 'code';
+            const code = match[2];
+            const blockId = `code-${Date.now()}-${i}`;
+            
+            const codeBlock = `<div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">${escapeHtml(language)}</span>
+                    <button class="code-copy-btn" onclick="copyCode('${blockId}')">Copy</button>
+                </div>
+                <div class="code-content">
+                    <pre id="${blockId}">${escapeHtml(code)}</pre>
+                </div>
+            </div>`;
+            
+            formattedText = formattedText.substring(0, match.index) + codeBlock + formattedText.substring(match.index + match[0].length);
+        }
+        
+        // Handle inline code with single backticks (but not triple backticks)
+        formattedText = formattedText.replace(/(?<!`)`([^`\n]+)`(?!`)/g, '<span class="inline-code">$1</span>');
+        
+        return formattedText;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function copyCode(blockId) {
+        const codeElement = document.getElementById(blockId);
+        if (!codeElement) return;
+        
+        const code = codeElement.textContent;
+        
+        navigator.clipboard.writeText(code).then(() => {
+            const button = codeElement.closest('.code-block').querySelector('.code-copy-btn');
+            const originalText = button.textContent;
+            const originalBg = button.style.background;
+            
+            button.textContent = 'Copied!';
+            button.style.background = '#10b981';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = originalBg;
+            }, 2000);
+        }).catch(err => {
+            alert('Failed to copy code');
+            console.error('Copy failed:', err);
+        });
+    }
+
     // === MESSAGE FUNCTIONS ===
-    function addMessageToUI(text, role, msgId = null) {
+    function addMessageToUI(text, role, msgId = null, animate = false) {
         const id = msgId || Date.now().toString();
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}`;
         msgDiv.dataset.messageId = id;
         
-        let content = `<div class="message-content"><div>${text}</div></div>`;
+        // Process text to extract and format code blocks
+        let processedText = text;
+        if (role === 'ai') {
+            processedText = formatCodeBlocks(text);
+        } else {
+            // Escape HTML for user and system messages
+            processedText = escapeHtml(text);
+        }
+        
+        let content = `<div class="message-content"><div class="message-text">${animate ? '' : processedText}</div></div>`;
         
         if (role !== 'system') {
             content += `<div class="message-actions">`;
@@ -598,9 +742,42 @@
         msgDiv.innerHTML = content;
         document.getElementById('chatArea').appendChild(msgDiv);
         document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+        
+        // Animate typing if requested
+        if (animate && role === 'ai') {
+            animateTyping(msgDiv.querySelector('.message-text'), processedText);
+        }
+        
+        return id;
     }
 
-    function addMessage(text, role) {
+    function animateTyping(element, html) {
+        // For HTML content with code blocks, we'll type character by character
+        let index = 0;
+        const speed = 10; // milliseconds per character
+        
+        function typeNextChar() {
+            if (index < html.length) {
+                // Add next character
+                element.innerHTML = html.substring(0, index + 1);
+                index++;
+                
+                // Auto-scroll as we type
+                const chatArea = document.getElementById('chatArea');
+                chatArea.scrollTop = chatArea.scrollHeight;
+                
+                // Continue typing
+                setTimeout(typeNextChar, speed);
+            } else {
+                // Typing complete - ensure full HTML is rendered
+                element.innerHTML = html;
+            }
+        }
+        
+        typeNextChar();
+    }
+
+    function addMessage(text, role, animate = false) {
         const msgId = Date.now().toString();
         const chat = getCurrentChat();
         if (chat) {
@@ -613,7 +790,7 @@
                 loadChatsFromStorage();
             }
         }
-        addMessageToUI(text, role, msgId);
+        addMessageToUI(text, role, msgId, animate);
     }
 
     function editMessage(msgId) {
@@ -627,8 +804,13 @@
             updateCurrentChat(chat);
             
             const msgDiv = document.querySelector(`[data-message-id="${msgId}"]`);
-            const contentDiv = msgDiv.querySelector('.message-content div');
-            contentDiv.textContent = newText.trim();
+            const contentDiv = msgDiv.querySelector('.message-content .message-text');
+            
+            if (msg.role === 'ai') {
+                contentDiv.innerHTML = formatCodeBlocks(newText.trim());
+            } else {
+                contentDiv.textContent = newText.trim();
+            }
             
             if (msg.role === 'user') {
                 regenerateResponse(msgId);
@@ -650,7 +832,7 @@
         
         const userMsg = chat.messages[userMsgIdx];
         const response = await getAIResponse(userMsg.content);
-        addMessage(response, 'ai');
+        addMessage(response, 'ai', true); // Enable animation for regenerated responses
     }
 
     // === AI INTERACTION ===
@@ -832,7 +1014,7 @@
         input.disabled = true;
 
         const response = await getAIResponse(text);
-        addMessage(response, 'ai');
+        addMessage(response, 'ai', true); // Enable animation for AI responses
 
         document.getElementById('sendBtn').disabled = false;
         input.disabled = false;
@@ -861,7 +1043,6 @@
         statusDiv.innerHTML = '<span style="color: #f59e0b;">⏳ Fetching API key from Google Drive...</span>';
 
         try {
-            // Try using a CORS proxy
             const proxyUrl = 'https://pastebin.com/raw/gAu3CpfW';
             const response = await fetch(proxyUrl + encodeURIComponent(GDRIVE_API_KEY_URL));
             
@@ -876,7 +1057,6 @@
                 throw new Error('Invalid API key format (too short)');
             }
 
-            // Store and display the API key
             localStorage.setItem('phart_api_key', cleanKey);
             document.getElementById('apiKeyInput').value = cleanKey;
             
@@ -888,7 +1068,6 @@
         }
     }
 
-    // Auto-fetch key on startup
     async function autoFetchApiKey() {
         if (!GDRIVE_API_KEY_URL || GDRIVE_API_KEY_URL.includes('YOUR_FILE_ID_HERE')) {
             return;
@@ -930,7 +1109,6 @@
         const apiKey = localStorage.getItem('phart_api_key');
         if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
 
-        // Update slider labels
         ['creativity', 'friendliness', 'technical', 'conciseness', 'selfawareness'].forEach(id => {
             const slider = document.getElementById(id);
             slider.oninput = () => document.getElementById('val-' + id).textContent = slider.value;

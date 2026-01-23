@@ -438,6 +438,51 @@
             width: 18px; /* Slightly smaller for the action buttons */
             height: 18px;
         }
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #334155;
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 14px;
+            align-self: flex-start;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: #4f46e5;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .stop-btn {
+            padding: 12px 24px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stop-btn:hover {
+            background: #b91c1c;
+        }
     </style>
 </head>
 <body>
@@ -530,6 +575,7 @@
     const DEV_MODE_CODE = 'devmode';
     const EXIT_DEV_CODE = 'exitdevmode';
   
+    let isAIResponding = false;
     let currentChatId = null;
     let devMode = false;
     let devModeKnowledge = {};
@@ -672,7 +718,43 @@
             }
         }
     }
+        function updateInputState() {
+        const sendBtn = document.getElementById('sendBtn');
+        const input = document.getElementById('userInput');
+        sendBtn.disabled = isAIResponding;
+        input.disabled = isAIResponding;
+    }
 
+    function showLoadingIndicator() {
+        const loadingId = 'loading-indicator';
+        const chatArea = document.getElementById('chatArea');
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = loadingId;
+        loadingDiv.className = 'message ai';
+        loadingDiv.innerHTML = `
+            <div class="loading-indicator">
+                <span>AI is thinking</span>
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            </div>
+        `;
+
+        chatArea.appendChild(loadingDiv);
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        return loadingId;
+    }
+
+    function hideLoadingIndicator(loadingId) {
+        const loadingDiv = document.getElementById(loadingId);
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
+    }
     function loadChatsFromStorage() {
         const chats = getChats();
         const list = document.getElementById('chatsList');
@@ -709,20 +791,16 @@
         const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
         
         let formattedText = text;
-        const matches = [];
+        const codeBlocks = [];
         let match;
         
-        // Collect all matches first
+        // Collect all code blocks and replace with placeholders
+        let placeholderIndex = 0;
         while ((match = codeBlockRegex.exec(text)) !== null) {
-            matches.push(match);
-        }
-        
-        // Replace in reverse order to maintain correct positions
-        for (let i = matches.length - 1; i >= 0; i--) {
-            match = matches[i];
+            const placeholder = `___CODE_BLOCK_${placeholderIndex}___`;
             const language = match[1] || 'code';
             const code = match[2];
-            const blockId = `code-${Date.now()}-${i}`;
+            const blockId = `code-${Date.now()}-${placeholderIndex}`;
             
             const codeBlock = `<div class="code-block">
                 <div class="code-header">
@@ -734,11 +812,25 @@
                 </div>
             </div>`;
             
-            formattedText = formattedText.substring(0, match.index) + codeBlock + formattedText.substring(match.index + match[0].length);
+            codeBlocks.push({ placeholder, html: codeBlock });
+            formattedText = formattedText.replace(match[0], placeholder);
+            placeholderIndex++;
         }
         
+        // Now process the text outside code blocks
         // Handle inline code with single backticks (but not triple backticks)
         formattedText = formattedText.replace(/(?<!`)`([^`\n]+)`(?!`)/g, '<span class="inline-code">$1</span>');
+        
+        // Handle bold text with **text**
+        formattedText = formattedText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        
+        // Convert newlines to <br> tags
+        formattedText = formattedText.replace(/\n/g, '<br>');
+        
+        // Restore code blocks
+        codeBlocks.forEach(({ placeholder, html }) => {
+            formattedText = formattedText.replace(placeholder, html);
+        });
         
         return formattedText;
     }
@@ -748,7 +840,25 @@
         div.textContent = text;
         return div.innerHTML;
     }
+    function stopAIResponse() {
+        stopTyping = true;
+        isAIResponding = false;
+        updateInputState();
+        updateStopButton();
+    }
 
+    function updateStopButton() {
+        const sendBtn = document.getElementById('sendBtn');
+        if (isAIResponding) {
+            sendBtn.textContent = 'Stop';
+            sendBtn.className = 'stop-btn';
+            sendBtn.onclick = stopAIResponse;
+        } else {
+            sendBtn.textContent = 'Send';
+            sendBtn.className = 'send-btn';
+            sendBtn.onclick = handleSend;
+        }
+    }
     function copyCode(blockId) {
         const codeElement = document.getElementById(blockId);
         if (!codeElement) return;
@@ -794,6 +904,7 @@
         if (role !== 'system') {
             content += `<div class="message-actions">`;
             content += `<button class="msg-action-btn" onclick="editMessage('${id}')">Edit</button>`;
+            content += `<button class="msg-action-btn" onclick="deleteMessage('${id}')">Delete</button>`;
             if (role === 'user') {
                 content += `<button class="msg-action-btn" onclick="regenerateResponse('${id}')">Regenerate</button>`;
             }
@@ -812,29 +923,32 @@
         return id;
     }
 
+    let stopTyping = false;
+
     function animateTyping(element, html) {
-        // For HTML content with code blocks, we'll type character by character
         let index = 0;
-        const speed = 10; // milliseconds per character
-        
+        const speed = 10;
+        stopTyping = false;
+
         function typeNextChar() {
-            if (index < html.length) {
-                // Add next character
-                element.innerHTML = html.substring(0, index + 1);
-                index++;
-                
-                // Auto-scroll as we type
-                const chatArea = document.getElementById('chatArea');
-                chatArea.scrollTop = chatArea.scrollHeight;
-                
-                // Continue typing
-                setTimeout(typeNextChar, speed);
-            } else {
-                // Typing complete - ensure full HTML is rendered
+            if (stopTyping || index >= html.length) {
+                // Typing complete or stopped
                 element.innerHTML = html;
+                isAIResponding = false;
+                updateInputState();
+                updateStopButton();
+                return;
             }
+
+            element.innerHTML = html.substring(0, index + 1);
+            index++;
+
+            const chatArea = document.getElementById('chatArea');
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            setTimeout(typeNextChar, speed);
         }
-        
+
         typeNextChar();
     }
 
@@ -844,14 +958,19 @@
         if (chat) {
             chat.messages.push({ id: msgId, content: text, role, timestamp: new Date().toISOString() });
             updateCurrentChat(chat);
-            
-            // Auto-rename first message
+
             if (chat.messages.length === 2 && chat.title === 'New Chat') {
                 updateCurrentChat({ title: text.substring(0, 30) + (text.length > 30 ? '...' : '') });
                 loadChatsFromStorage();
             }
         }
         addMessageToUI(text, role, msgId, animate);
+
+        if (animate) {
+            isAIResponding = true;
+            updateInputState();
+            updateStopButton(); // Add this line
+        }
     }
 
     function editMessage(msgId) {
@@ -878,22 +997,48 @@
             }
         }
     }
+    function deleteMessage(msgId) {
+        if (!confirm('Delete this message?')) return;
 
+        const chat = getCurrentChat();
+        const msgIndex = chat.messages.findIndex(m => m.id === msgId);
+
+        if (msgIndex === -1) return;
+
+        // Remove the message from the chat
+        chat.messages.splice(msgIndex, 1);
+        updateCurrentChat(chat);
+
+        // Remove the message from the UI
+        const msgDiv = document.querySelector(`[data-message-id="${msgId}"]`);
+        if (msgDiv) {
+            msgDiv.remove();
+        }
+    }
     async function regenerateResponse(userMsgId) {
+        if (isAIResponding) return;
+
         const chat = getCurrentChat();
         const userMsgIdx = chat.messages.findIndex(m => m.id === userMsgId);
-        
-        // Remove AI response after this message
+
         if (userMsgIdx < chat.messages.length - 1) {
             const aiMsgId = chat.messages[userMsgIdx + 1].id;
             chat.messages.splice(userMsgIdx + 1, 1);
             updateCurrentChat(chat);
             document.querySelector(`[data-message-id="${aiMsgId}"]`)?.remove();
         }
-        
+
         const userMsg = chat.messages[userMsgIdx];
+
+        isAIResponding = true;
+        updateInputState();
+        updateStopButton();
+
+        const loadingId = showLoadingIndicator();
         const response = await getAIResponse(userMsg.content);
-        addMessage(response, 'ai', true); // Enable animation for regenerated responses
+        hideLoadingIndicator(loadingId);
+
+        addMessage(response, 'ai', true);
     }
 
     // === AI INTERACTION ===
@@ -1036,11 +1181,10 @@
     async function handleSend() {
         const input = document.getElementById('userInput');
         const text = input.value.trim();
-        if (!text) return;
+        if (!text || isAIResponding) return;
 
         const textLower = text.toLowerCase().trim();
 
-        // Check for admin code BEFORE sending to AI
         if (textLower === ADMIN_CODE) {
             input.value = '';
             openSettings();
@@ -1048,7 +1192,6 @@
             return;
         }
 
-        // Check for dev mode codes BEFORE sending to AI
         if (textLower === DEV_MODE_CODE) {
             input.value = '';
             devMode = true;
@@ -1070,16 +1213,16 @@
 
         addMessage(text, 'user');
         input.value = '';
-        
-        document.getElementById('sendBtn').disabled = true;
-        input.disabled = true;
 
+        isAIResponding = true;
+        updateInputState();
+        updateStopButton();
+
+        const loadingId = showLoadingIndicator();
         const response = await getAIResponse(text);
-        addMessage(response, 'ai', true); // Enable animation for AI responses
+        hideLoadingIndicator(loadingId);
 
-        document.getElementById('sendBtn').disabled = false;
-        input.disabled = false;
-        input.focus();
+        addMessage(response, 'ai', true);
     }
 
     function updateDevModeIndicator() {

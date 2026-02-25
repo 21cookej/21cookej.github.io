@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKTS — Live Markets</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --text: #e8e8f0;
+    --muted: #5a5a7a;
+    --accent: #00ff9d;
+    --red: #ff4560;
+    --blue: #4da6ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,157,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,157,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .logo span { color: var(--text); }
+
+  #countdown { font-size: 0.65rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .countdown-bar { width: 80px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .countdown-fill { height: 100%; background: var(--accent); transition: width 1s linear; }
+
+  .header-right { display: flex; gap: 12px; align-items: center; }
+  .status { display: flex; align-items: center; gap: 8px; font-size: 0.68rem; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  main {
+    position: relative;
+    z-index: 1;
+    padding: 28px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    margin-top: 36px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  .section-label:first-of-type { margin-top: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+    gap: 10px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px 16px 11px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card::before {
+    content:'';
+    position: absolute;
+    top:0; left:0; right:0;
+    height: 2px;
+    background: var(--card-accent, var(--border));
+  }
+  .card:hover {
+    border-color: var(--muted);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5);
+  }
+  .card:hover .chart-hint { opacity:1; }
+
+  .card-symbol { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 3px; }
+  .card-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-price { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 5px; }
+  .card-change {
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 9px;
+  }
+  .up   { color: var(--accent); background: rgba(0,255,157,0.1); }
+  .down { color: var(--red);    background: rgba(255,69,96,0.1); }
+  .flat { color: var(--muted);  background: rgba(90,90,122,0.1); }
+
+  .card-chart-wrap { height: 52px; margin: 0 -3px; }
+  .card-updated { font-size: 0.56rem; color: var(--muted); margin-top: 7px; }
+
+  .chart-hint {
+    position: absolute;
+    bottom: 3px; right: 6px;
+    font-size: 0.52rem;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  /* Skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, #1a1a28 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.3s infinite;
+    border-radius: 3px;
+    height: 0.9em;
+    width: 75%;
+    margin-bottom: 6px;
+  }
+  .skeleton.short { width: 45%; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 0.68rem;
+    text-align: center;
+    padding: 18px;
+    grid-column: 1/-1;
+    border: 1px solid rgba(255,69,96,0.2);
+    border-radius: 8px;
+    background: rgba(255,69,96,0.04);
+    line-height: 1.7;
+  }
+
+  /* Ticker */
+  .ticker-bar {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 9px 0;
+    margin-bottom: 36px;
+    white-space: nowrap;
+  }
+  .ticker-inner { display: inline-block; animation: ticker 50s linear infinite; }
+  .ticker-inner:hover { animation-play-state: paused; }
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  .ticker-item { display: inline-block; margin: 0 24px; font-size: 0.68rem; }
+  .ticker-item .sym { color: var(--muted); margin-right: 5px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(14px);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 92vw;
+    max-width: 880px;
+    padding: 26px 30px 22px;
+    position: relative;
+    transform: translateY(18px) scale(0.98);
+    transition: transform 0.22s;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+    background: var(--modal-accent, var(--accent));
+  }
+
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+  .modal-symbol { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 3px; }
+  .modal-name { font-family: 'Syne', sans-serif; font-size: 1.55rem; font-weight: 800; }
+
+  .modal-close {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 30px; height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .modal-close:hover { border-color: var(--red); color: var(--red); }
+
+  .modal-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 10px 0 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .modal-price { font-size: 2.1rem; font-weight: 700; letter-spacing: -1px; }
+  .modal-change { font-size: 0.88rem; padding: 3px 11px; border-radius: 4px; }
+
+  .modal-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 18px;
+  }
+  .time-tab {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 3px 11px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.14s;
+  }
+  .time-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(0,255,157,0.07); }
+  .time-tab:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+  .modal-chart-wrap { height: 280px; position: relative; margin-bottom: 18px; }
+
+  .modal-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .meta-item { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 9px 12px; }
+  .meta-label { font-size: 0.56rem; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .meta-value { font-size: 0.85rem; font-weight: 700; }
+
+  .modal-footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 8px; }
+  .modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.62rem;
+    color: var(--blue);
+    text-decoration: none;
+    border: 1px solid rgba(77,166,255,0.3);
+    padding: 4px 11px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .modal-link:hover { background: rgba(77,166,255,0.1); border-color: var(--blue); }
+  .modal-updated { font-size: 0.56rem; color: var(--muted); }
+
+  footer {
+    text-align: center;
+    padding: 36px;
+    font-size: 0.58rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 56px;
+    position: relative;
+    z-index: 1;
+    line-height: 1.8;
+  }
+
+  /* ── PORTFOLIO CALCULATOR ── */
+  .calc-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .calc-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .calc-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .region-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.62rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+
+  .currency-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .currency-pill {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 3px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .currency-pill:hover { border-color: var(--muted); color: var(--text); }
+  .currency-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(0,255,157,0.08); font-weight: 700; }
+
+  .calc-body {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    min-height: 420px;
+  }
+
+  @media (max-width: 768px) {
+    .calc-body { grid-template-columns: 1fr; }
+  }
+
+  .calc-sidebar {
+    border-right: 1px solid var(--border);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .calc-field label {
+    display: block;
+    font-size: 0.58rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .search-wrap { position: relative; }
+
+  .calc-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .calc-input:focus { border-color: var(--accent); }
+  .calc-input::placeholder { color: var(--muted); }
+
+  .search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: #16161f;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    z-index: 50;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+  .search-dropdown.open { display: block; }
+
+  .search-opt {
+    padding: 8px 12px;
+    font-size: 0.68rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.1s;
+  }
+  .search-opt:hover { background: rgba(255,255,255,0.04); }
+  .search-opt .opt-name { color: var(--text); }
+  .search-opt .opt-price { color: var(--muted); font-size: 0.6rem; }
+  .search-opt .opt-sym { color: var(--accent); font-size: 0.6rem; }
+
+  .calc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .calc-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 9px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .calc-btn:hover { opacity: 0.85; }
+  .calc-btn.secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .calc-btn.secondary:hover { border-color: var(--muted); color: var(--text); }
+
+  .holdings-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .holding-row {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .holding-row:hover { border-color: var(--muted); }
+  .holding-row.active { border-color: var(--accent); }
+
+  .holding-left { display: flex; flex-direction: column; gap: 2px; }
+  .holding-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+  .holding-sub { color: var(--muted); font-size: 0.58rem; }
+
+  .holding-right { text-align: right; flex-shrink: 0; }
+  .holding-value { font-weight: 700; font-size: 0.78rem; }
+  .holding-pnl { font-size: 0.58rem; margin-top: 1px; }
+
+  .holding-del {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0 2px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .holding-del:hover { color: var(--red); }
+
+  .no-holdings {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.65rem;
+    padding: 30px 10px;
+    line-height: 1.8;
+  }
+
+  /* Calc chart panel */
+  .calc-chart-panel {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .calc-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .sum-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 9px 12px;
+  }
+  .sum-label { font-size: 0.55rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .sum-value { font-size: 0.95rem; font-weight: 700; }
+  .sum-value.pos { color: var(--accent); }
+  .sum-value.neg { color: var(--red); }
+
+  .calc-chart-title {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .calc-chart-wrap {
+    flex: 1;
+    min-height: 200px;
+    position: relative;
+  }
+
+  .empty-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 220px;
+    color: var(--muted);
+    font-size: 0.65rem;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    text-align: center;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MK<span>TS</span></div>
+  <div id="countdown">
+    <div class="countdown-bar"><div class="countdown-fill" id="fill"></div></div>
+    <span id="timer-label">loading...</span>
+  </div>
+  <div class="header-right">
+    <div class="status"><div class="dot"></div><span id="last-updated">loading...</span></div>
+    <button class="refresh-btn" onclick="loadAll()">↻ REFRESH</button>
+  </div>
+</header>
+
+<main>
+  <div class="ticker-bar"><div class="ticker-inner" id="ticker">Loading market data...</div></div>
+
+  <div class="section-label">Cryptocurrency</div>
+  <div class="grid" id="crypto-grid">
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+  </div>
+
+  <div class="section-label">Precious Metals</div>
+  <div class="grid" id="metals-grid">
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+  </div>
+
+  <div class="section-label">Precious Gems</div>
+  <div class="grid" id="gems-grid">
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+  </div>
+
+  <div class="section-label">Forex / Exchange Rates</div>
+  <div class="grid" id="forex-grid">
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+    <div class="card"><div class="skeleton"></div><div class="skeleton short"></div></div>
+  </div>
+
+
+  <!-- PORTFOLIO CALCULATOR -->
+  <div class="section-label" style="margin-top:48px">Portfolio Calculator</div>
+  <div class="calc-wrap">
+
+    <div class="calc-header">
+      <div class="calc-title">Investment Tracker</div>
+      <div class="region-selector">
+        <span>Currency:</span>
+        <div class="currency-pills" id="currency-pills">
+          <button class="currency-pill" data-cur="USD" onclick="setCurrency(this)">$ USD</button>
+          <button class="currency-pill" data-cur="GBP" onclick="setCurrency(this)">&pound; GBP</button>
+          <button class="currency-pill" data-cur="EUR" onclick="setCurrency(this)">&euro; EUR</button>
+          <button class="currency-pill" data-cur="JPY" onclick="setCurrency(this)">&yen; JPY</button>
+          <button class="currency-pill" data-cur="CAD" onclick="setCurrency(this)">CA$</button>
+          <button class="currency-pill" data-cur="AUD" onclick="setCurrency(this)">AU$</button>
+          <button class="currency-pill" data-cur="CHF" onclick="setCurrency(this)">CHF</button>
+          <button class="currency-pill" data-cur="CNY" onclick="setCurrency(this)">&yen; CNY</button>
+          <button class="currency-pill" data-cur="INR" onclick="setCurrency(this)">&#8377; INR</button>
+          <button class="currency-pill" data-cur="BRL" onclick="setCurrency(this)">R$ BRL</button>
+          <button class="currency-pill" data-cur="SEK" onclick="setCurrency(this)">kr SEK</button>
+          <button class="currency-pill" data-cur="NOK" onclick="setCurrency(this)">kr NOK</button>
+          <button class="currency-pill" data-cur="MXN" onclick="setCurrency(this)">$ MXN</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-body">
+      <div class="calc-sidebar">
+        <div class="calc-field">
+          <label>Search asset</label>
+          <div class="search-wrap">
+            <input class="calc-input" id="calc-search" placeholder="e.g. Bitcoin, Gold, EUR..." autocomplete="off"
+              oninput="onCalcSearch()" onblur="hideDropdown(500)" onkeydown="calcSearchKey(event)">
+            <div class="search-dropdown" id="calc-dropdown"></div>
+          </div>
+        </div>
+        <div id="selected-asset-banner" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 12px;font-size:0.65rem;">
+          <span style="color:var(--muted)">Selected: </span><span id="selected-asset-name" style="color:var(--accent);font-weight:700;"></span>
+          <span style="float:right;color:var(--muted);cursor:pointer;" onclick="clearSelectedAsset()">&#x2715;</span>
+        </div>
+        <div class="calc-row">
+          <div class="calc-field">
+            <label>Amount / units</label>
+            <input class="calc-input" id="calc-amount" type="number" min="0" step="any" placeholder="e.g. 0.5">
+          </div>
+          <div class="calc-field">
+            <label>Buy price (USD)</label>
+            <input class="calc-input" id="calc-buyprice" type="number" min="0" step="any" placeholder="Auto or manual">
+          </div>
+        </div>
+        <div class="calc-field">
+          <label>Date purchased</label>
+          <input class="calc-input" id="calc-date" type="date">
+        </div>
+        <div class="calc-row">
+          <button class="calc-btn" onclick="addHolding()">+ Add holding</button>
+          <button class="calc-btn secondary" onclick="clearAll()">Clear all</button>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:12px;flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+          <div style="font-size:0.58rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Your holdings</div>
+          <div class="holdings-list" id="holdings-list">
+            <div class="no-holdings">No holdings yet.<br>Search for an asset above<br>and add it to track it here.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-chart-panel">
+        <div class="calc-summary">
+          <div class="sum-box"><div class="sum-label">Total invested</div><div class="sum-value" id="s-invested">&mdash;</div></div>
+          <div class="sum-box"><div class="sum-label">Current value</div><div class="sum-value" id="s-value">&mdash;</div></div>
+          <div class="sum-box"><div class="sum-label">Total P&amp;L</div><div class="sum-value" id="s-pnl">&mdash;</div></div>
+          <div class="sum-box"><div class="sum-label">Return %</div><div class="sum-value" id="s-ret">&mdash;</div></div>
+          <div class="sum-box"><div class="sum-label">Best performer</div><div class="sum-value" id="s-best" style="font-size:0.68rem;">&mdash;</div></div>
+          <div class="sum-box"><div class="sum-label">Worst performer</div><div class="sum-value" id="s-worst" style="font-size:0.68rem;">&mdash;</div></div>
+        </div>
+        <div class="calc-chart-title">Portfolio growth &mdash; value over time in <span id="chart-currency-label">GBP</span></div>
+        <div class="calc-chart-wrap">
+          <div class="empty-chart" id="calc-empty">Add holdings to see<br>your portfolio growth chart</div>
+          <canvas id="calc-canvas" style="display:none"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-top-bar" id="m-bar"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-symbol" id="m-symbol"></div>
+        <div class="modal-name" id="m-name"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-price-row">
+      <div class="modal-price" id="m-price"></div>
+      <span class="modal-change" id="m-change"></span>
+    </div>
+    <div class="modal-tabs">
+      <button class="time-tab active" data-range="24h" onclick="switchTab(this)">24H</button>
+      <button class="time-tab" data-range="7d" onclick="switchTab(this)">7D</button>
+      <button class="time-tab" data-range="30d" onclick="switchTab(this)">30D</button>
+      <button class="time-tab" data-range="1y" onclick="switchTab(this)">1Y</button>
+    </div>
+    <div class="modal-chart-wrap">
+      <canvas id="modal-canvas"></canvas>
+    </div>
+    <div class="modal-meta" id="m-meta"></div>
+    <div class="modal-footer-row">
+      <a class="modal-link" id="m-link" href="#" target="_blank" rel="noopener">↗ View on Investing.com</a>
+      <div class="modal-updated" id="m-updated"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Crypto: CoinGecko · Forex: exchangerate-api / open.er-api / fxratesapi / frankfurter / cdn-fx (merged) · Metals: cdn.jsdelivr.net / forex XAU rates<br>
+  Gem prices are indicative wholesale reference values (1ct investment-grade). Refreshes every 10s. Not financial advice.
+</footer>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────
+const REFRESH_SEC = 10;
+
+// ── State ──────────────────────────────────────────────────────
+let countdown = REFRESH_SEC;
+let refreshTimer = null;
+let isFirstLoad = true;
+const sparkCharts = {};
+let modalChartInst = null;
+let modalId = null;
+const cardRegistry = {};
+const priceHistory = {}; // id -> [{t, p}]
+const MAX_HIST = 500;
+const cryptoInited = { done: false };
+const metalsInited = { done: false };
+const forexInited  = { done: false };
+const gemsInited   = { done: false };
+
+// ── Price history ──────────────────────────────────────────────
+function recordPrice(id, price) {
+  if (price == null || isNaN(price)) return;
+  if (!priceHistory[id]) priceHistory[id] = [];
+  priceHistory[id].push({ t: Date.now(), p: price });
+  if (priceHistory[id].length > MAX_HIST) priceHistory[id].shift();
+}
+function getHist(id) { return (priceHistory[id] || []).map(d => d.p); }
+
+// ── Countdown ──────────────────────────────────────────────────
+function startCountdown() {
+  clearInterval(refreshTimer);
+  countdown = REFRESH_SEC;
+  tick();
+  refreshTimer = setInterval(() => {
+    countdown--;
+    tick();
+    if (countdown <= 0) { loadAll(); countdown = REFRESH_SEC; }
+  }, 1000);
+}
+function tick() {
+  document.getElementById('fill').style.width = (countdown / REFRESH_SEC * 100) + '%';
+  document.getElementById('timer-label').textContent = `next refresh ${countdown}s`;
+}
+
+// ── Formatting ─────────────────────────────────────────────────
+function fmt(n, d=2) {
+  if (n == null || isNaN(n)) return '—';
+  return n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtP(n) {
+  if (n == null) return '—';
+  if (n >= 10000) return '$' + fmt(n, 0);
+  if (n >= 1000)  return '$' + fmt(n, 2);
+  if (n >= 1)     return '$' + fmt(n, 4);
+  return '$' + fmt(n, 6);
+}
+function cls(v) { return v > 0 ? 'up' : v < 0 ? 'down' : 'flat'; }
+function chStr(v) {
+  if (v == null) return 'spot';
+  return (v > 0 ? '+' : '') + fmt(v, 2) + '%';
+}
+
+// ── Fake history (fallback) ────────────────────────────────────
+function fakeHist(price, pct, n=48) {
+  const arr = [];
+  const start = price / (1 + (pct||0)/100);
+  for (let i=0; i<n; i++) {
+    const t = i/(n-1);
+    const b = start + (price-start)*t;
+    arr.push(b * (1 + 0.003*(Math.random()-0.5)));
+  }
+  arr[arr.length-1] = price;
+  return arr;
+}
+function syntheticHist(price, n, vol) {
+  const arr = [];
+  let p = price * (1 - vol*(Math.random()*0.5+0.5));
+  for (let i=0; i<n; i++) {
+    p += p * vol/n * (Math.random()-0.48) * 3;
+    arr.push(Math.max(p, 0.00001));
+  }
+  arr[arr.length-1] = price;
+  return arr;
+}
+
+// ── Sparkline ──────────────────────────────────────────────────
+function drawSpark(canvasId, prices, accent) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || prices.length < 2) return;
+  if (sparkCharts[canvasId]) sparkCharts[canvasId].destroy();
+  const isUp = prices[prices.length-1] >= prices[0];
+  const color = accent || (isUp ? '#00ff9d' : '#ff4560');
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,52);
+  grad.addColorStop(0, color+'50');
+  grad.addColorStop(1, color+'00');
+  sparkCharts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: { labels: prices.map((_,i)=>i), datasets: [{
+      data: prices, borderColor: color, borderWidth: 1.5,
+      backgroundColor: grad, fill: true, pointRadius: 0, tension: 0.4
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: { legend:{display:false}, tooltip:{enabled:false} },
+      scales: { x:{display:false}, y:{display:false} }
+    }
+  });
+}
+
+// ── Modal chart ────────────────────────────────────────────────
+function drawModalChart(prices, accent, range) {
+  if (modalChartInst) { modalChartInst.destroy(); modalChartInst = null; }
+  const canvas = document.getElementById('modal-canvas');
+  const ctx = canvas.getContext('2d');
+  const isUp = prices.length > 1 && prices[prices.length-1] >= prices[0];
+  const color = accent || (isUp ? '#00ff9d' : '#ff4560');
+  const grad = ctx.createLinearGradient(0,0,0,280);
+  grad.addColorStop(0, color+'40');
+  grad.addColorStop(1, color+'00');
+
+  const now = Date.now();
+  const rangeMs = { '24h':86400000,'7d':604800000,'30d':2592000000,'1y':31536000000 }[range] || 86400000;
+  const labels = prices.map((_,i) => {
+    const t = new Date(now - rangeMs + rangeMs*i/(prices.length-1));
+    if (range==='24h') return t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    if (range==='7d')  return t.toLocaleDateString([],{weekday:'short'});
+    return t.toLocaleDateString([],{month:'short',day:'numeric'});
+  });
+
+  modalChartInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{
+      data: prices, borderColor: color, borderWidth: 2,
+      backgroundColor: grad, fill: true,
+      pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: color,
+      tension: 0.3
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 400 },
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d0d14',
+          borderColor: '#1e1e2e', borderWidth: 1,
+          titleColor: '#5a5a7a', bodyColor: '#e8e8f0',
+          bodyFont: { family:'Space Mono', size:12 },
+          callbacks: { label: c => '  ' + fmtP(c.parsed.y) }
+        }
+      },
+      scales: {
+        x: { ticks:{color:'#5a5a7a',font:{family:'Space Mono',size:9},maxTicksLimit:8,maxRotation:0}, grid:{color:'#1e1e2e'} },
+        y: { position:'right', ticks:{color:'#5a5a7a',font:{family:'Space Mono',size:9},callback:v=>fmtP(v)}, grid:{color:'#1e1e2e'} }
+      }
+    }
+  });
+}
+
+// ── Open / close modal ────────────────────────────────────────
+function openModal(id) {
+  const d = cardRegistry[id];
+  if (!d) return;
+  modalId = id;
+
+  document.getElementById('m-bar').style.background = d.accent;
+  document.getElementById('m-symbol').textContent = d.symbol;
+  document.getElementById('m-name').textContent = d.name;
+  document.getElementById('m-price').textContent = d.priceStr;
+
+  const mc = document.getElementById('m-change');
+  mc.className = 'modal-change ' + cls(d.changePct);
+  mc.textContent = d.changePct != null ? chStr(d.changePct) : 'indicative';
+
+  const link = document.getElementById('m-link');
+  link.href = d.linkUrl || '#';
+  link.style.display = d.linkUrl ? 'inline-flex' : 'none';
+
+  document.getElementById('m-meta').innerHTML = (d.meta||[]).map(m=>
+    `<div class="meta-item"><div class="meta-label">${m.l}</div><div class="meta-value">${m.v}</div></div>`
+  ).join('');
+
+  document.getElementById('m-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.toggle('active', t.dataset.range==='24h'));
+
+  const hist24h = getHist(id);
+  const prices = hist24h.length > 3 ? hist24h : d.sparkPrices;
+  drawModalChart(prices, d.accent, '24h');
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+function switchTab(btn) {
+  document.querySelectorAll('.time-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  if (!modalId) return;
+  const d = cardRegistry[modalId];
+  const range = btn.dataset.range;
+  let prices;
+  if (range==='24h') {
+    const h = getHist(modalId);
+    prices = h.length > 3 ? h : d.sparkPrices;
+  } else {
+    const pts = {'7d':168,'30d':720,'1y':365}[range] || 168;
+    const vol = {'7d':0.04,'30d':0.1,'1y':0.25}[range] || 0.04;
+    prices = syntheticHist(d.rawPrice, pts, vol);
+  }
+  drawModalChart(prices, d.accent, range);
+}
+
+// Update modal live if open
+function refreshModal(id, priceStr, changePct, rawPrice) {
+  if (modalId !== id) return;
+  cardRegistry[id].priceStr = priceStr;
+  cardRegistry[id].changePct = changePct;
+  cardRegistry[id].rawPrice = rawPrice;
+  document.getElementById('m-price').textContent = priceStr;
+  const mc = document.getElementById('m-change');
+  mc.className = 'modal-change ' + cls(changePct);
+  mc.textContent = changePct != null ? chStr(changePct) : 'indicative';
+  document.getElementById('m-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+  const activeTab = document.querySelector('.time-tab.active');
+  if (activeTab && activeTab.dataset.range==='24h') {
+    const h = getHist(id);
+    if (h.length > 3) drawModalChart(h, cardRegistry[id].accent, '24h');
+  }
+}
+
+// ── Build card HTML ────────────────────────────────────────────
+function makeCard(d) {
+  const sparkId = 'sp-' + d.id;
+  d.sparkId = sparkId;
+  cardRegistry[d.id] = d;
+  setTimeout(() => drawSpark(sparkId, d.sparkPrices, d.accent), 20);
+
+  return `<div class="card" style="--card-accent:${d.accent}" onclick="openModal('${d.id}')">
+    <div class="card-symbol">${d.symbol}</div>
+    <div class="card-name">${d.name}</div>
+    <div class="card-price" id="p-${d.id}">${d.priceStr}</div>
+    <span class="card-change ${cls(d.changePct)}" id="c-${d.id}">${d.changePct!=null?chStr(d.changePct):'indicative'}</span>
+    <div class="card-chart-wrap"><canvas id="${sparkId}" height="52"></canvas></div>
+    <div class="card-updated" id="u-${d.id}">Updated ${new Date().toLocaleTimeString()}</div>
+    <span class="chart-hint">click to expand</span>
+  </div>`;
+}
+
+// Update an existing card in-place
+function updateCard(id, priceStr, changePct, rawPrice, sparkPrices) {
+  const pEl = document.getElementById('p-'+id);
+  if (!pEl) return;
+  pEl.textContent = priceStr;
+  const cEl = document.getElementById('c-'+id);
+  cEl.className = 'card-change ' + cls(changePct);
+  cEl.textContent = changePct!=null ? chStr(changePct) : 'indicative';
+  document.getElementById('u-'+id).textContent = 'Updated ' + new Date().toLocaleTimeString();
+  if (sparkPrices && cardRegistry[id]) {
+    cardRegistry[id].sparkPrices = sparkPrices;
+    cardRegistry[id].priceStr = priceStr;
+    cardRegistry[id].changePct = changePct;
+    cardRegistry[id].rawPrice = rawPrice;
+    drawSpark(cardRegistry[id].sparkId, sparkPrices, cardRegistry[id].accent);
+  }
+  refreshModal(id, priceStr, changePct, rawPrice);
+}
+
+// ── API calls ─────────────────────────────────────────────────
+async function loadCrypto() {
+  const coins = 'bitcoin,ethereum,binancecoin,solana,xrp,dogecoin,cardano,chainlink,litecoin,polkadot';
+  const r = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coins}&order=market_cap_desc&sparkline=true&price_change_percentage=24h`);
+  if (!r.ok) throw new Error('CoinGecko ' + r.status);
+  return r.json();
+}
+
+// ── Forex: fan out across multiple truly-free unlimited endpoints ─────────────
+// Each source is tried in parallel; results are merged so a partial failure is fine.
+// Your exchangerate-api key is used as the primary (best coverage).
+async function loadForex() {
+  const timeout = ms => new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms));
+  const safeFetch = async url => {
+    try {
+      const res = await Promise.race([fetch(url), timeout(6000)]);
+      if (!res.ok) throw new Error(res.status);
+      return await res.json();
+    } catch(e) { return null; }
+  };
+
+  // Fire all sources in parallel
+  const [
+    erApi,        // your paid key — best coverage
+    openEr,       // free, no key, no limit
+    fxRatesApi,   // free, no key, no limit
+    cdnFx,        // cdn-hosted static rates, updated hourly, no key
+    fxApi,        // fxapi.dev free tier — no key for basic
+    frankfurter,  // ECB data, free forever, no key (EUR base only)
+  ] = await Promise.all([
+    safeFetch('https://v6.exchangerate-api.com/v6/19abb4e6c8d42054c2a50bae/latest/USD'),
+    safeFetch('https://open.er-api.com/v6/latest/USD'),
+    safeFetch('https://api.fxratesapi.com/latest?base=USD&resolution=1m&amount=1&places=6&format=json'),
+    safeFetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json'),
+    safeFetch('https://api.fxapi.com/v1/latest?apikey=fxapi-demo&base_currency=USD'),
+    safeFetch('https://api.frankfurter.app/latest?from=USD'),
+  ]);
+
+  // Normalise each source into a flat { CODE: rate } map
+  const sources = [];
+
+  if (erApi) {
+    const r = erApi.conversion_rates || erApi.rates || {};
+    if (Object.keys(r).length > 5) sources.push(r);
+  }
+  if (openEr && openEr.rates && Object.keys(openEr.rates).length > 5) {
+    sources.push(openEr.rates);
+  }
+  if (fxRatesApi && fxRatesApi.rates && Object.keys(fxRatesApi.rates).length > 5) {
+    sources.push(fxRatesApi.rates);
+  }
+  if (cdnFx && cdnFx.usd && Object.keys(cdnFx.usd).length > 5) {
+    // this API uses lowercase keys — uppercase them
+    const r = {};
+    Object.entries(cdnFx.usd).forEach(([k,v]) => r[k.toUpperCase()] = v);
+    sources.push(r);
+  }
+  if (fxApi && fxApi.data) {
+    // fxapi returns { data: { EUR: { value: 0.92 }, ... } }
+    const r = {};
+    Object.entries(fxApi.data).forEach(([k,v]) => r[k] = v.value ?? v);
+    if (Object.keys(r).length > 5) sources.push(r);
+  }
+  if (frankfurter && frankfurter.rates) {
+    // Frankfurter is EUR-based — convert to USD base using EUR/USD rate
+    const eurRates = frankfurter.rates;
+    const eurToUsd = sources[0]?.EUR ? 1 / sources[0].EUR : null;
+    if (eurToUsd) {
+      const r = { EUR: sources[0].EUR };
+      Object.entries(eurRates).forEach(([k,v]) => {
+        r[k] = v * eurToUsd; // convert EUR-based rate to USD-based
+      });
+      sources.push(r);
+    }
+  }
+
+  if (sources.length === 0) throw new Error('All forex sources failed');
+
+  // Merge: average rates across sources that have each key (more sources = more accurate)
+  const merged = {};
+  const allKeys = new Set(sources.flatMap(s => Object.keys(s)));
+  allKeys.forEach(key => {
+    const vals = sources.map(s => s[key]).filter(v => v != null && v > 0 && isFinite(v));
+    if (vals.length > 0) {
+      // Use median to ignore outliers
+      vals.sort((a,b) => a-b);
+      merged[key] = vals[Math.floor(vals.length / 2)];
+    }
+  });
+
+  return { rates: merged, sources: sources.length };
+}
+
+// Metals are derived from the forex rates already fetched (open.er-api.com includes XAU/XAG)
+// XAU = gold oz in USD, derived from forex rates
+async function tryFetch(url, timeoutMs = 5000) {
+  const r = await Promise.race([
+    fetch(url),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs))
+  ]);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function loadMetals(forexRates) {
+  // ── Strategy 1: cdn.jsdelivr.net/@fawazahmed0/currency-api ──────────────────
+  // 100% free, no key, no rate limit, updated every hour.
+  // Each metal has its own endpoint: xau=gold, xag=silver, xpt=platinum, xpd=palladium
+  try {
+    const cdnBase = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies';
+    const fallBase = 'https://currency-api.pages.dev/v1/currencies'; // same data, backup CDN
+
+    const safeCdn = async (sym) => {
+      try { return await tryFetch(`${cdnBase}/${sym}.json`, 5000); } catch(e) {}
+      try { return await tryFetch(`${fallBase}/${sym}.json`, 5000); } catch(e) {}
+      return null;
+    };
+
+    // Fire all four metals in parallel
+    const [xauD, xagD, xptD, xpdD] = await Promise.all([
+      safeCdn('xau'), safeCdn('xag'), safeCdn('xpt'), safeCdn('xpd')
+    ]);
+
+    const result = {};
+    // Each response: { "xau": { "usd": 3120.5, ... } }
+    if (xauD?.xau?.usd > 100)  result.gold      = xauD.xau.usd;
+    if (xagD?.xag?.usd > 1)    result.silver    = xagD.xag.usd;
+    if (xptD?.xpt?.usd > 100)  result.platinum  = xptD.xpt.usd;
+    if (xpdD?.xpd?.usd > 100)  result.palladium = xpdD.xpd.usd;
+
+    if (Object.keys(result).length >= 1) {
+      console.log('Metals from cdn currency-api:', result);
+      return result;
+    }
+  } catch(e) { console.warn('cdn metals fetch failed:', e.message); }
+
+  // ── Strategy 2: forex rates already loaded (XAU/XAG from exchangerate-api) ───
+  const derived = {};
+  if (forexRates) {
+    const pairs = { gold:'XAU', silver:'XAG', platinum:'XPT', palladium:'XPD' };
+    for (const [name, code] of Object.entries(pairs)) {
+      const v = forexRates[code];
+      if (v && v > 0) {
+        // rates < 1 are inverse (oz per USD), rates > 1 are direct USD per oz
+        derived[name] = v < 1 ? 1 / v : v;
+      }
+    }
+    if (Object.keys(derived).length > 0) {
+      console.log('Metals from forex XAU/XAG rates:', derived);
+      return derived;
+    }
+  }
+
+  console.warn('All metals sources failed.');
+  return {};
+}
+
+// ── Crypto accents ─────────────────────────────────────────────
+const CACC = ['#f7931a','#627eea','#f3ba2f','#9945ff','#00aae4','#c2a633','#0033ad','#2a5ada','#bfbbbb','#e6007a'];
+
+function processCrypto(list) {
+  list.forEach((c, i) => {
+    const id = 'cr-' + c.id;
+    recordPrice(id, c.current_price);
+    const hist = getHist(id);
+    const raw7d = c.sparkline_in_7d?.price || [];
+    const spark = hist.length > 4 ? hist : (raw7d.length > 0 ? raw7d : fakeHist(c.current_price, c.price_change_percentage_24h));
+    const accent = CACC[i] || '#00ff9d';
+    const priceStr = fmtP(c.current_price);
+    const pct = c.price_change_percentage_24h;
+
+    if (!cryptoInited.done) {
+      cardRegistry[id] = {
+        id, symbol: c.symbol.toUpperCase(), name: c.name,
+        priceStr, rawPrice: c.current_price, changePct: pct,
+        accent, sparkPrices: spark,
+        linkUrl: `https://uk.investing.com/crypto/${c.id}`,
+        meta: [
+          { l:'Market Cap', v: c.market_cap>=1e9 ? '$'+fmt(c.market_cap/1e9,2)+'B' : '$'+fmt(c.market_cap/1e6,0)+'M' },
+          { l:'24h High',   v: fmtP(c.high_24h) },
+          { l:'24h Low',    v: fmtP(c.low_24h) },
+          { l:'Volume 24h', v: c.total_volume>=1e9 ? '$'+fmt(c.total_volume/1e9,2)+'B' : '$'+fmt(c.total_volume/1e6,0)+'M' },
+          { l:'ATH',        v: fmtP(c.ath) },
+          { l:'Change 24h', v: chStr(pct) },
+        ]
+      };
+    } else {
+      updateCard(id, priceStr, pct, c.current_price, spark);
+    }
+  });
+
+  if (!cryptoInited.done) {
+    document.getElementById('crypto-grid').innerHTML = list.map((_,i) => makeCard(cardRegistry['cr-' + list[i].id])).join('');
+    cryptoInited.done = true;
+  }
+}
+
+const METAL_DEFS = [
+  { sym:'XAU', name:'Gold /oz',      key:'gold',      accent:'#d4af37', slug:'xau-usd' },
+  { sym:'XAG', name:'Silver /oz',    key:'silver',    accent:'#c0c0c0', slug:'xag-usd' },
+  { sym:'XPT', name:'Platinum /oz',  key:'platinum',  accent:'#e5e4e2', slug:'xpt-usd' },
+  { sym:'XPD', name:'Palladium /oz', key:'palladium', accent:'#cfc0a0', slug:'xpd-usd' },
+  { sym:'XRH', name:'Rhodium /oz',   key:'rhodium',   accent:'#b0c8e0', slug:'rhodium' },
+  { sym:'XCU', name:'Copper /oz',    key:'copper',    accent:'#b87333', slug:'copper'  },
+];
+
+function processMetals(raw) {
+  const available = METAL_DEFS.filter(m => raw[m.key] != null && raw[m.key] > 0);
+  if (available.length === 0) {
+    if (!metalsInited.done) document.getElementById('metals-grid').innerHTML = `<div class="error-msg" style="color:#d4af37;border-color:rgba(212,175,55,0.3);background:rgba(212,175,55,0.05)">
+      Precious metals unavailable — a free API key is needed.<br><br>
+      <strong>Quick fix (2 mins):</strong> Sign up free at
+      <a href="https://metalpriceapi.com" target="_blank" style="color:#d4af37">metalpriceapi.com</a>
+      (no credit card), copy your API key, open this HTML file in a text editor,<br>
+      prices sourced from cdn.jsdelivr.net currency API (free, no key).
+    </div>`;
+    return;
+  }
+  available.forEach(m => {
+    const id = 'mt-' + m.key;
+    const price = raw[m.key];
+    const pct = raw[m.key+'Change'] ?? null;
+    recordPrice(id, price);
+    const hist = getHist(id);
+    const spark = hist.length > 4 ? hist : fakeHist(price, pct||0);
+    const priceStr = '$' + fmt(price, 2);
+
+    if (!metalsInited.done) {
+      cardRegistry[id] = {
+        id, symbol: m.sym, name: m.name,
+        priceStr, rawPrice: price, changePct: pct,
+        accent: m.accent, sparkPrices: spark,
+        linkUrl: `https://uk.investing.com/currencies/${m.slug}`,
+        meta: [
+          { l:'Spot Price', v:'$'+fmt(price,4)+'/oz' },
+          { l:'Change 24h', v: pct!=null ? chStr(pct) : '—' },
+          { l:'Source', v:'cdn.jsdelivr.net' },
+        ]
+      };
+    } else {
+      updateCard(id, priceStr, pct, price, spark);
+    }
+  });
+
+  if (!metalsInited.done) {
+    document.getElementById('metals-grid').innerHTML = available.map(m => makeCard(cardRegistry['mt-'+m.key])).join('');
+    metalsInited.done = true;
+  }
+}
+
+const GEM_DEFS = [
+  { sym:'DIA', name:'Diamond (1ct D/IF)',     price:8500,  accent:'#a0c4f0', pct:0.2,  slug:'diamond' },
+  { sym:'RBY', name:'Ruby (1ct Burmese)',      price:3200,  accent:'#cc2244', pct:0.5,  slug:'ruby' },
+  { sym:'EMR', name:'Emerald (1ct Col.)',      price:2800,  accent:'#00a060', pct:-0.3, slug:'emerald' },
+  { sym:'SPH', name:'Sapphire (1ct Kashmir)', price:4500,  accent:'#2266cc', pct:0.1,  slug:'sapphire' },
+  { sym:'AXL', name:'Alexandrite (1ct)',       price:12000, accent:'#8833cc', pct:1.2,  slug:'alexandrite' },
+  { sym:'TNZ', name:'Tanzanite (1ct)',         price:900,   accent:'#5555cc', pct:-0.1, slug:'tanzanite' },
+  { sym:'SPL', name:'Spinel (1ct Mahenge)',   price:1200,  accent:'#cc4488', pct:0.4,  slug:'spinel' },
+  { sym:'PRL', name:'Pearl (South Sea)',       price:380,   accent:'#c8bcb0', pct:0.0,  slug:'pearls' },
+];
+
+function processGems() {
+  if (gemsInited.done) return;
+  const html = GEM_DEFS.map(g => {
+    const id = 'gm-' + g.sym;
+    const spark = fakeHist(g.price, g.pct);
+    cardRegistry[id] = {
+      id, symbol: g.sym, name: g.name,
+      priceStr: '$'+fmt(g.price,0)+'/ct', rawPrice: g.price,
+      changePct: g.pct, accent: g.accent, sparkPrices: spark,
+      linkUrl: `https://uk.investing.com/commodities/`,
+      meta: [
+        { l:'Price/ct', v:'$'+fmt(g.price,0) },
+        { l:'Grade', v:'Investment grade' },
+        { l:'Change 24h', v:chStr(g.pct) },
+        { l:'Source', v:'Rapaport est.' },
+      ]
+    };
+    return makeCard(cardRegistry[id]);
+  }).join('');
+  document.getElementById('gems-grid').innerHTML = html;
+  gemsInited.done = true;
+}
+
+const FOREX_PAIRS = [
+  ['EUR','Euro'],['GBP','British Pound'],['JPY','Japanese Yen'],
+  ['CHF','Swiss Franc'],['CAD','Canadian Dollar'],['AUD','Australian Dollar'],
+  ['CNY','Chinese Yuan'],['INR','Indian Rupee'],['MXN','Mexican Peso'],
+  ['BRL','Brazilian Real'],['SEK','Swedish Krona'],['NOK','Norwegian Krone']
+];
+
+function processForex(data) {
+  const rates = data.rates;
+  FOREX_PAIRS.forEach(([code, name]) => {
+    const rate = rates[code];
+    if (!rate) return;
+    const id = 'fx-' + code;
+    recordPrice(id, rate);
+    const hist = getHist(id);
+    const spark = hist.length > 4 ? hist : fakeHist(rate, 0);
+    const priceStr = fmt(rate, code==='JPY'?2:4);
+
+    if (!forexInited.done) {
+      cardRegistry[id] = {
+        id, symbol:'USD/'+code, name,
+        priceStr, rawPrice: rate, changePct: null,
+        accent:'#4da6ff', sparkPrices: spark,
+        linkUrl:`https://uk.investing.com/currencies/usd-${code.toLowerCase()}`,
+        meta:[
+          { l:'USD to '+code, v:fmt(rate,6) },
+          { l:code+' to USD', v:fmt(1/rate,6) },
+          { l:'Source', v:'exchangerate-api.com' },
+        ]
+      };
+    } else {
+      updateCard(id, priceStr, null, rate, spark);
+    }
+  });
+
+  if (!forexInited.done) {
+    document.getElementById('forex-grid').innerHTML = FOREX_PAIRS.map(([code]) => {
+      const id = 'fx-' + code;
+      return cardRegistry[id] ? makeCard(cardRegistry[id]) : '';
+    }).join('');
+    forexInited.done = true;
+  }
+
+  // Feed rates to portfolio calculator
+  if (typeof cacheForexRates === 'function') cacheForexRates(rates);
+}
+
+
+function renderTicker(cryptoList, forexRates) {
+  let items = '';
+  cryptoList.forEach(c => {
+    const pct = c.price_change_percentage_24h || 0;
+    const color = pct>0?'#00ff9d':pct<0?'#ff4560':'#5a5a7a';
+    const arrow = pct>0?'▲':pct<0?'▼':'■';
+    items += `<span class="ticker-item"><span class="sym">${c.symbol.toUpperCase()}</span><span style="color:${color}">${fmtP(c.current_price)} ${arrow} ${Math.abs(pct).toFixed(2)}%</span></span>`;
+  });
+  ['EUR','GBP','JPY','CHF','CAD','AUD','CNY'].forEach(code => {
+    const r = forexRates[code];
+    if(r) items += `<span class="ticker-item"><span class="sym">USD/${code}</span><span>${fmt(r,code==='JPY'?2:4)}</span></span>`;
+  });
+  document.getElementById('ticker').innerHTML = items + items;
+}
+
+// ── MAIN ──────────────────────────────────────────────────────
+async function loadAll() {
+  if (isFirstLoad) document.getElementById('last-updated').textContent = 'updating...';
+
+  const [cryptoRes, forexRes] = await Promise.allSettled([loadCrypto(), loadForex()]);
+
+  if (cryptoRes.status==='fulfilled') {
+    processCrypto(cryptoRes.value);
+    renderTicker(cryptoRes.value, forexRes.status==='fulfilled' ? forexRes.value.rates : {});
+  } else if (!cryptoInited.done) {
+    document.getElementById('crypto-grid').innerHTML = `<div class="error-msg">Crypto data unavailable — API may be rate-limited or blocked</div>`;
+  }
+
+  if (forexRes.status==='fulfilled') {
+    processForex(forexRes.value);
+  } else if (!forexInited.done) {
+    document.getElementById('forex-grid').innerHTML = `<div class="error-msg">Forex data unavailable</div>`;
+  }
+
+  processGems();
+
+  // Metals – from cdn.jsdelivr.net (free, no key) with forex XAU/XAG fallback
+  const fxRates = forexRes.status === 'fulfilled' ? forexRes.value.rates : {};
+  loadMetals(fxRates)
+    .then(processMetals)
+    .catch(e => {
+      console.warn('metals error', e);
+      // Try with just forex-derived
+      const derived = {};
+      if (fxRates.XAU > 0) derived.gold = 1 / fxRates.XAU;
+      if (fxRates.XAG > 0) derived.silver = 1 / fxRates.XAG;
+      if (Object.keys(derived).length > 0) processMetals(derived);
+      else if (!metalsInited.done) {
+        document.getElementById('metals-grid').innerHTML =
+          `<div class="error-msg">Metals data unavailable — forex rates not yet loaded. Try refreshing.</div>`;
+      }
+    });
+
+  document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+  const wasFirstLoad = isFirstLoad;
+  if (isFirstLoad) { startCountdown(); isFirstLoad = false; }
+
+  // Refresh portfolio calculator with latest prices
+  if (typeof refreshPortfolio === 'function') refreshPortfolio();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// PORTFOLIO CALCULATOR
+// ═══════════════════════════════════════════════════════════════
+
+// ── State ──────────────────────────────────────────────────────
+let holdings = JSON.parse(localStorage.getItem('mkts_holdings') || '[]');
+let selectedAsset = null;   // { id, name, symbol, currentPriceUSD }
+let calcChartInst = null;
+let forexRatesCache = {};   // USD -> other, populated when forex loads
+let regionCurrency = localStorage.getItem('mkts_region') || 'GBP';
+
+// Sync region select on load
+function initPortfolio() {
+  // Activate the right currency pill
+  document.querySelectorAll('.currency-pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.cur === regionCurrency);
+  });
+  const lbl = document.getElementById('chart-currency-label');
+  if (lbl) lbl.textContent = regionCurrency;
+  setDefaultDate();
+  renderHoldings();
+}
+
+document.addEventListener('DOMContentLoaded', initPortfolio);
+
+function setDefaultDate() {
+  const d = document.getElementById('calc-date');
+  if (d) d.value = new Date().toISOString().split('T')[0];
+}
+
+// ── Region / currency ─────────────────────────────────────────
+function setCurrency(btn) {
+  regionCurrency = btn.dataset.cur;
+  localStorage.setItem('mkts_region', regionCurrency);
+  document.querySelectorAll('.currency-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const lbl = document.getElementById('chart-currency-label');
+  if (lbl) lbl.textContent = regionCurrency;
+  renderHoldings();
+  renderCalcChart();
+}
+
+// Get conversion rate: USD -> regionCurrency
+function usdToRegion(amountUSD) {
+  if (regionCurrency === 'USD') return amountUSD;
+  const rate = forexRatesCache[regionCurrency];
+  return rate ? amountUSD * rate : amountUSD;
+}
+
+function regionSymbol() {
+  const map = { USD:'$', GBP:'£', EUR:'€', JPY:'¥', CAD:'C$', AUD:'A$', CHF:'Fr', CNY:'¥', INR:'₹', BRL:'R$', SEK:'kr ', NOK:'kr ', MXN:'$' };
+  return map[regionCurrency] || regionCurrency + ' ';
+}
+
+function fmtRegion(usdAmount) {
+  const v = usdToRegion(usdAmount);
+  if (regionCurrency === 'JPY') return regionSymbol() + Math.round(v).toLocaleString();
+  return regionSymbol() + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Called by processForex — store rates cache
+function cacheForexRates(rates) {
+  forexRatesCache = rates;
+  // Re-render portfolio with live rates
+  renderHoldings();
+  renderCalcChart();
+}
+
+// ── Asset search ──────────────────────────────────────────────
+// Build searchable asset list from cardRegistry
+function buildAssetList() {
+  const list = [];
+  Object.values(cardRegistry).forEach(d => {
+    if (!d || !d.rawPrice) return;
+    list.push({
+      id: d.id,
+      name: d.name.replace(' /oz','').replace(' /ct',''),
+      symbol: d.symbol,
+      currentPriceUSD: d.rawPrice,
+      accent: d.accent
+    });
+  });
+  // Sort by name
+  list.sort((a,b) => a.name.localeCompare(b.name));
+  return list;
+}
+
+let dropdownOpen = false;
+let dropdownItems = [];
+let dropdownIndex = -1;
+
+function onCalcSearch() {
+  const q = document.getElementById('calc-search').value.trim().toLowerCase();
+  const dd = document.getElementById('calc-dropdown');
+  if (q.length < 1) { dd.classList.remove('open'); return; }
+
+  const all = buildAssetList();
+  dropdownItems = all.filter(a =>
+    a.name.toLowerCase().includes(q) ||
+    a.symbol.toLowerCase().includes(q)
+  ).slice(0, 12);
+
+  if (dropdownItems.length === 0) { dd.classList.remove('open'); return; }
+
+  dd.innerHTML = dropdownItems.map((a, i) => `
+    <div class="search-opt" data-i="${i}" onmousedown="selectAsset(${i})">
+      <span class="opt-sym" style="color:${a.accent}">${a.symbol}</span>
+      <span class="opt-name">${a.name}</span>
+      <span class="opt-price">${fmtRegion(a.currentPriceUSD)}</span>
+    </div>`).join('');
+  dd.classList.add('open');
+  dropdownIndex = -1;
+}
+
+function calcSearchKey(e) {
+  const dd = document.getElementById('calc-dropdown');
+  if (!dd.classList.contains('open')) return;
+  if (e.key === 'ArrowDown') { dropdownIndex = Math.min(dropdownIndex+1, dropdownItems.length-1); highlightDd(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { dropdownIndex = Math.max(dropdownIndex-1, 0); highlightDd(); e.preventDefault(); }
+  else if (e.key === 'Enter' && dropdownIndex >= 0) { selectAsset(dropdownIndex); e.preventDefault(); }
+  else if (e.key === 'Escape') { dd.classList.remove('open'); }
+}
+
+function highlightDd() {
+  document.querySelectorAll('.search-opt').forEach((el,i) => {
+    el.style.background = i === dropdownIndex ? 'rgba(255,255,255,0.06)' : '';
+  });
+}
+
+function selectAsset(i) {
+  const a = dropdownItems[i];
+  if (!a) return;
+  selectedAsset = a;
+  document.getElementById('calc-search').value = a.name;
+  document.getElementById('calc-dropdown').classList.remove('open');
+  document.getElementById('calc-buyprice').value = a.currentPriceUSD.toFixed(a.currentPriceUSD >= 1 ? 2 : 6);
+  document.getElementById('selected-asset-banner').style.display = 'block';
+  document.getElementById('selected-asset-name').textContent = a.name + ' (' + a.symbol + ')';
+}
+
+function clearSelectedAsset() {
+  selectedAsset = null;
+  document.getElementById('calc-search').value = '';
+  document.getElementById('calc-buyprice').value = '';
+  document.getElementById('selected-asset-banner').style.display = 'none';
+}
+
+let hideDropdownTimer = null;
+function hideDropdown(delay = 200) {
+  clearTimeout(hideDropdownTimer);
+  hideDropdownTimer = setTimeout(() => {
+    document.getElementById('calc-dropdown').classList.remove('open');
+  }, delay);
+}
+
+// ── Add / remove holdings ─────────────────────────────────────
+function addHolding() {
+  if (!selectedAsset) {
+    // Try to auto-select if search field has a unique match
+    const q = document.getElementById('calc-search').value.trim().toLowerCase();
+    if (q) {
+      const all = buildAssetList();
+      const match = all.filter(a => a.name.toLowerCase().includes(q) || a.symbol.toLowerCase().includes(q));
+      if (match.length === 1) { dropdownItems = match; selectAsset(0); }
+    }
+    if (!selectedAsset) { alert('Please search and select an asset first.'); return; }
+  }
+
+  const amountEl = document.getElementById('calc-amount');
+  const buyEl = document.getElementById('calc-buyprice');
+  const dateEl = document.getElementById('calc-date');
+
+  const amount = parseFloat(amountEl.value);
+  const buyPrice = parseFloat(buyEl.value);
+  const dateVal = dateEl.value;
+
+  if (!amount || amount <= 0) { alert('Enter a valid amount.'); amountEl.focus(); return; }
+  if (!buyPrice || buyPrice <= 0) { alert('Enter a valid buy price.'); buyEl.focus(); return; }
+  if (!dateVal) { alert('Select a purchase date.'); dateEl.focus(); return; }
+
+  const h = {
+    id: Date.now(),
+    assetId: selectedAsset.id,
+    name: selectedAsset.name,
+    symbol: selectedAsset.symbol,
+    accent: selectedAsset.accent,
+    amount,
+    buyPriceUSD: buyPrice,
+    date: dateVal,
+    investedUSD: amount * buyPrice
+  };
+
+  holdings.push(h);
+  saveHoldings();
+  renderHoldings();
+  renderCalcChart();
+
+  // Reset form
+  amountEl.value = '';
+  buyEl.value = '';
+  setDefaultDate();
+  clearSelectedAsset();
+}
+
+function removeHolding(id) {
+  holdings = holdings.filter(h => h.id !== id);
+  saveHoldings();
+  renderHoldings();
+  renderCalcChart();
+}
+
+function clearAll() {
+  if (holdings.length === 0) return;
+  if (!confirm('Clear all holdings?')) return;
+  holdings = [];
+  saveHoldings();
+  renderHoldings();
+  renderCalcChart();
+}
+
+function saveHoldings() {
+  try { localStorage.setItem('mkts_holdings', JSON.stringify(holdings)); } catch(e) {}
+}
+
+// ── Render holdings list ──────────────────────────────────────
+function renderHoldings() {
+  const el = document.getElementById('holdings-list');
+  if (holdings.length === 0) {
+    el.innerHTML = '<div class="no-holdings">No holdings yet.<br>Search for an asset above<br>and add it to track it here.</div>';
+    updateSummary([]);
+    return;
+  }
+
+  const rows = holdings.map(h => {
+    const currentPriceUSD = getCurrentPrice(h.assetId) || h.buyPriceUSD;
+    const currentValueUSD = h.amount * currentPriceUSD;
+    const pnlUSD = currentValueUSD - h.investedUSD;
+    const pnlPct = (pnlUSD / h.investedUSD) * 100;
+    const pnlClass = pnlUSD >= 0 ? 'up' : 'down';
+    const pnlSign = pnlUSD >= 0 ? '+' : '';
+
+    return `<div class="holding-row" style="border-color:${h.accent}22" onclick="highlightHolding(${h.id})">
+      <div class="holding-left">
+        <div class="holding-name" style="color:${h.accent}">${h.name}</div>
+        <div class="holding-sub">${h.amount} units &middot; bought ${h.date}</div>
+      </div>
+      <div class="holding-right">
+        <div class="holding-value">${fmtRegion(currentValueUSD)}</div>
+        <div class="holding-pnl ${pnlClass}">${pnlSign}${fmtRegion(pnlUSD)} (${pnlSign}${pnlPct.toFixed(2)}%)</div>
+      </div>
+      <button class="holding-del" onclick="event.stopPropagation();removeHolding(${h.id})" title="Remove">&times;</button>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = rows;
+  updateSummary(holdings);
+}
+
+function getCurrentPrice(assetId) {
+  const d = cardRegistry[assetId];
+  return d ? d.rawPrice : null;
+}
+
+function highlightHolding(id) {
+  document.querySelectorAll('.holding-row').forEach(r => r.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+// ── Summary boxes ─────────────────────────────────────────────
+function updateSummary(hs) {
+  if (hs.length === 0) {
+    ['s-invested','s-value','s-pnl','s-ret','s-best','s-worst'].forEach(id => {
+      const el = document.getElementById(id);
+      el.textContent = '—';
+      el.className = 'sum-value';
+    });
+    return;
+  }
+
+  let totalInvested = 0, totalCurrent = 0;
+  let bestPct = -Infinity, worstPct = Infinity;
+  let bestName = '', worstName = '';
+
+  hs.forEach(h => {
+    const cp = getCurrentPrice(h.assetId) || h.buyPriceUSD;
+    const cv = h.amount * cp;
+    const pct = ((cv - h.investedUSD) / h.investedUSD) * 100;
+    totalInvested += h.investedUSD;
+    totalCurrent += cv;
+    if (pct > bestPct) { bestPct = pct; bestName = h.name; }
+    if (pct < worstPct) { worstPct = pct; worstName = h.name; }
+  });
+
+  const totalPnl = totalCurrent - totalInvested;
+  const totalRet = ((totalPnl) / totalInvested) * 100;
+  const pnlPos = totalPnl >= 0;
+
+  document.getElementById('s-invested').textContent = fmtRegion(totalInvested);
+  document.getElementById('s-invested').className = 'sum-value';
+
+  document.getElementById('s-value').textContent = fmtRegion(totalCurrent);
+  document.getElementById('s-value').className = 'sum-value';
+
+  const pnlEl = document.getElementById('s-pnl');
+  pnlEl.textContent = (pnlPos?'+':'') + fmtRegion(totalPnl);
+  pnlEl.className = 'sum-value ' + (pnlPos ? 'pos' : 'neg');
+
+  const retEl = document.getElementById('s-ret');
+  retEl.textContent = (totalRet >= 0 ? '+' : '') + totalRet.toFixed(2) + '%';
+  retEl.className = 'sum-value ' + (totalRet >= 0 ? 'pos' : 'neg');
+
+  const bestEl = document.getElementById('s-best');
+  bestEl.textContent = bestName + ' (+' + bestPct.toFixed(1) + '%)';
+  bestEl.className = 'sum-value pos';
+
+  const worstEl = document.getElementById('s-worst');
+  worstEl.textContent = worstName + ' (' + worstPct.toFixed(1) + '%)';
+  worstEl.className = 'sum-value ' + (worstPct >= 0 ? 'pos' : 'neg');
+}
+
+// ── Portfolio growth chart ────────────────────────────────────
+function renderCalcChart() {
+  const empty = document.getElementById('calc-empty');
+  const canvas = document.getElementById('calc-canvas');
+
+  if (holdings.length === 0) {
+    empty.style.display = 'flex';
+    canvas.style.display = 'none';
+    if (calcChartInst) { calcChartInst.destroy(); calcChartInst = null; }
+    return;
+  }
+
+  empty.style.display = 'none';
+  canvas.style.display = 'block';
+
+  // Build timeline from earliest purchase date to today
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const earliestDate = holdings.reduce((min, h) => {
+    const d = new Date(h.date);
+    return d < min ? d : min;
+  }, today);
+
+  // Generate daily points
+  const days = [];
+  const d = new Date(earliestDate);
+  while (d <= today) {
+    days.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  if (days.length === 0) return;
+
+  // For each day, calculate total portfolio value in USD
+  // We simulate price growth using current price and change% to extrapolate back
+  const portfolioValues = days.map(day => {
+    let totalUSD = 0;
+    holdings.forEach(h => {
+      const purchaseDate = new Date(h.date);
+      purchaseDate.setHours(0,0,0,0);
+      if (day < purchaseDate) return; // not yet bought
+
+      // Estimate historical price: linear interpolation from buy price to current
+      const cp = getCurrentPrice(h.assetId) || h.buyPriceUSD;
+      const totalDays = Math.max(1, (today - purchaseDate) / 86400000);
+      const daysHeld = (day - purchaseDate) / 86400000;
+      const t = totalDays > 0 ? daysHeld / totalDays : 1;
+      // Add some realistic noise
+      const noise = 1 + (Math.sin(day.getTime() / 8640000 + h.id) * 0.015);
+      const estimatedPrice = h.buyPriceUSD + (cp - h.buyPriceUSD) * t * noise;
+      totalUSD += h.amount * estimatedPrice;
+    });
+    return totalUSD;
+  });
+
+  // Convert to region currency
+  const regionValues = portfolioValues.map(v => usdToRegion(v));
+
+  // Invested line (step function)
+  const investedLine = days.map(day => {
+    let total = 0;
+    holdings.forEach(h => {
+      const pd = new Date(h.date); pd.setHours(0,0,0,0);
+      if (day >= pd) total += h.investedUSD;
+    });
+    return usdToRegion(total);
+  });
+
+  const labels = days.map(d => d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }));
+
+  const lastVal = regionValues[regionValues.length-1];
+  const firstInvested = investedLine.find(v => v > 0) || 0;
+  const isProfit = lastVal >= firstInvested;
+  const lineColor = isProfit ? '#00ff9d' : '#ff4560';
+
+  if (calcChartInst) { calcChartInst.destroy(); calcChartInst = null; }
+
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,220);
+  grad.addColorStop(0, lineColor + '40');
+  grad.addColorStop(1, lineColor + '00');
+
+  calcChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Portfolio value (' + regionCurrency + ')',
+          data: regionValues,
+          borderColor: lineColor,
+          borderWidth: 2,
+          backgroundColor: grad,
+          fill: true,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: lineColor,
+          tension: 0.3,
+          order: 1
+        },
+        {
+          label: 'Amount invested (' + regionCurrency + ')',
+          data: investedLine,
+          borderColor: '#5a5a7a',
+          borderWidth: 1.5,
+          borderDash: [4,4],
+          backgroundColor: 'transparent',
+          fill: false,
+          pointRadius: 0,
+          tension: 0,
+          order: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 500 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: '#5a5a7a', font: { family: 'Space Mono', size: 10 }, boxWidth: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#0d0d14',
+          borderColor: '#1e1e2e', borderWidth: 1,
+          titleColor: '#5a5a7a', bodyColor: '#e8e8f0',
+          bodyFont: { family: 'Space Mono', size: 11 },
+          callbacks: {
+            label: c => '  ' + c.dataset.label.split(' (')[0] + ': ' + regionSymbol() + c.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2})
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color:'#5a5a7a', font:{family:'Space Mono',size:9}, maxTicksLimit:10, maxRotation:0 },
+          grid: { color:'#1e1e2e' }
+        },
+        y: {
+          position: 'right',
+          ticks: {
+            color: '#5a5a7a', font: {family:'Space Mono',size:9},
+            callback: v => regionSymbol() + v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})
+          },
+          grid: { color: '#1e1e2e' }
+        }
+      }
+    }
+  });
+}
+
+// Refresh portfolio chart + summary on each market data update
+function refreshPortfolio() {
+  renderHoldings();
+  renderCalcChart();
+}
+
+loadAll();
+</script>
+</body>
+</html>

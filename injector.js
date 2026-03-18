@@ -1,5 +1,11 @@
-// Don't show home button on the main homepage
-if (location.hostname !== '21cookej.github.io' || location.pathname !== '/') {
+// URLs where the home button should NOT appear
+const HIDE_ON = [
+  '/',                    // homepage
+  '/name-match',     // add more paths here
+  '/about',
+];
+
+if (!HIDE_ON.includes(location.pathname)) {
   const btn = document.createElement('a');
   btn.href = 'https://21cookej.github.io';
   btn.innerText = '⬅ Home';

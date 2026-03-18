@@ -1,7 +1,7 @@
 // URLs where the home button should NOT appear
 const HIDE_ON = [
   '/',                    // homepage
-  '/name-match',     // add more paths here
+  '/name-match/',     // add more paths here
   '/about',
 ];
 

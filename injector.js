@@ -2,6 +2,8 @@
 const HIDE_ON = [
   '/',                    // homepage
   '/name-match/',     // add more paths here
+  '/eaglerforge/',
+  '/1.12-Eaglerforge/',
   '/about',
 ];
 

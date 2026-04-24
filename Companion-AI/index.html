@@ -295,8 +295,12 @@
 
         <div class="cg">
             <label>OpenRouter API Key</label>
-            <input type="password" id="apiKeyInput" placeholder="sk-or-…">
-            <div class="hint">Auto-fetched on load. Stored locally, never shared.</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="password" id="apiKeyInput" placeholder="sk-or-…" style="flex:1;">
+                <button class="btn btn-primary" id="fetchKeyBtn" onclick="manualFetchApiKey()" style="white-space:nowrap;padding:9px 14px;font-size:12px;">Fetch Key</button>
+            </div>
+            <div id="keyStatus" style="font-size:11.5px;margin-top:6px;font-style:italic;min-height:16px;"></div>
+            <div class="hint">Paste manually or fetch automatically from Pastebin.</div>
         </div>
 
         <div class="modal-actions">
@@ -612,12 +616,32 @@
     // API KEY AUTO-FETCH
     async function autoFetchApiKey(){
         try{
-            const res=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://pastebin.com/raw/6VG3Mu1f'));
+            const res=await fetch('https://gist.githubusercontent.com/21cookej/274ddf69c80da165643471834d7393d2/raw/d6c80db3d297252d7f6a6897093bcd86fa6a6894/gistfile1.txt');
             if(res.ok){
                 const key=(await res.text()).trim();
                 if(key.length>=10){ localStorage.setItem('ca_api_key',key); document.getElementById('apiKeyInput').value=key; }
             }
         } catch(e){ console.log('Auto-fetch failed, using stored key'); }
+    }
+
+    async function manualFetchApiKey(){
+        const btn=document.getElementById('fetchKeyBtn');
+        const status=document.getElementById('keyStatus');
+        btn.disabled=true; btn.textContent='Fetching…';
+        status.style.color='var(--textm)'; status.textContent='⏳ Fetching key from Pastebin…';
+        try{
+            const res=await fetch('https://gist.githubusercontent.com/21cookej/274ddf69c80da165643471834d7393d2/raw/d6c80db3d297252d7f6a6897093bcd86fa6a6894/gistfile1.txt');
+            if(!res.ok) throw new Error('Network response was not ok');
+            const key=(await res.text()).trim();
+            if(key.length<10) throw new Error('Key looks too short — check your Pastebin URL');
+            localStorage.setItem('ca_api_key',key);
+            document.getElementById('apiKeyInput').value=key;
+            status.style.color='#16a34a'; status.textContent='✅ Key fetched and saved successfully!';
+        } catch(e){
+            status.style.color='#dc2626'; status.textContent='❌ Failed: '+e.message;
+        } finally{
+            btn.disabled=false; btn.textContent='Fetch Key';
+        }
     }
 
     // AI

@@ -6,54 +6,23 @@
     <title>P.H.A.R.T. AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* ── DEFAULT THEME (Indigo) ── */
         :root {
             --a1: #4f46e5; --a1d: #3730a3; --a1l: #e0e7ff;
-            --a2: #1e1b4b;
-            --bg: #f0f4ff; --bgw: #f5f8ff;
+            --a2: #1e1b4b; --bg: #f0f4ff; --bgw: #f5f8ff;
             --text: #0f172a; --textm: #4b5563;
             --surf: #ffffff; --surf2: #eef2ff;
             --bord: #c7d2fe; --shad: rgba(79,70,229,0.12);
             --sb1: #eef2ff; --sb2: #e0e7ff;
         }
-        body.theme-cyan {
-            --a1:#06b6d4; --a1d:#0e7490; --a1l:#cffafe;
-            --a2:#164e63; --bg:#ecfeff; --bgw:#f0fdff;
-            --text:#083344; --textm:#155e75;
-            --surf:#ffffff; --surf2:#cffafe;
-            --bord:#a5f3fc; --shad:rgba(6,182,212,0.12);
-            --sb1:#ecfeff; --sb2:#cffafe;
-        }
-        body.theme-orange {
-            --a1:#f97316; --a1d:#c2410c; --a1l:#ffedd5;
-            --a2:#7c2d12; --bg:#fff7ed; --bgw:#fffbf5;
-            --text:#431407; --textm:#9a3412;
-            --surf:#ffffff; --surf2:#ffedd5;
-            --bord:#fed7aa; --shad:rgba(249,115,22,0.12);
-            --sb1:#fff7ed; --sb2:#ffedd5;
-        }
-        body.theme-green {
-            --a1:#10b981; --a1d:#065f46; --a1l:#d1fae5;
-            --a2:#064e3b; --bg:#f0fdf4; --bgw:#f5fff8;
-            --text:#052e16; --textm:#166534;
-            --surf:#ffffff; --surf2:#dcfce7;
-            --bord:#a7f3d0; --shad:rgba(16,185,129,0.12);
-            --sb1:#f0fdf4; --sb2:#dcfce7;
-        }
-        body.theme-dark {
-            --a1:#818cf8; --a1d:#6366f1; --a1l:#1e1b4b;
-            --a2:#c7d2fe; --bg:#0a0a16; --bgw:#111128;
-            --text:#e2e8f0; --textm:#94a3b8;
-            --surf:#1a1a30; --surf2:#1e1e3a;
-            --bord:#2d2d5a; --shad:rgba(0,0,0,0.4);
-            --sb1:#0f0f20; --sb2:#141430;
-        }
+        body.theme-cyan { --a1:#06b6d4;--a1d:#0e7490;--a1l:#cffafe;--a2:#164e63;--bg:#ecfeff;--bgw:#f0fdff;--text:#083344;--textm:#155e75;--surf:#ffffff;--surf2:#cffafe;--bord:#a5f3fc;--shad:rgba(6,182,212,0.12);--sb1:#ecfeff;--sb2:#cffafe; }
+        body.theme-orange { --a1:#f97316;--a1d:#c2410c;--a1l:#ffedd5;--a2:#7c2d12;--bg:#fff7ed;--bgw:#fffbf5;--text:#431407;--textm:#9a3412;--surf:#ffffff;--surf2:#ffedd5;--bord:#fed7aa;--shad:rgba(249,115,22,0.12);--sb1:#fff7ed;--sb2:#ffedd5; }
+        body.theme-green { --a1:#10b981;--a1d:#065f46;--a1l:#d1fae5;--a2:#064e3b;--bg:#f0fdf4;--bgw:#f5fff8;--text:#052e16;--textm:#166534;--surf:#ffffff;--surf2:#dcfce7;--bord:#a7f3d0;--shad:rgba(16,185,129,0.12);--sb1:#f0fdf4;--sb2:#dcfce7; }
+        body.theme-dark { --a1:#818cf8;--a1d:#6366f1;--a1l:#1e1b4b;--a2:#c7d2fe;--bg:#0a0a16;--bgw:#111128;--text:#e2e8f0;--textm:#94a3b8;--surf:#1a1a30;--surf2:#1e1e3a;--bord:#2d2d5a;--shad:rgba(0,0,0,0.4);--sb1:#0f0f20;--sb2:#141430; }
 
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'DM Sans',sans-serif;background:var(--bg);height:100vh;display:flex;overflow:hidden;color:var(--text);transition:background .3s,color .3s;}
 
-        /* SIDEBAR */
-        .sidebar{width:270px;background:linear-gradient(160deg,var(--sb1),var(--sb2));display:flex;flex-direction:column;border-right:1px solid var(--bord);box-shadow:2px 0 20px var(--shad);z-index:10;transition:background .3s;}
+        .sidebar{width:270px;background:linear-gradient(160deg,var(--sb1),var(--sb2));display:flex;flex-direction:column;border-right:1px solid var(--bord);box-shadow:2px 0 20px var(--shad);z-index:10;}
         .sidebar-brand{padding:20px 20px 16px;border-bottom:1px solid var(--bord);}
         .brand-name{font-family:'Playfair Display',serif;font-size:16px;color:var(--a2);font-weight:600;letter-spacing:.3px;}
         .brand-sub{font-size:10px;color:var(--textm);margin-top:3px;letter-spacing:.5px;text-transform:uppercase;line-height:1.5;}
@@ -73,7 +42,6 @@
         .chat-action-btn:hover{background:var(--a1l);color:var(--a1d);}
         .icon{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
 
-        /* HEADER */
         .main-area{flex:1;display:flex;flex-direction:column;min-width:0;}
         .header{background:var(--surf);padding:0 24px;height:64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bord);box-shadow:0 2px 16px var(--shad);}
         .header-left{display:flex;align-items:center;gap:14px;}
@@ -88,7 +56,6 @@
         .settings-btn{background:var(--surf2);border:1px solid var(--bord);color:var(--a2);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;display:flex;align-items:center;gap:6px;transition:all .18s;}
         .settings-btn:hover{background:var(--a1l);border-color:var(--a1);}
 
-        /* CHAT */
         .chat-area{flex:1;padding:24px 28px;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:14px;}
         .chat-area::-webkit-scrollbar{width:5px;}
         .chat-area::-webkit-scrollbar-thumb{background:var(--bord);border-radius:4px;}
@@ -108,7 +75,6 @@
         .ai-msg-wrapper{display:flex;gap:10px;align-items:flex-start;}
         .ai-msg-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-family:'DM Sans',sans-serif;font-weight:600;flex-shrink:0;margin-top:4px;}
 
-        /* WELCOME */
         .welcome-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;text-align:center;}
         .welcome-logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px var(--shad);animation:floatIn .6s ease;}
         .welcome-logo svg{width:36px;height:36px;stroke:white;stroke-width:1.5;fill:none;}
@@ -124,7 +90,6 @@
         .wc-title{font-weight:600;font-size:13px;color:var(--a2);margin-bottom:4px;}
         .wc-desc{font-size:11.5px;color:var(--textm);line-height:1.5;}
 
-        /* INPUT */
         .input-area{padding:16px 24px 20px;background:var(--surf);border-top:1px solid var(--bord);}
         .input-wrapper{display:flex;gap:10px;align-items:flex-end;background:var(--bg);border-radius:18px;padding:8px 8px 8px 16px;border:1.5px solid var(--bord);transition:border-color .2s;}
         .input-wrapper:focus-within{border-color:var(--a1);}
@@ -135,7 +100,6 @@
         .send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
         .stop-btn{padding:9px 20px;background:#ef4444;color:white;border:none;border-radius:14px;cursor:pointer;font-weight:500;font-size:13px;font-family:'DM Sans',sans-serif;}
 
-        /* LOADING */
         .loading-indicator{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--surf);border:1px solid var(--bord);border-radius:18px;border-bottom-left-radius:5px;color:var(--textm);font-size:13px;box-shadow:0 3px 14px var(--shad);}
         .loading-dots{display:flex;gap:5px;}
         .loading-dot{width:7px;height:7px;background:var(--a1);border-radius:50%;animation:bounce 1.4s infinite ease-in-out both;}
@@ -143,7 +107,6 @@
         .loading-dot:nth-child(2){animation-delay:-.16s;}
         @keyframes bounce{0%,80%,100%{transform:scale(.4);opacity:.5;}40%{transform:scale(1);opacity:1;}}
 
-        /* MODAL */
         .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center;z-index:100;backdrop-filter:blur(3px);}
         .modal.active{display:flex;}
         .modal-content{background:var(--surf);padding:28px 30px;border-radius:20px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
@@ -152,8 +115,8 @@
         .modal-header{font-family:'Playfair Display',serif;font-size:22px;color:var(--a2);margin-bottom:22px;}
         .cg{margin-bottom:18px;}
         .cg label{display:block;font-size:12px;font-weight:600;color:var(--a2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;}
-        .cg input[type=text],.cg input[type=password],.cg input[type=range],.cg textarea.field{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bord);font-size:13.5px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;background:var(--bgw);}
-        .cg input[type=range]{padding:6px 0;border:none;background:transparent;accent-color:var(--a1);cursor:pointer;}
+        .cg input[type=text],.cg input[type=password],.cg textarea.field{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bord);font-size:13.5px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;background:var(--bgw);}
+        .cg input[type=range]{width:100%;padding:6px 0;border:none;background:transparent;accent-color:var(--a1);cursor:pointer;}
         .cg input:focus,.cg textarea.field:focus{border-color:var(--a1);}
         .cg textarea.field{resize:vertical;min-height:70px;}
         .slider-row{display:flex;align-items:center;gap:12px;}
@@ -162,19 +125,25 @@
         .hint{font-size:11.5px;color:var(--textm);margin-top:5px;font-style:italic;}
         .divider{border:none;border-top:1px solid var(--bord);margin:16px 0 18px;}
 
-        /* THEME SWATCHES */
+        /* fetch key row */
+        .key-row{display:flex;gap:8px;align-items:stretch;}
+        .key-row input{flex:1;}
+        .fetch-btn{background:linear-gradient(135deg,var(--a1),var(--a2));color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:opacity .2s;}
+        .fetch-btn:hover{opacity:.88;}
+        .fetch-btn:disabled{opacity:.45;cursor:not-allowed;}
+        .key-status{font-size:11.5px;margin-top:6px;min-height:16px;font-style:italic;}
+
         .theme-swatches{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
         .swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .18s,box-shadow .18s;}
         .swatch:hover{transform:scale(1.15);}
         .swatch.active{box-shadow:0 0 0 3px var(--surf),0 0 0 5px var(--a1);}
-        .swatch.indigo {background:linear-gradient(135deg,#4f46e5,#1e1b4b);}
-        .swatch.cyan   {background:linear-gradient(135deg,#06b6d4,#164e63);}
-        .swatch.orange {background:linear-gradient(135deg,#f97316,#7c2d12);}
-        .swatch.green  {background:linear-gradient(135deg,#10b981,#064e3b);}
-        .swatch.dark   {background:linear-gradient(135deg,#818cf8,#0a0a16);}
+        .swatch.indigo{background:linear-gradient(135deg,#4f46e5,#1e1b4b);}
+        .swatch.cyan  {background:linear-gradient(135deg,#06b6d4,#164e63);}
+        .swatch.orange{background:linear-gradient(135deg,#f97316,#7c2d12);}
+        .swatch.green {background:linear-gradient(135deg,#10b981,#064e3b);}
+        .swatch.dark  {background:linear-gradient(135deg,#818cf8,#0a0a16);}
         .theme-label{font-size:11px;color:var(--textm);margin-top:8px;}
 
-        /* KNOWLEDGE DISPLAY */
         .knowledge-display{background:var(--surf2);border:1px solid var(--bord);border-radius:10px;padding:12px 14px;margin-top:10px;max-height:140px;overflow-y:auto;}
         .knowledge-display::-webkit-scrollbar{width:4px;}
         .knowledge-display::-webkit-scrollbar-thumb{background:var(--bord);border-radius:4px;}
@@ -182,7 +151,6 @@
         .knowledge-item{font-size:12px;color:var(--textm);padding:3px 0;border-bottom:1px solid var(--bord);}
         .knowledge-item:last-child{border-bottom:none;}
 
-        /* MODAL ACTIONS */
         .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--bord);}
         .btn{padding:9px 20px;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;transition:opacity .18s;}
         .btn:hover{opacity:.88;}
@@ -191,7 +159,6 @@
         .btn-danger{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;}
         .btn-danger:hover{background:#fecaca;}
 
-        /* CODE */
         .code-block{background:#1e1e1e;border-radius:10px;margin:10px 0;overflow:hidden;border:1px solid #333;}
         .code-header{background:#2d2d2d;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;}
         .code-lang{color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;}
@@ -217,8 +184,8 @@
 <div class="main-area">
     <div class="header">
         <div class="header-left">
-            <div class="ai-avatar" id="aiAvatar">
-                <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:white;stroke-width:1.8;fill:none;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 3.5c1.5.5 2.5 2 2.5 3.5s-1 3-2.5 3.5"/></svg>
+            <div class="ai-avatar">
+                <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:white;stroke-width:1.8;fill:none;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             </div>
             <div>
                 <div class="ai-info-name">P.H.A.R.T. AI</div>
@@ -247,23 +214,19 @@
             <div class="welcome-cards">
                 <div class="welcome-card" onclick="startChat('code')">
                     <div class="wc-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
-                    <div class="wc-title">Code Help</div>
-                    <div class="wc-desc">Debugging, snippets, architecture.</div>
+                    <div class="wc-title">Code Help</div><div class="wc-desc">Debugging, snippets, architecture.</div>
                 </div>
                 <div class="welcome-card" onclick="startChat('hardware')">
                     <div class="wc-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></div>
-                    <div class="wc-title">Hardware</div>
-                    <div class="wc-desc">Components, circuits, builds.</div>
+                    <div class="wc-title">Hardware</div><div class="wc-desc">Components, circuits, builds.</div>
                 </div>
                 <div class="welcome-card" onclick="startChat('robotics')">
                     <div class="wc-icon"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="8" rx="1"/><path d="M12 10v2"/><rect x="4" y="12" width="16" height="8" rx="2"/><circle cx="9" cy="16" r="1.5"/><circle cx="15" cy="16" r="1.5"/><line x1="4" y1="16" x2="2" y2="16"/><line x1="20" y1="16" x2="22" y2="16"/></svg></div>
-                    <div class="wc-title">Robotics</div>
-                    <div class="wc-desc">Automation, AI, control systems.</div>
+                    <div class="wc-title">Robotics</div><div class="wc-desc">Automation, AI, control systems.</div>
                 </div>
                 <div class="welcome-card" onclick="startChat('general')">
                     <div class="wc-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-                    <div class="wc-title">General AI</div>
-                    <div class="wc-desc">Anything tech-related.</div>
+                    <div class="wc-title">General AI</div><div class="wc-desc">Anything tech-related.</div>
                 </div>
             </div>
         </div>
@@ -298,8 +261,12 @@
 
         <div class="cg">
             <label>OpenRouter API Key</label>
-            <input type="password" id="apiKeyInput" placeholder="sk-or-…">
-            <div class="hint">Auto-fetched on load. Stored locally, never shared.</div>
+            <div class="key-row">
+                <input type="password" id="apiKeyInput" placeholder="sk-or-… (or click Fetch Key)">
+                <button class="fetch-btn" id="fetchKeyBtn" onclick="manualFetchApiKey()">Fetch Key</button>
+            </div>
+            <div class="key-status" id="keyStatus"></div>
+            <div class="hint">Fetched automatically from Pastebin on load. Stored locally, never shared.</div>
         </div>
 
         <hr class="divider">
@@ -351,25 +318,23 @@
 </div>
 
 <script>
-    let isAIResponding = false, stopTyping = false, currentChatId = null;
-    let selectedTheme = 'indigo';
-    let devMode = false, devModeKnowledge = {};
-
-    const THEME_LABELS = {indigo:'Indigo',cyan:'Cyan',orange:'Orange',green:'Green',dark:'Dark'};
-    const ADMIN_CODE = 'admin123', DEV_MODE_CODE = 'devmode', EXIT_DEV_CODE = 'exitdevmode';
+    let isAIResponding=false, stopTyping=false, currentChatId=null;
+    let selectedTheme='indigo', devMode=false, devModeKnowledge={};
+    const THEME_LABELS={indigo:'Indigo',cyan:'Cyan',orange:'Orange',green:'Green',dark:'Dark'};
+    const ADMIN_CODE='admin123', DEV_MODE_CODE='devmode', EXIT_DEV_CODE='exitdevmode';
+    const PASTEBIN_URL='https://gist.githubusercontent.com/21cookej/274ddf69c80da165643471834d7393d2/raw/d6c80db3d297252d7f6a6897093bcd86fa6a6894/gistfile1.txt';
 
     // INIT
     loadChatsFromStorage();
     loadSettings();
     loadDevModeState();
     autoFetchApiKey();
-    const _chats = getChats();
-    if (_chats.length > 0) loadChat(_chats[0].id);
-    else { /* show welcome */ }
+    const _c=getChats();
+    if(_c.length>0) loadChat(_c[0].id);
 
     // STORAGE
     function getChats(){ return JSON.parse(localStorage.getItem('phart_chats')||'[]'); }
-    function saveChats(c){ localStorage.setItem('phart_chats', JSON.stringify(c)); }
+    function saveChats(c){ localStorage.setItem('phart_chats',JSON.stringify(c)); }
     function getCurrentChat(){ return getChats().find(c=>c.id===currentChatId); }
     function updateCurrentChat(u){
         const chats=getChats(), idx=chats.findIndex(c=>c.id===currentChatId);
@@ -384,9 +349,9 @@
     // THEME
     function applyTheme(theme){
         selectedTheme=theme;
-        document.body.className = theme==='indigo' ? '' : 'theme-'+theme;
-        document.getElementById('themeLabel').textContent = THEME_LABELS[theme]||theme;
-        document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active', s.classList.contains(theme)));
+        document.body.className=theme==='indigo'?'':'theme-'+theme;
+        document.getElementById('themeLabel').textContent=THEME_LABELS[theme]||theme;
+        document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.classList.contains(theme)));
     }
 
     // SETTINGS
@@ -395,44 +360,76 @@
         document.getElementById('apiKeyInput').value=s.apiKey||'';
         ['creativity','friendliness','technical','conciseness','selfawareness'].forEach(k=>{
             const el=document.getElementById(k);
-            if(el){ el.value=s[k]||5; document.getElementById('val-'+k).textContent=el.value; }
+            if(el){ el.value=s[k]; document.getElementById('val-'+k).textContent=el.value; }
         });
-        selectedTheme=s.theme||'indigo';
-        applyTheme(selectedTheme);
+        selectedTheme=s.theme||'indigo'; applyTheme(selectedTheme);
         const k=localStorage.getItem('phart_api_key');
         if(k) document.getElementById('apiKeyInput').value=k;
     }
 
     function saveSettings(){
         const s={
-            creativity: parseFloat(document.getElementById('creativity').value),
-            friendliness: parseInt(document.getElementById('friendliness').value),
-            technical: parseInt(document.getElementById('technical').value),
-            conciseness: parseInt(document.getElementById('conciseness').value),
-            selfawareness: parseInt(document.getElementById('selfawareness').value),
-            apiKey: document.getElementById('apiKeyInput').value.trim(),
-            theme: selectedTheme
+            creativity:parseFloat(document.getElementById('creativity').value),
+            friendliness:parseInt(document.getElementById('friendliness').value),
+            technical:parseInt(document.getElementById('technical').value),
+            conciseness:parseInt(document.getElementById('conciseness').value),
+            selfawareness:parseInt(document.getElementById('selfawareness').value),
+            apiKey:document.getElementById('apiKeyInput').value.trim(),
+            theme:selectedTheme
         };
-        localStorage.setItem('phart_settings', JSON.stringify(s));
-        if(s.apiKey) localStorage.setItem('phart_api_key', s.apiKey);
-        closeSettings();
-        addMessage('✨ Settings saved!','system');
+        localStorage.setItem('phart_settings',JSON.stringify(s));
+        if(s.apiKey) localStorage.setItem('phart_api_key',s.apiKey);
+        closeSettings(); addMessage('✨ Settings saved!','system');
     }
 
     function openSettings(){ loadSettings(); updateKnowledgeDisplay(); document.getElementById('settingsModal').classList.add('active'); }
     function closeSettings(){ document.getElementById('settingsModal').classList.remove('active'); }
+
+    // API KEY
+    async function autoFetchApiKey(){
+        try{
+            const res=await fetch(PASTEBIN_URL);
+            if(res.ok){
+                const key=(await res.text()).trim();
+                if(key.length>=10){
+                    localStorage.setItem('phart_api_key',key);
+                    const inp=document.getElementById('apiKeyInput');
+                    if(inp) inp.value=key;
+                }
+            }
+        } catch(e){ console.log('Auto-fetch failed, using stored key'); }
+    }
+
+    async function manualFetchApiKey(){
+        const btn=document.getElementById('fetchKeyBtn');
+        const status=document.getElementById('keyStatus');
+        btn.disabled=true; btn.textContent='Fetching…';
+        status.style.color='var(--textm)'; status.textContent='⏳ Contacting Pastebin…';
+        try{
+            const res=await fetch(PASTEBIN_URL);
+            if(!res.ok) throw new Error('Network error (status '+res.status+')');
+            const key=(await res.text()).trim();
+            if(key.length<10) throw new Error('Key looks invalid — check your Pastebin content');
+            localStorage.setItem('phart_api_key',key);
+            document.getElementById('apiKeyInput').value=key;
+            status.style.color='#16a34a'; status.textContent='✅ Key fetched and saved!';
+        } catch(e){
+            status.style.color='#dc2626'; status.textContent='❌ '+e.message;
+        } finally{
+            btn.disabled=false; btn.textContent='Fetch Key';
+        }
+    }
 
     // DEV MODE
     function loadDevModeState(){
         const saved=localStorage.getItem('phart_devmode');
         if(saved){ const d=JSON.parse(saved); devMode=d.active; devModeKnowledge=d.knowledge||{}; updateDevBadge(); }
     }
-    function saveDevModeState(){ localStorage.setItem('phart_devmode', JSON.stringify({active:devMode,knowledge:devModeKnowledge})); updateKnowledgeDisplay(); }
+    function saveDevModeState(){ localStorage.setItem('phart_devmode',JSON.stringify({active:devMode,knowledge:devModeKnowledge})); updateKnowledgeDisplay(); }
     function updateDevBadge(){
-        const badge=document.getElementById('devBadge');
-        const count=Object.keys(devModeKnowledge).length;
+        const badge=document.getElementById('devBadge'), count=Object.keys(devModeKnowledge).length;
         if(devMode){ badge.classList.add('visible'); badge.textContent=`DEV [${count}]`; }
-        else { badge.classList.remove('visible'); }
+        else badge.classList.remove('visible');
     }
     function clearDevKnowledge(){
         if(!confirm('Clear all developer mode knowledge?')) return;
@@ -445,78 +442,51 @@
         if(count===0){ sec.innerHTML=''; return; }
         let html=`<hr class="divider"><div class="cg"><label>Stored Knowledge (${count})</label><div class="knowledge-display"><div class="knowledge-title">Developer Mode Facts</div>`;
         for(const[k,v] of Object.entries(devModeKnowledge)) html+=`<div class="knowledge-item">${escapeHtml(k)} = ${escapeHtml(v)}</div>`;
-        html+='</div></div>';
-        sec.innerHTML=html;
+        html+='</div></div>'; sec.innerHTML=html;
     }
 
     // CHAT MANAGEMENT
     function startChat(type){
         hideWelcome(); createNewChat();
-        const msgs={code:'Hello! I need help with some code.',hardware:'I have a hardware question.',robotics:'Can you help me with a robotics project?',general:'Let\'s talk tech!'};
+        const msgs={code:'Hello! I need help with some code.',hardware:'I have a hardware question.',robotics:'Can you help me with a robotics project?',general:"Let's talk tech!"};
         document.getElementById('userInput').value=msgs[type]||'';
         document.getElementById('userInput').focus();
     }
-
     function createNewChat(){
         hideWelcome();
         const chat={id:Date.now().toString(),title:'New Chat',messages:[],created:new Date().toISOString()};
         const chats=getChats(); chats.unshift(chat); saveChats(chats);
         loadChat(chat.id); loadChatsFromStorage();
     }
-
     function hideWelcome(){ const w=document.getElementById('welcomeScreen'); if(w) w.remove(); }
-
     function loadChat(chatId){
-        currentChatId=chatId;
-        const chat=getCurrentChat(); if(!chat) return;
-        hideWelcome();
-        document.getElementById('chatArea').innerHTML='';
+        currentChatId=chatId; const chat=getCurrentChat(); if(!chat) return;
+        hideWelcome(); document.getElementById('chatArea').innerHTML='';
         chat.messages.forEach(m=>addMessageToUI(m.content,m.role,m.id));
         loadChatsFromStorage();
     }
-
     function deleteChat(chatId){
         if(!confirm('Delete this chat?')) return;
         let chats=getChats().filter(c=>c.id!==chatId); saveChats(chats);
-        if(currentChatId===chatId){
-            if(chats.length>0) loadChat(chats[0].id);
-            else { currentChatId=null; location.reload(); }
-        }
+        if(currentChatId===chatId){ if(chats.length>0) loadChat(chats[0].id); else { currentChatId=null; location.reload(); } }
         loadChatsFromStorage();
     }
-
-    function clearChat(chatId){
-        if(!confirm('Clear all messages?')) return;
-        updateCurrentChat({messages:[]}); document.getElementById('chatArea').innerHTML='';
-    }
-
+    function clearChat(){ if(!confirm('Clear all messages?')) return; updateCurrentChat({messages:[]}); document.getElementById('chatArea').innerHTML=''; }
     function renameChat(chatId){
         const chat=getChats().find(c=>c.id===chatId);
         const n=prompt('Rename chat:',chat.title);
-        if(n&&n.trim()){
-            const chats=getChats(), idx=chats.findIndex(c=>c.id===chatId);
-            chats[idx].title=n.trim(); saveChats(chats); loadChatsFromStorage();
-        }
+        if(n&&n.trim()){ const chats=getChats(), idx=chats.findIndex(c=>c.id===chatId); chats[idx].title=n.trim(); saveChats(chats); loadChatsFromStorage(); }
     }
-
     function loadChatsFromStorage(){
-        const chats=getChats(), list=document.getElementById('chatsList');
-        list.innerHTML='';
+        const chats=getChats(), list=document.getElementById('chatsList'); list.innerHTML='';
         chats.forEach(chat=>{
             const div=document.createElement('div');
             div.className=`chat-item ${chat.id===currentChatId?'active':''}`;
-            div.innerHTML=`
-                <span class="chat-item-title" onclick="loadChat('${chat.id}')">${escapeHtml(chat.title)}</span>
+            div.innerHTML=`<span class="chat-item-title" onclick="loadChat('${chat.id}')">${escapeHtml(chat.title)}</span>
                 <div class="chat-actions">
-                    <button class="chat-action-btn" onclick="renameChat('${chat.id}')" title="Rename">
-                        <svg class="icon" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-                    </button>
-                    <button class="chat-action-btn" onclick="clearChat('${chat.id}')" title="Clear messages">
-                        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                    </button>
-                    <button class="chat-action-btn" onclick="deleteChat('${chat.id}')" title="Delete">
-                        <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
+                    <button class="chat-action-btn" onclick="renameChat('${chat.id}')" title="Rename"><svg class="icon" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+                    <button class="chat-action-btn" onclick="clearChat()" title="Clear"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></button>
+                    <button class="chat-action-btn" onclick="deleteChat('${chat.id}')" title="Delete"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                 </div>`;
             list.appendChild(div);
         });
@@ -524,13 +494,12 @@
 
     // MESSAGES
     function escapeHtml(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
-
     function formatCodeBlocks(text){
         const re=/```(\w+)?\n?([\s\S]*?)```/g;
         let out=text, blocks=[], match, i=0;
         while((match=re.exec(text))!==null){
             const ph=`___CB_${i}___`, lang=match[1]||'code', code=match[2], bid=`cb-${Date.now()}-${i}`;
-            blocks.push({ph, html:`<div class="code-block"><div class="code-header"><span class="code-lang">${escapeHtml(lang)}</span><button class="code-copy" onclick="copyCode('${bid}')">Copy</button></div><div class="code-content"><pre id="${bid}">${escapeHtml(code)}</pre></div></div>`});
+            blocks.push({ph,html:`<div class="code-block"><div class="code-header"><span class="code-lang">${escapeHtml(lang)}</span><button class="code-copy" onclick="copyCode('${bid}')">Copy</button></div><div class="code-content"><pre id="${bid}">${escapeHtml(code)}</pre></div></div>`});
             out=out.replace(match[0],ph); i++;
         }
         out=out.replace(/(?<!`)`([^`\n]+)`(?!`)/g,'<span class="inline-code">$1</span>');
@@ -539,7 +508,6 @@
         blocks.forEach(b=>{ out=out.replace(b.ph,b.html); });
         return out;
     }
-
     function copyCode(id){
         const el=document.getElementById(id); if(!el) return;
         navigator.clipboard.writeText(el.textContent).then(()=>{
@@ -548,26 +516,19 @@
             setTimeout(()=>{ btn.textContent='Copy'; btn.style.background=''; },2000);
         });
     }
-
-    function addMessageToUI(text, role, msgId=null, animate=false){
+    function addMessageToUI(text,role,msgId=null,animate=false){
         const id=msgId||Date.now().toString();
         const area=document.getElementById('chatArea');
-        const div=document.createElement('div');
-        div.className=`message ${role}`;
-        div.dataset.messageId=id;
+        const div=document.createElement('div'); div.className=`message ${role}`; div.dataset.messageId=id;
         const proc=role==='ai'?formatCodeBlocks(text):escapeHtml(text);
         let inner='';
         if(role==='ai'){
-            inner=`<div class="ai-msg-wrapper">
-                <div class="ai-msg-avatar">AI</div>
-                <div>
-                    <div class="message-content"><div class="message-text">${animate?'':proc}</div></div>
-                    <div class="message-actions">
-                        <button class="msg-action-btn" onclick="editMessage('${id}')">Edit</button>
-                        <button class="msg-action-btn" onclick="deleteMessage('${id}')">Delete</button>
-                    </div>
-                </div>
-            </div>`;
+            inner=`<div class="ai-msg-wrapper"><div class="ai-msg-avatar">AI</div><div>
+                <div class="message-content"><div class="message-text">${animate?'':proc}</div></div>
+                <div class="message-actions">
+                    <button class="msg-action-btn" onclick="editMessage('${id}')">Edit</button>
+                    <button class="msg-action-btn" onclick="deleteMessage('${id}')">Delete</button>
+                </div></div></div>`;
         } else if(role==='system'){
             inner=`<div class="message-content"><div class="message-text">${proc}</div></div>`;
         } else {
@@ -578,39 +539,31 @@
                     <button class="msg-action-btn" onclick="regenerateResponse('${id}')">Regenerate</button>
                 </div>`;
         }
-        div.innerHTML=inner;
-        area.appendChild(div);
-        area.scrollTop=area.scrollHeight;
+        div.innerHTML=inner; area.appendChild(div); area.scrollTop=area.scrollHeight;
         if(animate&&role==='ai') animateTyping(div.querySelector('.message-text'),proc);
         return id;
     }
-
-    function addMessage(text, role, animate=false){
-        const msgId=Date.now().toString();
-        const chat=getCurrentChat();
+    function addMessage(text,role,animate=false){
+        const msgId=Date.now().toString(); const chat=getCurrentChat();
         if(chat){
             chat.messages.push({id:msgId,content:text,role,timestamp:new Date().toISOString()});
             updateCurrentChat(chat);
             if(chat.messages.length===2&&chat.title==='New Chat'){
-                updateCurrentChat({title:text.substring(0,35)+(text.length>35?'…':'')});
-                loadChatsFromStorage();
+                updateCurrentChat({title:text.substring(0,35)+(text.length>35?'…':'')}); loadChatsFromStorage();
             }
         }
         addMessageToUI(text,role,msgId,animate);
         if(animate){ isAIResponding=true; updateInputState(); }
     }
-
-    function animateTyping(el, html){
+    function animateTyping(el,html){
         let idx=0; stopTyping=false;
         function next(){
             if(stopTyping||idx>=html.length){ el.innerHTML=html; isAIResponding=false; updateInputState(); updateSendBtn(); return; }
             el.innerHTML=html.substring(0,idx+1); idx++;
-            document.getElementById('chatArea').scrollTop=99999;
-            setTimeout(next,8);
+            document.getElementById('chatArea').scrollTop=99999; setTimeout(next,8);
         }
         next();
     }
-
     function editMessage(msgId){
         const chat=getCurrentChat(), msg=chat.messages.find(m=>m.id===msgId); if(!msg) return;
         const t=prompt('Edit message:',msg.content);
@@ -621,84 +574,45 @@
             if(msg.role==='user') regenerateResponse(msgId);
         }
     }
-
     function deleteMessage(msgId){
         if(!confirm('Delete this message?')) return;
         const chat=getCurrentChat(), idx=chat.messages.findIndex(m=>m.id===msgId); if(idx===-1) return;
         chat.messages.splice(idx,1); updateCurrentChat(chat);
         document.querySelector(`[data-message-id="${msgId}"]`)?.remove();
     }
-
     async function regenerateResponse(userMsgId){
         if(isAIResponding) return;
         const chat=getCurrentChat(), idx=chat.messages.findIndex(m=>m.id===userMsgId);
-        if(idx<chat.messages.length-1){
-            const nid=chat.messages[idx+1].id; chat.messages.splice(idx+1,1); updateCurrentChat(chat);
-            document.querySelector(`[data-message-id="${nid}"]`)?.remove();
-        }
+        if(idx<chat.messages.length-1){ const nid=chat.messages[idx+1].id; chat.messages.splice(idx+1,1); updateCurrentChat(chat); document.querySelector(`[data-message-id="${nid}"]`)?.remove(); }
         isAIResponding=true; updateInputState(); updateSendBtn();
-        const lid=showLoading();
-        const resp=await getAIResponse(chat.messages[idx].content);
-        hideLoading(lid);
+        const lid=showLoading(); const resp=await getAIResponse(chat.messages[idx].content); hideLoading(lid);
         addMessage(resp,'ai',true);
     }
 
     // LOADING
     function showLoading(){
-        const id='loading-'+Date.now(), div=document.createElement('div');
-        div.id=id; div.className='message ai';
+        const id='loading-'+Date.now(), div=document.createElement('div'); div.id=id; div.className='message ai';
         div.innerHTML=`<div class="ai-msg-wrapper"><div class="ai-msg-avatar">AI</div><div class="loading-indicator"><span>Thinking</span><div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div></div></div>`;
-        document.getElementById('chatArea').appendChild(div);
-        document.getElementById('chatArea').scrollTop=99999;
-        return id;
+        document.getElementById('chatArea').appendChild(div); document.getElementById('chatArea').scrollTop=99999; return id;
     }
     function hideLoading(id){ document.getElementById(id)?.remove(); }
-    function updateInputState(){
-        document.getElementById('sendBtn').disabled=isAIResponding;
-        document.getElementById('userInput').disabled=isAIResponding;
-    }
+    function updateInputState(){ document.getElementById('sendBtn').disabled=isAIResponding; document.getElementById('userInput').disabled=isAIResponding; }
     function updateSendBtn(){
         const btn=document.getElementById('sendBtn');
-        if(isAIResponding){
-            btn.textContent='Stop'; btn.className='stop-btn';
-            btn.onclick=()=>{ stopTyping=true; isAIResponding=false; updateInputState(); updateSendBtn(); };
-        } else {
-            btn.textContent='Send ✦'; btn.className='send-btn'; btn.onclick=handleSend;
-        }
-    }
-
-    // API KEY AUTO-FETCH
-    async function autoFetchApiKey(){
-        try{
-            const res=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://pastebin.com/raw/Fn07Tini'));
-            if(res.ok){
-                const key=(await res.text()).trim();
-                if(key.length>=10){ localStorage.setItem('phart_api_key',key); document.getElementById('apiKeyInput').value=key; }
-            }
-        } catch(e){ console.log('Auto-fetch failed, using stored key'); }
+        if(isAIResponding){ btn.textContent='Stop'; btn.className='stop-btn'; btn.onclick=()=>{ stopTyping=true; isAIResponding=false; updateInputState(); updateSendBtn(); }; }
+        else { btn.textContent='Send ✦'; btn.className='send-btn'; btn.onclick=handleSend; }
     }
 
     // AI
     async function getAIResponse(query){
         const apiKey=localStorage.getItem('phart_api_key')||getSettings().apiKey;
-        if(!apiKey) return "No API key found — click **Settings** in the top right to add one.";
+        if(!apiKey) return "No API key found — open **Settings** and click **Fetch Key**, or paste one manually.";
 
-        const queryLower=query.toLowerCase().trim();
-
-        // Dev mode learning
         if(devMode){
-            const directPattern=/^(.+?)\s*(?:is|are|equals?|=|:)\s*(.+)$/i;
-            const directMatch=query.match(directPattern);
-            if(directMatch){
-                const subject=directMatch[1].trim().toLowerCase(), value=directMatch[2].trim();
-                if(subject.includes('you are')||subject==='you'){ devModeKnowledge['__IDENTITY__']=value; }
-                else { devModeKnowledge[subject]=value; }
-                saveDevModeState(); updateDevBadge();
-                return `✅ Learned: "${subject}" = "${value}"`;
-            }
-            const rememberPattern=/(?:remember|learn|know)\s+(?:that\s+)?(.+)/i;
-            const rememberMatch=query.match(rememberPattern);
-            if(rememberMatch){ devModeKnowledge[`fact_${Date.now()}`]=rememberMatch[1].trim(); saveDevModeState(); updateDevBadge(); return `✅ Remembered: "${rememberMatch[1].trim()}"`; }
+            const dm=query.match(/^(.+?)\s*(?:is|are|equals?|=|:)\s*(.+)$/i);
+            if(dm){ const s=dm[1].trim().toLowerCase(), v=dm[2].trim(); devModeKnowledge[s.includes('you')?'__IDENTITY__':s]=v; saveDevModeState(); updateDevBadge(); return `✅ Learned: "${s}" = "${v}"`; }
+            const rm=query.match(/(?:remember|learn|know)\s+(?:that\s+)?(.+)/i);
+            if(rm){ devModeKnowledge[`fact_${Date.now()}`]=rm[1].trim(); saveDevModeState(); updateDevBadge(); return `✅ Remembered: "${rm[1].trim()}"`; }
         }
 
         const s=getSettings();
@@ -708,12 +622,10 @@
             if(devModeKnowledge['__IDENTITY__']) sys+=`Your identity: ${devModeKnowledge['__IDENTITY__']}\n`;
             for(const[k,v] of Object.entries(devModeKnowledge)) if(!k.startsWith('__')) sys+=`- ${k} = ${v}\n`;
         }
-
         const chat=getCurrentChat();
         const messages=[{role:'system',content:sys}];
         chat.messages.slice(-12).forEach(m=>{ if(m.role!=='system') messages.push({role:m.role==='ai'?'assistant':'user',content:m.content}); });
         messages.push({role:'user',content:query});
-
         try{
             const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
                 method:'POST',
@@ -728,26 +640,19 @@
     }
 
     async function handleSend(){
-        const input=document.getElementById('userInput');
-        const text=input.value.trim();
+        const input=document.getElementById('userInput'); const text=input.value.trim();
         if(!text||isAIResponding) return;
-
         const tl=text.toLowerCase().trim();
         if(tl===ADMIN_CODE){ input.value=''; openSettings(); addMessage('🔓 Settings unlocked!','system'); return; }
-        if(tl===DEV_MODE_CODE){ input.value=''; devMode=true; saveDevModeState(); updateDevBadge(); addMessage('🔴 Developer Mode activated! I will now learn anything you tell me as absolute truth.\n\nExamples:\n• "you are a robot" — I become a robot\n• "Python is the best language" — accepted as fact\n\nType "exitdevmode" to return to normal.','system'); return; }
+        if(tl===DEV_MODE_CODE){ input.value=''; devMode=true; saveDevModeState(); updateDevBadge(); addMessage('🔴 Developer Mode activated!\n\nType facts and I will accept them as absolute truth.\nType "exitdevmode" to return to normal.','system'); return; }
         if(tl===EXIT_DEV_CODE){ input.value=''; devMode=false; devModeKnowledge={}; saveDevModeState(); updateDevBadge(); addMessage('✅ Developer Mode deactivated. All learned knowledge cleared.','system'); return; }
-
         if(!currentChatId) createNewChat();
-        addMessage(text,'user');
-        input.value=''; input.style.height='auto';
+        addMessage(text,'user'); input.value=''; input.style.height='auto';
         isAIResponding=true; updateInputState(); updateSendBtn();
-        const lid=showLoading();
-        const resp=await getAIResponse(text);
-        hideLoading(lid);
+        const lid=showLoading(); const resp=await getAIResponse(text); hideLoading(lid);
         addMessage(resp,'ai',true);
     }
 
-    // KEYBOARD
     const ta=document.getElementById('userInput');
     ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); handleSend(); } });
     ta.addEventListener('input',function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,150)+'px'; });

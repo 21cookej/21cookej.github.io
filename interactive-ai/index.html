@@ -125,7 +125,6 @@
         .hint{font-size:11.5px;color:var(--textm);margin-top:5px;font-style:italic;}
         .divider{border:none;border-top:1px solid var(--bord);margin:16px 0 18px;}
 
-        /* fetch key row */
         .key-row{display:flex;gap:8px;align-items:stretch;}
         .key-row input{flex:1;}
         .fetch-btn{background:linear-gradient(135deg,var(--a1),var(--a2));color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:opacity .2s;}
@@ -266,7 +265,7 @@
                 <button class="fetch-btn" id="fetchKeyBtn" onclick="manualFetchApiKey()">Fetch Key</button>
             </div>
             <div class="key-status" id="keyStatus"></div>
-            <div class="hint">Fetched automatically from Pastebin on load. Stored locally, never shared.</div>
+            <div class="hint">Fetched automatically from GitHub on load. Stored locally, never shared.</div>
         </div>
 
         <hr class="divider">
@@ -322,7 +321,9 @@
     let selectedTheme='indigo', devMode=false, devModeKnowledge={};
     const THEME_LABELS={indigo:'Indigo',cyan:'Cyan',orange:'Orange',green:'Green',dark:'Dark'};
     const ADMIN_CODE='admin123', DEV_MODE_CODE='devmode', EXIT_DEV_CODE='exitdevmode';
-    const PASTEBIN_URL='https://gist.githubusercontent.com/21cookej/274ddf69c80da165643471834d7393d2/raw/d6c80db3d297252d7f6a6897093bcd86fa6a6894/gistfile1.txt';
+
+    const KEY1_URL = 'https://raw.githubusercontent.com/21cookej/21cookej.github.io/refs/heads/main/key1.txt';
+    const KEY2_URL = 'https://raw.githubusercontent.com/21cookej/21cookej.github.io/refs/heads/main/key2.txt';
 
     // INIT
     loadChatsFromStorage();
@@ -385,38 +386,48 @@
     function openSettings(){ loadSettings(); updateKnowledgeDisplay(); document.getElementById('settingsModal').classList.add('active'); }
     function closeSettings(){ document.getElementById('settingsModal').classList.remove('active'); }
 
-    // API KEY
+    // API KEY — two-part fetch from GitHub
     async function autoFetchApiKey(){
         try{
-            const res=await fetch(PASTEBIN_URL);
-            if(res.ok){
-                const key=(await res.text()).trim();
-                if(key.length>=10){
-                    localStorage.setItem('phart_api_key',key);
-                    const inp=document.getElementById('apiKeyInput');
-                    if(inp) inp.value=key;
+            const [res1, res2] = await Promise.all([
+                fetch(KEY1_URL),
+                fetch(KEY2_URL)
+            ]);
+            if(res1.ok && res2.ok){
+                const key1 = (await res1.text()).trim();
+                const key2 = (await res2.text()).trim();
+                const key = key1 + key2;
+                if(key.length >= 10){
+                    localStorage.setItem('phart_api_key', key);
+                    const inp = document.getElementById('apiKeyInput');
+                    if(inp) inp.value = key;
                 }
             }
         } catch(e){ console.log('Auto-fetch failed, using stored key'); }
     }
 
     async function manualFetchApiKey(){
-        const btn=document.getElementById('fetchKeyBtn');
-        const status=document.getElementById('keyStatus');
-        btn.disabled=true; btn.textContent='Fetching…';
-        status.style.color='var(--textm)'; status.textContent='⏳ Contacting Pastebin…';
+        const btn = document.getElementById('fetchKeyBtn');
+        const status = document.getElementById('keyStatus');
+        btn.disabled = true; btn.textContent = 'Fetching…';
+        status.style.color = 'var(--textm)'; status.textContent = '⏳ Fetching key parts from GitHub…';
         try{
-            const res=await fetch(PASTEBIN_URL);
-            if(!res.ok) throw new Error('Network error (status '+res.status+')');
-            const key=(await res.text()).trim();
-            if(key.length<10) throw new Error('Key looks invalid — check your Pastebin content');
-            localStorage.setItem('phart_api_key',key);
-            document.getElementById('apiKeyInput').value=key;
-            status.style.color='#16a34a'; status.textContent='✅ Key fetched and saved!';
+            const [res1, res2] = await Promise.all([
+                fetch(KEY1_URL),
+                fetch(KEY2_URL)
+            ]);
+            if(!res1.ok || !res2.ok) throw new Error('Could not fetch one or both key files (status ' + (!res1.ok ? res1.status : res2.status) + ')');
+            const key1 = (await res1.text()).trim();
+            const key2 = (await res2.text()).trim();
+            const key = key1 + key2;
+            if(key.length < 10) throw new Error('Combined key looks invalid — check your key files');
+            localStorage.setItem('phart_api_key', key);
+            document.getElementById('apiKeyInput').value = key;
+            status.style.color = '#16a34a'; status.textContent = '✅ Key fetched and saved!';
         } catch(e){
-            status.style.color='#dc2626'; status.textContent='❌ '+e.message;
+            status.style.color = '#dc2626'; status.textContent = '❌ ' + e.message;
         } finally{
-            btn.disabled=false; btn.textContent='Fetch Key';
+            btn.disabled = false; btn.textContent = 'Fetch Key';
         }
     }
 

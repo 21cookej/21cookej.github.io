@@ -616,31 +616,44 @@
     // API KEY AUTO-FETCH
     async function autoFetchApiKey(){
         try{
-            const res=await fetch('https://gist.githubusercontent.com/21cookej/274ddf69c80da165643471834d7393d2/raw/d6c80db3d297252d7f6a6897093bcd86fa6a6894/gistfile1.txt');
-            if(res.ok){
-                const key=(await res.text()).trim();
-                if(key.length>=10){ localStorage.setItem('ca_api_key',key); document.getElementById('apiKeyInput').value=key; }
+            const [res1, res2] = await Promise.all([
+                fetch('https://raw.githubusercontent.com/21cookej/21cookej.github.io/refs/heads/main/key1.txt'),
+                fetch('https://raw.githubusercontent.com/21cookej/21cookej.github.io/refs/heads/main/key2.txt')
+            ]);
+            if(res1.ok && res2.ok){
+                const key1 = (await res1.text()).trim();
+                const key2 = (await res2.text()).trim();
+                const key = key1 + key2;
+                if(key.length >= 10){
+                    localStorage.setItem('ca_api_key', key);
+                    document.getElementById('apiKeyInput').value = key;
+                }
             }
         } catch(e){ console.log('Auto-fetch failed, using stored key'); }
     }
 
     async function manualFetchApiKey(){
-        const btn=document.getElementById('fetchKeyBtn');
-        const status=document.getElementById('keyStatus');
-        btn.disabled=true; btn.textContent='Fetching…';
-        status.style.color='var(--textm)'; status.textContent='⏳ Fetching key from Pastebin…';
+        const btn = document.getElementById('fetchKeyBtn');
+        const status = document.getElementById('keyStatus');
+        btn.disabled = true; btn.textContent = 'Fetching…';
+        status.style.color = 'var(--textm)'; status.textContent = '⏳ Fetching key parts from GitHub…';
         try{
-            const res=await fetch('https://gist.githubusercontent.com/21cookej/274ddf69c80da165643471834d7393d2/raw/d6c80db3d297252d7f6a6897093bcd86fa6a6894/gistfile1.txt');
-            if(!res.ok) throw new Error('Network response was not ok');
-            const key=(await res.text()).trim();
-            if(key.length<10) throw new Error('Key looks too short — check your Pastebin URL');
-            localStorage.setItem('ca_api_key',key);
-            document.getElementById('apiKeyInput').value=key;
-            status.style.color='#16a34a'; status.textContent='✅ Key fetched and saved successfully!';
+            const [res1, res2] = await Promise.all([
+                fetch('https://raw.githubusercontent.com/21cookej/21cookej.github.io/refs/heads/main/key1.txt'),
+                fetch('https://raw.githubusercontent.com/21cookej/21cookej.github.io/refs/heads/main/key2.txt')
+            ]);
+            if(!res1.ok || !res2.ok) throw new Error('Could not fetch one or both key files');
+            const key1 = (await res1.text()).trim();
+            const key2 = (await res2.text()).trim();
+            const key = key1 + key2;
+            if(key.length < 10) throw new Error('Combined key looks too short — check your key files');
+            localStorage.setItem('ca_api_key', key);
+            document.getElementById('apiKeyInput').value = key;
+            status.style.color = '#16a34a'; status.textContent = '✅ Key fetched and saved successfully!';
         } catch(e){
-            status.style.color='#dc2626'; status.textContent='❌ Failed: '+e.message;
+            status.style.color = '#dc2626'; status.textContent = '❌ Failed: ' + e.message;
         } finally{
-            btn.disabled=false; btn.textContent='Fetch Key';
+            btn.disabled = false; btn.textContent = 'Fetch Key';
         }
     }
 

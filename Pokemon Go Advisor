@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PokéGO Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E3350D;
+    --yellow: #FFCB05;
+    --blue: #3B4CCA;
+    --dark: #1a1a2e;
+    --darker: #0f0f1a;
+    --card-bg: #1e1e35;
+    --card-border: #2e2e50;
+    --text: #e8e8f0;
+    --muted: #8888aa;
+    --green: #4CAF50;
+    --orange: #FF9800;
+    --purple: #9C27B0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--darker);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(59,76,202,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(227,53,13,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,203,5,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header { text-align: center; padding: 40px 0 30px; }
+
+  .logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(16px, 4vw, 26px);
+    color: var(--yellow);
+    text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0,0,0,0.5);
+    letter-spacing: 2px;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.2)} }
+
+  .subtitle {
+    font-size: 14px; color: var(--muted);
+    margin-top: 12px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+
+  .divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
+  .divider::before,.divider::after { content:''; flex:1; height:2px; background:linear-gradient(to right,transparent,var(--card-border)); }
+  .divider::after { background:linear-gradient(to left,transparent,var(--card-border)); }
+  .divider-ball {
+    width:20px;height:20px;border-radius:50%;
+    background:linear-gradient(180deg,var(--red) 50%,white 50%);
+    border:2px solid #555;position:relative;flex-shrink:0;
+  }
+  .divider-ball::after {
+    content:'';position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:6px;height:6px;border-radius:50%;
+    background:white;border:1.5px solid #555;
+  }
+
+  .add-section, .io-section {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px; color: var(--yellow);
+    margin-bottom: 20px; letter-spacing: 1px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 12px; align-items: end;
+  }
+
+  @media (max-width: 620px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .io-row { flex-wrap: wrap; }
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  label {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  input, select {
+    background: var(--darker);
+    border: 2px solid var(--card-border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px; font-weight: 700;
+    padding: 10px 14px; transition: border-color 0.2s;
+    outline: none; width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--yellow); }
+  input::placeholder { color: #444466; }
+  select option { background: var(--darker); }
+
+  .btn {
+    background: linear-gradient(135deg, var(--yellow), #ffaa00);
+    border: none; border-radius: 10px;
+    color: var(--darker); font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 900;
+    padding: 12px 20px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
+    white-space: nowrap; display: inline-flex;
+    align-items: center; gap: 6px;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,203,5,0.4); filter: brightness(1.1); }
+  .btn:active { transform: translateY(0); }
+  .btn-red  { background: linear-gradient(135deg, var(--red), #c02000); color: white; }
+  .btn-red:hover  { box-shadow: 0 6px 20px rgba(227,53,13,0.4); }
+  .btn-blue { background: linear-gradient(135deg, #4a6cf7, var(--blue)); color: white; }
+  .btn-blue:hover { box-shadow: 0 6px 20px rgba(59,76,202,0.5); }
+  .btn-green{ background: linear-gradient(135deg, #56c271, #3a9e52); color: white; }
+  .btn-green:hover{ box-shadow: 0 6px 20px rgba(76,175,80,0.5); }
+  .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 8px; }
+
+  .io-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  .io-info {
+    font-size: 12px; color: var(--muted);
+    margin-top: 12px; padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px; border-left: 3px solid var(--green);
+    line-height: 1.6;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 12px; padding: 12px 22px;
+    font-size: 14px; font-weight: 700; color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    z-index: 9999; transition: transform 0.3s ease; white-space: nowrap;
+  }
+  .toast.show  { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: rgba(227,53,13,0.5); color: #ff7777; }
+
+  .stats-hint {
+    font-size: 12px; color: var(--muted); margin-top: 14px;
+    padding: 10px 14px; background: rgba(255,255,255,0.03);
+    border-radius: 8px; border-left: 3px solid var(--blue);
+  }
+
+  .results-section { margin-bottom: 28px; }
+  .results-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+  }
+  .count-badge {
+    background: var(--blue); color: white;
+    font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 20px;
+  }
+
+  .pokemon-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .pokemon-card {
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 16px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 14px; align-items: start;
+    transition: all 0.25s; position: relative; overflow: hidden;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+
+  .pokemon-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0;
+    width:4px; border-radius:4px 0 0 4px;
+  }
+  .rank-1::before { background:#FFD700; }
+  .rank-2::before { background:#C0C0C0; }
+  .rank-3::before { background:#CD7F32; }
+  .rank-other::before { background:var(--blue); }
+
+  .pokemon-card:not(.editing):hover {
+    border-color:rgba(255,203,5,0.3);
+    transform:translateX(4px);
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .pokemon-card.editing {
+    border-color:rgba(255,203,5,0.6)!important;
+    box-shadow:0 0 0 2px rgba(255,203,5,0.15),0 4px 20px rgba(0,0,0,0.3)!important;
+  }
+
+  @media(max-width:620px){
+    .pokemon-card { grid-template-columns: auto 1fr auto; }
+    .score-section,.card-actions { display:none; }
+  }
+
+  .rank-badge {
+    width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Press Start 2P',monospace;font-size:10px;flex-shrink:0;
+    margin-top:4px;
+  }
+  .rank-1 .rank-badge{background:#FFD700;color:#333}
+  .rank-2 .rank-badge{background:#C0C0C0;color:#333}
+  .rank-3 .rank-badge{background:#CD7F32;color:#333}
+  .rank-other .rank-badge{background:var(--card-border);color:var(--muted)}
+
+  .pokemon-info { min-width:0; }
+  .pokemon-name {
+    font-size:16px;font-weight:800;margin-bottom:4px;
+    text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .pokemon-stats { display:flex;gap:10px;flex-wrap:wrap; }
+  .stat-pill {
+    font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;
+    background:rgba(255,255,255,0.07);color:var(--muted);
+  }
+  .stat-pill span{color:var(--text)}
+
+  .score-bar-wrap{margin-top:6px;display:flex;align-items:center;gap:8px}
+  .score-bar{flex:1;height:4px;background:var(--card-border);border-radius:2px;overflow:hidden;max-width:120px}
+  .score-fill{height:100%;border-radius:2px;transition:width 0.5s ease}
+
+  .score-section{text-align:center;padding-top:2px}
+  .score-value{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);display:block}
+  .score-label{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px}
+
+  .rec-badge{
+    padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;
+    text-align:center;white-space:nowrap;margin-bottom:6px;
+  }
+  .rec-high{background:rgba(76,175,80,0.2);color:#4CAF50;border:1px solid rgba(76,175,80,0.4)}
+  .rec-med {background:rgba(255,152,0,0.2);color:#FF9800;border:1px solid rgba(255,152,0,0.4)}
+  .rec-low {background:rgba(136,136,170,0.1);color:var(--muted);border:1px solid var(--card-border)}
+
+  .card-actions{display:flex;flex-direction:column;gap:5px;align-items:center;padding-top:2px}
+
+  .icon-btn{
+    background:none;border:none;cursor:pointer;font-size:16px;
+    padding:5px 7px;border-radius:7px;transition:all 0.2s;line-height:1;color:var(--muted);
+  }
+  .icon-btn.edit-btn:hover{color:var(--yellow);background:rgba(255,203,5,0.12)}
+  .icon-btn.del-btn:hover{color:var(--red);background:rgba(227,53,13,0.12)}
+
+  /* Inline edit */
+  .inline-edit{
+    display:none;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:12px;
+    padding-top:14px;
+    border-top:1px solid var(--card-border);
+    animation:fadeIn 0.2s ease;
+    grid-column:1/-1;
+  }
+  .inline-edit.open{display:grid}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .inline-edit input,.inline-edit select{font-size:13px;padding:7px 10px}
+  .inline-edit label{font-size:10px}
+
+  .edit-actions{
+    grid-column:1/-1;
+    display:flex;gap:8px;flex-wrap:wrap;
+    padding-top:4px;
+  }
+
+  /* card inner wrapper spans all columns */
+  .card-row{display:contents}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+  .empty-icon{font-size:64px;margin-bottom:16px;opacity:0.4}
+  .empty-state p{font-size:14px;line-height:1.6}
+
+  .legend{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:16px;padding:20px 24px;margin-top:8px;
+  }
+  .legend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:14px}
+  .legend-item{display:flex;align-items:flex-start;gap:10px;font-size:13px}
+  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .legend-text strong{display:block;font-weight:800;margin-bottom:2px}
+  .legend-text span{color:var(--muted);font-size:12px}
+
+  .tip{
+    position:relative;cursor:help;display:inline-block;margin-left:4px;
+    color:var(--muted);font-size:11px;font-weight:700;background:var(--card-border);
+    width:16px;height:16px;border-radius:50%;text-align:center;line-height:16px;vertical-align:middle;
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="container">
+  <header>
+    <div class="logo">⚡ PokéGO Advisor</div>
+    <p class="subtitle">Find your best Pokémon to power up</p>
+  </header>
+
+  <div class="divider"><div class="divider-ball"></div></div>
+
+  <!-- Save / Load -->
+  <div class="io-section">
+    <div class="section-title">💾 Save &amp; Load Your Data</div>
+    <div class="io-row">
+      <button class="btn btn-green" onclick="exportData()">⬇ Export to File</button>
+      <button class="btn btn-blue"  onclick="document.getElementById('import-file').click()">⬆ Import from File</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-red btn-sm" onclick="clearAll()">🗑 Clear All</button>
+    </div>
+    <div class="io-info">
+      📤 <strong>Export</strong> downloads all your Pokémon as a <code>.json</code> file you can keep and re-load later.&nbsp;
+      📥 <strong>Import</strong> reads a saved file — you'll be asked whether to <em>merge</em> with your current list or <em>replace</em> it.&nbsp;
+      Your list also auto-saves in the browser while you use it.
+    </div>
+  </div>
+
+  <!-- Add Pokémon -->
+  <div class="add-section">
+    <div class="section-title">📋 Add Your Pokémon</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Pokémon Name</label>
+        <input type="text" id="input-name" placeholder="e.g. Dragonite" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>CP</label>
+        <input type="number" id="input-cp" placeholder="e.g. 2800" min="10" max="9999">
+      </div>
+      <div class="form-group">
+        <label>IV % <span class="tip" title="IV percentage 0–100. Use Appraise in-game or PokéGenie.">?</span></label>
+        <input type="number" id="input-iv" placeholder="e.g. 87" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="input-type">
+          <option value="">— Any —</option>
+          <option>Normal</option><option>Fire</option><option>Water</option>
+          <option>Grass</option><option>Electric</option><option>Ice</option>
+          <option>Fighting</option><option>Poison</option><option>Ground</option>
+          <option>Flying</option><option>Psychic</option><option>Bug</option>
+          <option>Rock</option><option>Ghost</option><option>Dragon</option>
+          <option>Dark</option><option>Steel</option><option>Fairy</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-top:12px;grid-template-columns:1fr 1fr 1fr 2fr;">
+      <div class="form-group">
+        <label>Stardust Cost</label>
+        <input type="number" id="input-dust" placeholder="e.g. 5000" min="200" max="100000">
+      </div>
+      <div class="form-group">
+        <label>Candy Cost</label>
+        <input type="number" id="input-candy" placeholder="e.g. 3" min="1" max="400">
+      </div>
+      <div class="form-group">
+        <label>Is Lucky? 🍀</label>
+        <select id="input-lucky">
+          <option value="0">No</option>
+          <option value="1">Yes (50% dust off)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button class="btn" onclick="addPokemon()">➕ Add Pokémon</button>
+      </div>
+    </div>
+    <div class="stats-hint">
+      💡 <strong>Tip:</strong> Find your IV% in-game via Pokémon → Menu (⋮) → Appraise. 0 Stars = IV 25%, 1 Star = IV 58%, 2 Stars = IV 73%, 3 Stars = IV 90%, 3 Stars Red Background = IV 100%.
+    </div>
+  </div>
+
+  <!-- Rankings -->
+  <div class="results-section">
+    <div class="results-header">
+      <div class="section-title" style="margin:0">🏆 Upgrade Rankings</div>
+      <span class="count-badge" id="count-badge">0 Pokémon</span>
+    </div>
+    <div class="pokemon-list" id="pokemon-list">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p>Add your Pokémon above and this advisor will rank<br>them from best to worst to power up!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="section-title" style="font-size:9px">📊 How Scoring Works</div>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#4CAF50"></div>
+        <div class="legend-text"><strong>IVs (40%)</strong><span>Higher IV = more ceiling potential. 100% is perfect.</span></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#3B4CCA"></div>
+        <div class="legend-text"><strong>CP Ratio (30%)</strong><span>Current CP vs estimated max CP for the species.</span></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#FFCB05"></div>
+        <div class="legend-text"><strong>Efficiency (20%)</strong><span>Lower stardust &amp; candy cost = better return per resource.</span></div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#E3350D"></div>
+        <div class="legend-text"><strong>Lucky Bonus (10%)</strong><span>Lucky Pokémon get 50% stardust discount — big value!</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MAX_CP_REF = {
+  mewtwo:4724,slaking:4431,regigigas:4346,dialga:4038,palkia:3991,
+  garchomp:3962,rayquaza:3835,giratina:3683,kyogre:4652,groudon:4652,
+  dragonite:3792,tyranitar:3834,salamence:3749,metagross:3791,
+  machamp:3056,gengar:2878,gyarados:3391,blissey:3219,snorlax:3225,
+  vaporeon:3521,flareon:3029,jolteon:2888,espeon:3170,umbreon:2137,
+  togekiss:3767,lucario:2703,electivire:2904,magmortar:2980,
+  rhyperior:3733,tangrowth:3110,mamoswine:3328,glaceon:3126,
+  leafeon:3328,gallade:2964,porygonz:3266,drifblim:2191,
+  charizard:3266,blastoise:2788,venusaur:2720,pikachu:938,
+  raichu:2182,alakazam:2887,golem:2916,arcanine:3029,
+  lapras:2641,eevee:1210,aerodactyl:2711,zapdos:3527,
+  moltres:3465,articuno:3051,rhydon:3300,chansey:1255,
+  scizor:3148,heracross:2938,entei:3376,raikou:3452,
+  suicune:2983,lugia:3703,hooh:3913,latios:3812,latias:3510,
+  flygon:3008,altaria:1998,absol:2526,milotic:3005,
+  roserade:3359,gliscor:2700,electabuzz:2306,magmar:2364,
+  porygon2:2074,steelix:2729,donphan:2848,aggron:3000,
+  kingdra:2641,togetic:1703,abomasnow:2364,weavile:3005,
+  honchkrow:2570,mismagius:2427,glalie:2294,froslass:2340,
+  dusknoir:2368,rotom:1815,conkeldurr:3118,excadrill:3244,
+  reuniclus:2754,chandelure:3268,haxorus:3366,hydreigon:3625,
+  zekrom:4038,reshiram:4038,kyurem:3987,genesect:3353,
+  sylveon:3069,goodra:3276,dragapult:3390,
+  zacian:5765,zamazenta:5765,melmetal:4724,
+};
+
+const TYPE_OPTS = ['','Normal','Fire','Water','Grass','Electric','Ice','Fighting','Poison','Ground','Flying','Psychic','Bug','Rock','Ghost','Dragon','Dark','Steel','Fairy'];
+
+function getMaxCP(name){
+  const key=name.toLowerCase().replace(/[^a-z0-9]/g,'');
+  return MAX_CP_REF[key]||2500;
+}
+
+let pokemons=[];
+try{pokemons=JSON.parse(localStorage.getItem('pokego_advisor')||'[]')}catch(e){}
+
+let editingIdx=null;
+
+// ── Score ──────────────────────────────────────────────────────
+function scoreBoost(p){
+  let s=0;
+  if(p.iv!==''&&p.iv!=null) s+=(p.iv/100)*40;
+  if(p.cp){const r=Math.min(p.cp/getMaxCP(p.name),1);s+=r*30;}
+  const ds=p.dust >0?Math.max(0,1-(p.dust /50000)):0.5;
+  const cs=p.candy>0?Math.max(0,1-(p.candy/200  )):0.5;
+  s+=((ds+cs)/2)*20;
+  if(p.lucky)s+=10;
+  return Math.round(s);
+}
+
+function getRec(score){
+  if(score>=70)return{text:'⬆ High Priority',cls:'rec-high'};
+  if(score>=45)return{text:'↗ Worth It',cls:'rec-med'};
+  return{text:'⬇ Hold Off',cls:'rec-low'};
+}
+
+function col(score){
+  if(score>=70)return'#4CAF50';
+  if(score>=45)return'#FF9800';
+  return'#888';
+}
+
+function rankCls(i){return['rank-1','rank-2','rank-3'][i]||'rank-other';}
+
+// ── Persistence ────────────────────────────────────────────────
+function save(){try{localStorage.setItem('pokego_advisor',JSON.stringify(pokemons))}catch(e){}}
+
+// ── Toast ──────────────────────────────────────────────────────
+let _tt;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+(type||'');
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ── Render ─────────────────────────────────────────────────────
+function render(){
+  const list=document.getElementById('pokemon-list');
+  document.getElementById('count-badge').textContent=`${pokemons.length} Pokémon`;
+
+  if(!pokemons.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div><p>Add your Pokémon above and this advisor will rank<br>them from best to worst to power up!</p></div>`;
+    return;
+  }
+
+  const sorted=[...pokemons]
+    .map((p,i)=>({...p,origIdx:i,score:scoreBoost(p)}))
+    .sort((a,b)=>b.score-a.score);
+
+  list.innerHTML=sorted.map((p,i)=>{
+    const rec=getRec(p.score);
+    const rc=rankCls(i);
+    const isEd=editingIdx===p.origIdx;
+
+    const typeOpts=TYPE_OPTS.map(t=>`<option value="${t}"${p.type===t?' selected':''}>${t||'— Any —'}</option>`).join('');
+    const luckyOpts=`<option value="0"${!p.lucky?' selected':''}>No</option><option value="1"${p.lucky?' selected':''}>Yes 🍀</option>`;
+
+    return`
+    <div class="pokemon-card ${rc}${isEd?' editing':''}" id="card-${p.origIdx}">
+      <div class="rank-badge">${i+1}</div>
+
+      <div class="pokemon-info">
+        <div class="pokemon-name">
+          ${p.name}${p.lucky?' 🍀':''}
+          ${p.type?`<span style="font-size:11px;color:var(--muted);font-weight:600"> [${p.type}]</span>`:''}
+        </div>
+        <div class="pokemon-stats">
+          <div class="stat-pill">CP <span>${p.cp?Number(p.cp).toLocaleString():'—'}</span></div>
+          <div class="stat-pill">IV <span>${p.iv!==''&&p.iv!=null?p.iv+'%':'—'}</span></div>
+          <div class="stat-pill">Dust <span>${p.dust>0?Number(p.dust).toLocaleString():'—'}</span></div>
+          <div class="stat-pill">Candy <span>${p.candy>0?p.candy:'—'}</span></div>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar"><div class="score-fill" style="width:${p.score}%;background:${col(p.score)}"></div></div>
+        </div>
+
+        <!-- Inline edit form -->
+        <div class="inline-edit${isEd?' open':''}" id="edit-${p.origIdx}">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="e-name-${p.origIdx}" value="${escHtml(p.name)}">
+          </div>
+          <div class="form-group">
+            <label>CP</label>
+            <input type="number" id="e-cp-${p.origIdx}" value="${p.cp||''}" placeholder="—">
+          </div>
+          <div class="form-group">
+            <label>IV %</label>
+            <input type="number" id="e-iv-${p.origIdx}" value="${p.iv!==''&&p.iv!=null?p.iv:''}" placeholder="—" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Stardust</label>
+            <input type="number" id="e-dust-${p.origIdx}" value="${p.dust||''}" placeholder="—">
+          </div>
+          <div class="form-group">
+            <label>Candy</label>
+            <input type="number" id="e-candy-${p.origIdx}" value="${p.candy||''}" placeholder="—">
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="e-type-${p.origIdx}">${typeOpts}</select>
+          </div>
+          <div class="form-group">
+            <label>Lucky</label>
+            <select id="e-lucky-${p.origIdx}">${luckyOpts}</select>
+          </div>
+          <div class="edit-actions">
+            <button class="btn btn-green btn-sm" onclick="saveEdit(${p.origIdx})">✔ Save Changes</button>
+            <button class="btn btn-red btn-sm"   onclick="cancelEdit()">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-section">
+        <span class="score-value">${p.score}</span>
+        <span class="score-label">Score</span>
+      </div>
+
+      <div>
+        <div class="rec-badge ${rec.cls}">${rec.text}</div>
+      </div>
+
+      <div class="card-actions">
+        <button class="icon-btn edit-btn" onclick="startEdit(${p.origIdx})" title="Edit">✏️</button>
+        <button class="icon-btn del-btn"  onclick="deletePokemon(${p.origIdx})" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// ── Add ────────────────────────────────────────────────────────
+function addPokemon(){
+  const name =document.getElementById('input-name').value.trim();
+  const cp   =parseInt(document.getElementById('input-cp').value)||0;
+  const ivRaw=document.getElementById('input-iv').value;
+  const iv   =ivRaw!==''?parseFloat(ivRaw):'';
+  const type =document.getElementById('input-type').value;
+  const dust =parseInt(document.getElementById('input-dust').value)||0;
+  const candy=parseInt(document.getElementById('input-candy').value)||0;
+  const lucky=document.getElementById('input-lucky').value==='1';
+
+  if(!name){toast('Please enter a Pokémon name!','error');return;}
+  if(iv!==''&&(iv<0||iv>100)){toast('IV must be 0–100!','error');return;}
+
+  pokemons.push({name,cp,iv,type,dust,candy,lucky});
+  save(); render();
+
+  ['input-name','input-cp','input-iv','input-dust','input-candy'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('input-type').value='';
+  document.getElementById('input-lucky').value='0';
+  document.getElementById('input-name').focus();
+  toast(`✅ ${name} added!`);
+}
+
+// ── Edit ───────────────────────────────────────────────────────
+function startEdit(origIdx){
+  editingIdx=origIdx;
+  render();
+  const card=document.getElementById(`card-${origIdx}`);
+  if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function saveEdit(origIdx){
+  const name =document.getElementById(`e-name-${origIdx}`).value.trim();
+  const cp   =parseInt(document.getElementById(`e-cp-${origIdx}`).value)||0;
+  const ivRaw=document.getElementById(`e-iv-${origIdx}`).value;
+  const iv   =ivRaw!==''?parseFloat(ivRaw):'';
+  const dust =parseInt(document.getElementById(`e-dust-${origIdx}`).value)||0;
+  const candy=parseInt(document.getElementById(`e-candy-${origIdx}`).value)||0;
+  const type =document.getElementById(`e-type-${origIdx}`).value;
+  const lucky=document.getElementById(`e-lucky-${origIdx}`).value==='1';
+
+  if(!name){toast('Name cannot be empty!','error');return;}
+  if(iv!==''&&(iv<0||iv>100)){toast('IV must be 0–100!','error');return;}
+
+  pokemons[origIdx]={name,cp,iv,type,dust,candy,lucky};
+  save(); editingIdx=null; render();
+  toast(`✏️ ${name} updated!`);
+}
+
+function cancelEdit(){editingIdx=null;render();}
+
+// ── Delete ─────────────────────────────────────────────────────
+function deletePokemon(origIdx){
+  const name=pokemons[origIdx]?.name||'Pokémon';
+  if(editingIdx===origIdx)editingIdx=null;
+  pokemons.splice(origIdx,1);
+  save();render();
+  toast(`🗑 ${name} removed`);
+}
+
+function clearAll(){
+  if(!pokemons.length)return;
+  if(confirm('Remove ALL Pokémon from your list?')){
+    pokemons=[];editingIdx=null;save();render();
+    toast('🗑 All Pokémon cleared');
+  }
+}
+
+// ── Export ─────────────────────────────────────────────────────
+function exportData(){
+  if(!pokemons.length){toast('Nothing to export yet!','error');return;}
+  const data={version:1,exported:new Date().toISOString(),pokemons};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`pokego-advisor-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`✅ Exported ${pokemons.length} Pokémon!`);
+}
+
+// ── Import ─────────────────────────────────────────────────────
+function importData(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const parsed=JSON.parse(e.target.result);
+      const incoming=Array.isArray(parsed)?parsed:(parsed.pokemons||[]);
+      if(!incoming.length){toast('No Pokémon found in file!','error');return;}
+
+      let merge=false;
+      if(pokemons.length>0){
+        merge=confirm(
+          `You have ${pokemons.length} Pokémon already.\n\n` +
+          `OK  → Merge (keep yours + add imported)\n` +
+          `Cancel → Replace (load imported only)`
+        );
+      }
+
+      pokemons = merge ? [...pokemons,...incoming] : [...incoming];
+      editingIdx=null;save();render();
+      toast(`✅ ${merge?'Merged':'Loaded'} ${incoming.length} Pokémon!`);
+    }catch(err){
+      toast('❌ Invalid file — could not read!','error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+// ── Enter key ─────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.closest('.add-section'))addPokemon();
+});
+
+render();
+</script>
+</body>
+</html>

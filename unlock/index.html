@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Unlock</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    color: #fff;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  #lock-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0f0f1a;
+    z-index: 100;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  #lock-screen.unlocking {
+    opacity: 0;
+    transform: scale(1.05);
+    pointer-events: none;
+  }
+
+  .lock-title {
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 12px;
+  }
+
+  .lock-hint {
+    font-size: 13px;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 48px;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  #canvas-wrap {
+    position: relative;
+    width: min(340px, 90vw);
+    aspect-ratio: 1;
+  }
+
+  #draw-canvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .status-bar {
+    margin-top: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.3s;
+  }
+
+  .status-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.04em;
+    transition: color 0.3s;
+  }
+
+  .status-text.success { color: #4ade80; }
+  .status-text.fail { color: #f87171; }
+  .status-dot.success { background: #4ade80; }
+  .status-dot.fail { background: #f87171; }
+
+  .clear-btn {
+    margin-top: 20px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.35);
+    padding: 8px 24px;
+    border-radius: 40px;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .clear-btn:hover {
+    border-color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.7);
+  }
+
+  .shake {
+    animation: shake 0.4s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+</style>
+</head>
+<body>
+
+<div id="lock-screen">
+  <p class="lock-title">Draw to Unlock</p>
+  <p class="lock-hint">Draw the correct pattern to continue</p>
+
+  <div id="canvas-wrap">
+    <canvas id="draw-canvas"></canvas>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <span class="status-text" id="status-text">Draw the pattern above</span>
+  </div>
+
+  <button class="clear-btn" id="clear-btn">Clear</button>
+</div>
+
+<script>
+const lockScreen = document.getElementById('lock-screen');
+const canvas = document.getElementById('draw-canvas');
+const statusText = document.getElementById('status-text');
+const statusDot = document.getElementById('status-dot');
+const clearBtn = document.getElementById('clear-btn');
+const wrap = document.getElementById('canvas-wrap');
+
+let SIZE = 340;
+function resize() {
+  SIZE = wrap.offsetWidth;
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+}
+
+const ctx = canvas.getContext('2d');
+
+function lightningPoints(S) {
+  const m = S * 0.12;
+  return [
+    { x: S * 0.62, y: m },
+    { x: S * 0.32, y: S * 0.52 },
+    { x: S * 0.55, y: S * 0.52 },
+    { x: S * 0.28, y: S - m }
+  ];
+}
+
+let drawing = false;
+let points = [];
+let trails = [];
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - r.left) * (canvas.width / r.width),
+    y: (src.clientY - r.top) * (canvas.height / r.height)
+  };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  drawing = true;
+  points = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const p = getPos(e);
+  points.push(p);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  ctx.strokeStyle = 'rgba(167,139,250,0.9)';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  setStatus('drawing');
+}
+
+function moveDraw(e) {
+  if (!drawing) return;
+  e.preventDefault();
+  const p = getPos(e);
+  points.push(p);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+}
+
+function endDraw(e) {
+  if (!drawing) return;
+  drawing = false;
+  if (points.length > 5) {
+    checkPattern(points);
+  }
+}
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', moveDraw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mouseleave', endDraw);
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+canvas.addEventListener('touchmove', moveDraw, { passive: false });
+canvas.addEventListener('touchend', endDraw);
+
+clearBtn.addEventListener('click', () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  setStatus('idle');
+});
+
+function setStatus(state, msg) {
+  statusDot.className = 'status-dot';
+  statusText.className = 'status-text';
+  if (state === 'success') {
+    statusDot.classList.add('success');
+    statusText.classList.add('success');
+    statusText.textContent = msg || 'Pattern recognised!';
+  } else if (state === 'fail') {
+    statusDot.classList.add('fail');
+    statusText.classList.add('fail');
+    statusText.textContent = msg || 'Try again';
+  } else if (state === 'drawing') {
+    statusText.textContent = '...';
+  } else {
+    statusText.textContent = 'Draw the pattern above';
+  }
+}
+
+function normalise(pts) {
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
+  return pts.map(p => ({
+    x: (p.x - minX) / rangeX,
+    y: (p.y - minY) / rangeY
+  }));
+}
+
+function directionVector(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  return { dx: dx/len, dy: dy/len };
+}
+
+function samplePoints(pts, n) {
+  if (pts.length <= n) return pts;
+  const result = [];
+  for (let i = 0; i < n; i++) {
+    result.push(pts[Math.floor(i * (pts.length - 1) / (n - 1))]);
+  }
+  return result;
+}
+
+function checkPattern(rawPoints) {
+  const sampled = samplePoints(rawPoints, 60);
+  const norm = normalise(sampled);
+
+  const score = matchLightning(norm);
+
+  if (score > 0.62) {
+    setStatus('success', 'Pattern recognised!');
+    paintSuccess();
+    setTimeout(unlock, 700);
+  } else {
+    setStatus('fail', 'Not quite — try again');
+    wrap.classList.add('shake');
+    setTimeout(() => {
+      wrap.classList.remove('shake');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      setStatus('idle');
+    }, 600);
+  }
+}
+
+function matchLightning(norm) {
+  const n = norm.length;
+  let scores = [];
+
+  const top = norm.slice(0, Math.floor(n * 0.25));
+  const upper = norm.slice(Math.floor(n * 0.25), Math.floor(n * 0.5));
+  const lower = norm.slice(Math.floor(n * 0.5), Math.floor(n * 0.75));
+  const bottom = norm.slice(Math.floor(n * 0.75));
+
+  const seg = (pts) => {
+    if (pts.length < 2) return { dx: 0, dy: 0 };
+    return directionVector(pts[0], pts[pts.length - 1]);
+  };
+
+  const s1 = seg(top);
+  const s2 = seg(upper);
+  const s3 = seg(lower);
+  const s4 = seg(bottom);
+
+  const startX = norm[0].x, endX = norm[n - 1].x;
+  const startY = norm[0].y, endY = norm[n - 1].y;
+
+  let score = 0;
+  const checks = [
+    s1.dy > 0.4,
+    s4.dy > 0.4,
+    s1.dx < 0.2,
+    s4.dx < 0.2,
+    endY > startY + 0.5,
+    checkZigzag(norm),
+  ];
+
+  score = checks.filter(Boolean).length / checks.length;
+  return score;
+}
+
+function checkZigzag(norm) {
+  const n = norm.length;
+  const mid = Math.floor(n / 2);
+  const quarter = Math.floor(n / 4);
+  const threeQ = Math.floor(3 * n / 4);
+
+  const topHalf = norm.slice(0, mid);
+  const botHalf = norm.slice(mid);
+
+  const topDir = directionVector(topHalf[0], topHalf[topHalf.length - 1]);
+  const botDir = directionVector(botHalf[0], botHalf[botHalf.length - 1]);
+
+  const midPt = norm[mid];
+  const q1 = norm[quarter];
+  const q3 = norm[threeQ];
+
+  const topGoesLeft = q1.x > midPt.x;
+  const botGoesLeft = midPt.x > q3.x;
+
+  return topGoesLeft !== botGoesLeft;
+}
+
+function paintSuccess() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const pts = lightningPoints(canvas.width);
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = '#4ade80';
+  ctx.lineWidth = 3.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.shadowColor = '#4ade80';
+  ctx.shadowBlur = 10;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function unlock() {
+  lockScreen.classList.add('unlocking');
+  setTimeout(() => {
+    window.location.href = 'https://21cookej.github.io/';
+  }, 600);
+}
+
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>

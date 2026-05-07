@@ -1,110 +1,159 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-</head>
-    <script src="infinite/infinite.js"></script>
-    <script src="infinite.js"></script>
-</body>
-</html>
- -->
- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>374 Toggle Buttons</title>
-    <style>
-        body {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 25px;
-            margin: 5px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-            border-radius: 25px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 19px;
-            width: 19px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #4CAF50;
-        }
-        input:checked + .slider:before {
-            transform: translateX(25px);
-        }
-        #container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toggle Drawing</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f4f4f9; font-family: Arial, sans-serif; }
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      flex-wrap: wrap;
+      background: white;
+    }
+    #toolbar button {
+      font-size: 13px;
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+    }
+    #toolbar button:hover { background: #f0f0f0; }
+    .mode-btn.active { background: #d0eaff; color: #0a5fa8; border-color: #74b3f5; }
+    #count { font-size: 13px; color: #666; margin-left: auto; }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 48px);
+      gap: 4px;
+      padding: 12px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .sw {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      cursor: pointer;
+    }
+    .track {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: #ccc;
+      transition: background 0.15s;
+    }
+    .thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: left 0.15s;
+    }
+    .sw.on .track { background: #4CAF50; }
+    .sw.on .thumb { left: 27px; }
+  </style>
 </head>
 <body>
-    <div id="container"></div>
-    <script>
-        const container = document.getElementById('container');
-        const totalButtons = 374;
-        let switches = [];
 
-        // Generate 374 toggle switches
-        for (let i = 0; i < totalButtons; i++) {
-            const switchDiv = document.createElement('div');
-            switchDiv.className = 'switch';
-            switchDiv.innerHTML = `
-                <label>
-                    <input type="checkbox" data-index="${i}">
-                    <span class="slider"></span>
-                </label>
-            `;
-            container.appendChild(switchDiv);
-            switches.push(switchDiv.querySelector('input'));
-        }
+<div id="toolbar">
+  <button class="mode-btn active" id="btn-on" onclick="setMode('on')">Draw ON</button>
+  <button class="mode-btn" id="btn-off" onclick="setMode('off')">Draw OFF</button>
+  <button class="mode-btn" id="btn-toggle" onclick="setMode('toggle')">Draw TOGGLE</button>
+  <button onclick="clearAll()">Clear all</button>
+  <button onclick="fillAll()">Fill all</button>
+  <span id="count">0 / 374 on</span>
+</div>
+<div id="grid"></div>
 
-        // Check if all switches are activated
-        function checkWin() {
-            if (switches.every(switchEl => switchEl.checked)) {
-                document.body.style.backgroundColor = "black";
-                container.style.display = "none";
-            }
-        }
+<script>
+  const TOTAL = 374;
+  const grid = document.getElementById('grid');
+  let switches = [];
+  let isDown = false;
+  let drawMode = 'on';
 
-        // Attach event listeners to each switch
-        switches.forEach(switchEl => {
-            switchEl.addEventListener('change', checkWin);
-        });
-    </script>
+  function setMode(m) {
+    drawMode = m;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + m).classList.add('active');
+  }
+
+  function updateCount() {
+    const on = switches.filter(s => s.on).length;
+    document.getElementById('count').textContent = on + ' / ' + TOTAL + ' on';
+  }
+
+  function setState(sw, val) {
+    if (sw.on === val) return;
+    sw.on = val;
+    sw.el.classList.toggle('on', val);
+    updateCount();
+  }
+
+  function applyTo(sw) {
+    if (drawMode === 'toggle') setState(sw, !sw.on);
+    else if (drawMode === 'on') setState(sw, true);
+    else setState(sw, false);
+  }
+
+  function clearAll() { switches.forEach(s => setState(s, false)); }
+  function fillAll()  { switches.forEach(s => setState(s, true));  }
+
+  // Build grid
+  for (let i = 0; i < TOTAL; i++) {
+    const div = document.createElement('div');
+    div.className = 'sw';
+    div.innerHTML = '<div class="track"></div><div class="thumb"></div>';
+    const sw = { el: div, on: false, index: i };
+    switches.push(sw);
+    grid.appendChild(div);
+  }
+
+  // Use mousemove on document + elementFromPoint for reliable drag detection
+  document.addEventListener('mousedown', e => {
+    isDown = true;
+    hitTest(e.clientX, e.clientY);
+    e.preventDefault();
+  });
+  document.addEventListener('mouseup', () => { isDown = false; });
+  document.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    hitTest(e.clientX, e.clientY);
+  });
+
+  // Touch support
+  document.addEventListener('touchstart', e => {
+    isDown = true;
+    const t = e.touches[0];
+    hitTest(t.clientX, t.clientY);
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', () => { isDown = false; });
+  document.addEventListener('touchmove', e => {
+    if (!isDown) return;
+    const t = e.touches[0];
+    hitTest(t.clientX, t.clientY);
+    e.preventDefault();
+  }, { passive: false });
+
+  function hitTest(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return;
+    const swDiv = el.closest('.sw');
+    if (!swDiv) return;
+    const sw = switches.find(s => s.el === swDiv);
+    if (sw) applyTo(sw);
+  }
+</script>
 </body>
 </html>

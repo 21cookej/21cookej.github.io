@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Symbol Cipher Translator</title>
+  <title>Vorrath Translator</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #fff; color: #111; }
     h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
@@ -25,7 +25,7 @@
   </style>
 </head>
 <body>
-  <h1>Symbol Cipher</h1>
+  <h1>Vorrath</h1>
   <p class="subtitle">Type in either box — translates both ways instantly.</p>
 
   <div class="boxes">
@@ -34,7 +34,7 @@
       <textarea id="eng" placeholder="Type English here…"></textarea>
     </div>
     <div class="box">
-      <label>Cipher</label>
+      <label>Vorrath</label>
       <textarea id="sym" placeholder="Type cipher here…"></textarea>
     </div>
   </div>
@@ -53,13 +53,13 @@
     // No token is a prefix of another — reverse parsing is always unambiguous.
     const MAP = {
       a: "꧀ꩧ", b: "ᯊ᪈", c: "ꡀ᩵", d: "᳁ꪼ", e: "ᰦꤪ",
-      f: "꩷ᯨ", g: "᪰ꡠ", h: "ꪸᰳ", i: "ᩙ꧁", j: "ꤸ᳄",
-      k: "ᯰ꩸", l: "ꡘ᪱", m: "᳇ꪹ", n: "ᰮꤹ", o: "᩺꧂",
-      p: "ꤺᯱ", q: "᪲ꡙ", r: "ꪺᰯ", s: "ᰰ᩻", t: "꧃ꤻ",
-      u: "᯲ᪧ", v: "ꡚꪻ", w: "᳈ᰱ", x: "ꤼ᩼", y: "᪳꧄",
+      f: "꩷ᯨ", g: "᪰ꡠ", h: "ꪸᰳ", i: "ᩙ༼༽", j: "ꤸ᳄",
+      k: "ᯰ꩸", l: "ꡘ᪱", m: "᳇ꪹ", n: "ᰮꤹ", o: "᩺༽",
+      p: "ꤺᯱ", q: "᪲ꡙ", r: "ꪺᰯ", s: "ᰰ᩻", t: "༼ꤼ᩼ꤻ",
+      u: "᯲ᪧ", v: "ꡚꪻ", w: "᳈ᰱ", x: "ꤼ᩼", y: " つ",
       z: "ꪼ᯳",
       " ": "᳉ꡛ",
-      "0": "ᰲ᩽", "1": "꧅ꤽ", "2": "᯴᪨", "3": "ꡜꪽ",
+      "0": "ᰲ᩽", "1": "≡ꤽ", "2": "᯴᪨", "3": "ꡜꪽ",
       "4": "᳊ᰴ", "5": "ꤾ᩾", "6": "᪴꧆", "7": "ꪾ᯵",
       "8": "ᰵ᩿", "9": "꧇ꤿ",
       ".": "᯶᪩", ",": "ꡝ꪿", "!": "᳋ᰶ", "?": "ꥀ᪀",

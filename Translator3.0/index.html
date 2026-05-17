@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Symbol Cipher Translator</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #fff; color: #111; }
+    h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+    .subtitle { font-size: 14px; color: #666; margin: 0 0 20px; }
+    .boxes { display: flex; gap: 12px; }
+    .box { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .box label { font-size: 13px; font-weight: 500; color: #555; }
+    .box textarea {
+      width: 100%; box-sizing: border-box; height: 150px; resize: none;
+      font-size: 16px; padding: 10px 12px; line-height: 1.9;
+      border: 1px solid #ccc; border-radius: 8px; font-family: Arial, sans-serif;
+    }
+    .box textarea:focus { outline: none; border-color: #888; }
+    .section-label { font-size: 13px; font-weight: 500; color: #555; margin: 20px 0 6px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #e0e0e0; padding: 7px 2px; text-align: center; }
+    th { font-size: 11px; color: #555; font-weight: 500; background: #f9f9f9; }
+    td { font-size: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Symbol Cipher</h1>
+  <p class="subtitle">Type in either box — translates both ways instantly.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <label>English</label>
+      <textarea id="eng" placeholder="Type English here…"></textarea>
+    </div>
+    <div class="box">
+      <label>Cipher</label>
+      <textarea id="sym" placeholder="Type cipher here…"></textarea>
+    </div>
+  </div>
+
+  <p class="section-label">Letters</p>
+  <table><thead><tr id="hdr1"></tr></thead><tbody><tr id="bdy1"></tr></tbody></table>
+
+  <p class="section-label">Numbers &amp; punctuation</p>
+  <table><thead><tr id="hdr2"></tr></thead><tbody><tr id="bdy2"></tr></tbody></table>
+
+  <script>
+    // Every letter is a unique 2-symbol sequence drawn from 8 different obscure Unicode blocks:
+    // Tibetan, Batak, Pahawh Hmong, Meetei Mayek, Tai Tham, Miao, Soyombo, and Old Sogdian.
+    // Spaces are encoded so word lengths are invisible.
+    // Numbers and punctuation are also encoded.
+    // No token is a prefix of another — reverse parsing is always unambiguous.
+    const MAP = {
+      a: "꧀ꩧ", b: "ᯊ᪈", c: "ꡀ᩵", d: "᳁ꪼ", e: "ᰦꤪ",
+      f: "꩷ᯨ", g: "᪰ꡠ", h: "ꪸᰳ", i: "ᩙ꧁", j: "ꤸ᳄",
+      k: "ᯰ꩸", l: "ꡘ᪱", m: "᳇ꪹ", n: "ᰮꤹ", o: "᩺꧂",
+      p: "ꤺᯱ", q: "᪲ꡙ", r: "ꪺᰯ", s: "ᰰ᩻", t: "꧃ꤻ",
+      u: "᯲ᪧ", v: "ꡚꪻ", w: "᳈ᰱ", x: "ꤼ᩼", y: "᪳꧄",
+      z: "ꪼ᯳",
+      " ": "᳉ꡛ",
+      "0": "ᰲ᩽", "1": "꧅ꤽ", "2": "᯴᪨", "3": "ꡜꪽ",
+      "4": "᳊ᰴ", "5": "ꤾ᩾", "6": "᪴꧆", "7": "ꪾ᯵",
+      "8": "ᰵ᩿", "9": "꧇ꤿ",
+      ".": "᯶᪩", ",": "ꡝ꪿", "!": "᳋ᰶ", "?": "ꥀ᪀",
+      "'": "᪵꧈", "\"": "ꫀ᯷", "-": "᰷᪁", ":": "꧉ꥁ",
+      ";": "᯸꫁",  "(": "᳌᰸", ")": "ꥂ᪂",
+    };
+
+    // Sort tokens longest-first so the greedy reverse parser always picks the right match
+    const REV = Object.entries(MAP)
+      .map(([k, v]) => [v, k])
+      .sort((a, b) => b[0].length - a[0].length);
+
+    function buildTable(keys, h, b) {
+      const hdr = document.getElementById(h);
+      const bdy = document.getElementById(b);
+      for (const k of keys) {
+        const th = document.createElement("th");
+        th.textContent = k === " " ? "SPC" : k;
+        hdr.appendChild(th);
+        const td = document.createElement("td");
+        td.textContent = MAP[k] ?? "";
+        bdy.appendChild(td);
+      }
+    }
+
+    buildTable([..."abcdefghijklmnopqrstuvwxyz", " "], "hdr1", "bdy1");
+    buildTable([..."0123456789", ".", ",", "!", "?", "'", '"', "-", ":", ";", "(", ")"], "hdr2", "bdy2");
+
+    const eng = document.getElementById("eng");
+    const sym = document.getElementById("sym");
+    let busy = false;
+
+    eng.addEventListener("input", () => {
+      if (busy) return; busy = true;
+      sym.value = [...eng.value.toLowerCase()].map(c => MAP[c] ?? c).join("");
+      busy = false;
+    });
+
+    sym.addEventListener("input", () => {
+      if (busy) return; busy = true;
+      let inp = sym.value, out = "";
+      while (inp.length) {
+        let hit = false;
+        for (const [tok, ch] of REV) {
+          if (inp.startsWith(tok)) { out += ch; inp = inp.slice(tok.length); hit = true; break; }
+        }
+        if (!hit) { out += inp[0]; inp = inp.slice(1); }
+      }
+      eng.value = out;
+      busy = false;
+    });
+  </script>
+</body>
+</html>

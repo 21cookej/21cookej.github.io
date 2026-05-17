@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Symbol Cipher Translator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fff;
+      color: #111;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 500;
+      margin: 0 0 4px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 20px;
+    }
+    .boxes {
+      display: flex;
+      gap: 12px;
+    }
+    .box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .box label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+    }
+    .box textarea {
+      width: 100%;
+      box-sizing: border-box;
+      height: 130px;
+      resize: none;
+      font-size: 17px;
+      padding: 10px 12px;
+      line-height: 1.6;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+    }
+    .box textarea:focus {
+      outline: none;
+      border-color: #888;
+    }
+    table {
+      margin-top: 24px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 8px 3px;
+      text-align: center;
+    }
+    th {
+      font-size: 12px;
+      color: #555;
+      font-weight: 500;
+      background: #f9f9f9;
+    }
+    td {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Symbol Cipher</h1>
+  <p class="subtitle">Type in either box — translates both ways instantly.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <label>English</label>
+      <textarea id="eng" placeholder="Type English here…"></textarea>
+    </div>
+    <div class="box">
+      <label>Cipher</label>
+      <textarea id="sym" placeholder="Type cipher here…"></textarea>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr id="hdr"></tr></thead>
+    <tbody><tr id="bdy"></tr></tbody>
+  </table>
+
+  <script>
+    const MAP = {
+      a: "ꀤ",
+      b: "ঌ",
+      c: "ყ",
+      d: "ꆜ",
+      e: "ᚹ",
+      f: "ꉙ",
+      g: "ᛯ",
+      h: "ꄲ",
+      i: "ჯ",
+      j: "ꂷ",
+      k: "ᚸ",
+      l: "ꁗ",
+      m: "ᛕ",
+      n: "ꀯ",
+      o: "ᚢ",
+      p: "ꃅ",
+      q: "ᛃ",
+      r: "ꅔ",
+      s: "ᚦ",
+      t: "ꆊ",
+      u: "ᛇ",
+      v: "ꄧ",
+      w: "ᚾ",
+      x: "ꈌ",
+      y: "ᛒ",
+      z: "ꉺ",
+      " ": " "
+    };
+
+    const REV = {};
+    for (const [k, v] of Object.entries(MAP)) REV[v] = k;
+
+    const hdr = document.getElementById("hdr");
+    const bdy = document.getElementById("bdy");
+    for (const l of "abcdefghijklmnopqrstuvwxyz".split("")) {
+      const th = document.createElement("th");
+      th.textContent = l.toUpperCase();
+      hdr.appendChild(th);
+      const td = document.createElement("td");
+      td.textContent = MAP[l];
+      bdy.appendChild(td);
+    }
+
+    const eng = document.getElementById("eng");
+    const sym = document.getElementById("sym");
+    let updating = false;
+
+    eng.addEventListener("input", () => {
+      if (updating) return;
+      updating = true;
+      sym.value = eng.value.toLowerCase().split("").map(c => MAP[c] ?? c).join("");
+      updating = false;
+    });
+
+    sym.addEventListener("input", () => {
+      if (updating) return;
+      updating = true;
+      const chars = [...sym.value];
+      let result = "";
+      for (const ch of chars) {
+        result += REV[ch] ?? ch;
+      }
+      eng.value = result;
+      updating = false;
+    });
+
+  </script>
+
+</body>
+</html>

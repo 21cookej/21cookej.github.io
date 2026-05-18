@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vorralith Translator</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #fff; color: #111; }
+    h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+    .subtitle { font-size: 14px; color: #666; margin: 0 0 20px; }
+    .boxes { display: flex; gap: 12px; }
+    .box { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .box label { font-size: 13px; font-weight: 500; color: #555; }
+    .box textarea {
+      width: 100%%; box-sizing: border-box; height: 150px; resize: none;
+      font-size: 16px; padding: 10px 12px; line-height: 1.9;
+      border: 1px solid #ccc; border-radius: 8px; font-family: Arial, sans-serif;
+    }
+    .box textarea:focus { outline: none; border-color: #888; }
+    .section-label { font-size: 13px; font-weight: 500; color: #555; margin: 20px 0 6px; }
+    table { width: 100%%; border-collapse: collapse; }
+    th, td { border: 1px solid #e0e0e0; padding: 7px 2px; text-align: center; }
+    th { font-size: 11px; color: #555; font-weight: 500; background: #f9f9f9; }
+    td { font-size: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Vorralith</h1>
+  <p class="subtitle">Type in either box - translates both ways instantly.</p>
+  <div class="boxes">
+    <div class="box">
+      <label>English</label>
+      <textarea id="eng" placeholder="Type English here..."></textarea>
+    </div>
+    <div class="box">
+      <label>Vorralith</label>
+      <textarea id="sym" placeholder="Type Vorralith here..."></textarea>
+    </div>
+  </div>
+  <p class="section-label">Letters</p>
+  <table><thead><tr id="hdr1"></tr></thead><tbody><tr id="bdy1"></tr></tbody></table>
+  <p class="section-label">Numbers &amp; punctuation</p>
+  <table><thead><tr id="hdr2"></tr></thead><tbody><tr id="bdy2"></tr></tbody></table>
+  <script>
+    const MAP = {
+      "a": "꜀ꩧ",
+      "b": "꓆ꡳ",
+      "c": "ꡀꩲ",
+      "d": "↸꓅",
+      "e": "ꩪꤪ",
+      "f": "꩷꓄",
+      "g": "≎ȸ",
+      "h": "ꪸꩫ",
+      "i": "ƨƪ",
+      "j": "ꤸ꓃",
+      "k": "꩸꓂",
+      "l": "ȣȤ",
+      "m": "ᐲ꓁",
+      "n": "ꩬ꤫",
+      "o": "𝙹꓀",
+      "p": "ꤺ꒿",
+      "q": "ƒȝ",
+      "r": "ꪺꩭ",
+      "s": "ᓭꩮ",
+      "t": "ȼɏ",
+      "u": "❝❞",
+      "v": "⍈꒾",
+      "w": "ŋƸ",
+      "x": "ꤼ꒽",
+      "y": "ƾȿ",
+      "z": "⨅꒼",
+      " ": "ɂɃ",
+      "0": "❖‡",
+      "1": "≡ꤽ",
+      "2": "✿❀",
+      "3": "❂❃",
+      "4": "꒺꒔",
+      "5": "ꤾ꒹",
+      "6": "‡†",
+      "7": "꒐꒸",
+      "8": "꒕꒷",
+      "9": "꜇ꤿ",
+      ".": "❈❉",
+      ",": "ꡝ꒑",
+      "!": "꒵꒖",
+      "?": "❊❋",
+      "'": "Ȣȷ",
+      '"': '꒒꒴',
+      "-": "꒗ꓐ",
+      ":": "꜉ꥁ",
+      ";": "꒳꒓",
+      "(": "꒲꒘",
+      ")": "ꥂ꒱"
+    };
+    const REV = Object.entries(MAP).map(([k,v])=>[v,k]).sort((a,b)=>b[0].length-a[0].length);
+    function buildTable(keys,h,b){
+      const hdr=document.getElementById(h), bdy=document.getElementById(b);
+      for(const k of keys){
+        const th=document.createElement("th"); th.textContent=k===" "?"SPC":k; hdr.appendChild(th);
+        const td=document.createElement("td"); td.textContent=MAP[k]??""; bdy.appendChild(td);
+      }
+    }
+    buildTable([..."abcdefghijklmnopqrstuvwxyz"," "],"hdr1","bdy1");
+    buildTable([..."0123456789",".",",","!","?","'",'"',"-",":",";","(",")"],"hdr2","bdy2");
+    const eng=document.getElementById("eng"), sym=document.getElementById("sym");
+    let busy=false;
+    eng.addEventListener("input",()=>{
+      if(busy)return; busy=true;
+      sym.value=[...eng.value.toLowerCase()].map(c=>MAP[c]??c).join("");
+      busy=false;
+    });
+    sym.addEventListener("input",()=>{
+      if(busy)return; busy=true;
+      let inp=sym.value, out="";
+      while(inp.length){
+        let hit=false;
+        for(const [tok,ch] of REV){ if(inp.startsWith(tok)){out+=ch;inp=inp.slice(tok.length);hit=true;break;} }
+        if(!hit){out+=inp[0];inp=inp.slice(1);}
+      }
+      eng.value=out; busy=false;
+    });
+  </script>
+</body>
+</html>

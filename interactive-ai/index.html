@@ -641,7 +641,7 @@
             const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
                 method:'POST',
                 headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json','HTTP-Referer':window.location.origin,'X-Title':'P.H.A.R.T. AI'},
-                body:JSON.stringify({model:'openai/gpt-oss-120b:free',messages,temperature:s.creativity})
+                body:JSON.stringify({model:'openai/gpt-oss-120b',messages,temperature:s.creativity})
             });
             const data=await res.json();
             if(data.choices) return data.choices[0].message.content;

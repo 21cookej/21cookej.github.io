@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero Forge — Heropack Builder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1016; --panel:#181a24; --panel-2:#20222f; --line:#31344a; --line-bright:#464a6c;
+    --text:#eef0f6; --muted:#9298b3; --accent:#ef4d55; --cyan:#35c9d1; --gold:#ffb648; --green:#5bd18a; --purple:#b58cf0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.5;padding:24px 18px 90px;}
+  .wrap{max-width:1260px;margin:0 auto;}
+  .kicker{color:var(--accent);font-family:'Space Mono',monospace;font-size:12px;margin:0 0 6px;}
+  h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,7vw,60px);margin:0;line-height:.95;}
+  h1 span{color:var(--accent);}
+  .sub{color:var(--muted);max-width:70ch;margin:10px 0 0;font-size:14.5px;}
+
+  .tabs{display:flex;gap:2px;margin:24px 0 0;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .tab{background:var(--panel);color:var(--muted);border:1px solid var(--line);border-bottom:none;
+       padding:10px 16px;font-weight:600;font-size:13.5px;cursor:pointer;}
+  .tab.active{color:var(--text);background:var(--panel-2);border-top:2px solid var(--accent);}
+  .tab[disabled]{opacity:.4;cursor:not-allowed;}
+  .panel{background:var(--panel-2);border:1px solid var(--line);border-top:none;padding:20px;display:none;}
+  .panel.active{display:block;}
+
+  h2{font-family:'Bebas Neue',sans-serif;font-size:22px;margin:0 0 4px;}
+  h3{font-family:'Bebas Neue',sans-serif;font-size:17px;margin:18px 0 8px;color:var(--gold);}
+  p.hint{color:var(--muted);font-size:13px;margin:4px 0 14px;}
+
+  .dropzone{border:2px dashed var(--line-bright);padding:36px 20px;text-align:center;cursor:pointer;background:var(--panel);}
+  .dropzone:hover{border-color:var(--cyan);}
+  .dropzone strong{color:var(--text);}
+  input[type=file]{display:none;}
+
+  .btn{background:var(--panel);color:var(--text);border:1px solid var(--line-bright);padding:9px 14px;
+       font-weight:600;font-size:13px;cursor:pointer;}
+  .btn:hover{border-color:var(--cyan);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#1a0708;}
+  .btn.primary:hover{background:#ff5d64;}
+  .btn.small{padding:5px 9px;font-size:12px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.active{border-color:var(--green);color:var(--green);}
+  .btn.preset{border-color:var(--purple);color:var(--purple);}
+  .btn.preset:hover{background:#2a2140;}
+
+  .stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .stat{background:var(--panel);border:1px solid var(--line);padding:10px 14px;min-width:110px;}
+  .stat b{display:block;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--cyan);}
+  .stat span{font-size:11.5px;color:var(--muted);}
+
+  label{display:block;font-size:12.5px;color:var(--muted);margin:0 0 5px;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);
+    padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;
+  }
+  .field{margin-bottom:12px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+
+  .slug-preview{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--muted);margin:-6px 0 12px;}
+  .slug-preview.warn{color:var(--accent);}
+
+  .power-card{border:1px solid var(--line);background:var(--panel);padding:10px 12px;margin-bottom:8px;}
+  .power-card.checked{border-color:var(--cyan);background:#152229;}
+  .power-card.conflict{border-color:var(--gold);}
+  .power-card label.chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:0;}
+  .power-card input[type=checkbox]{margin-top:3px;}
+  .power-card .pname{color:var(--text);font-weight:600;font-size:14px;}
+  .power-card .pid{color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+  .tag{background:var(--panel-2);border:1px solid var(--line-bright);color:var(--cyan);font-size:10.5px;
+       padding:2px 7px;font-family:'Space Mono',monospace;}
+  .tag.sound{color:var(--gold);}
+  .tag.preset{color:var(--purple);border-color:var(--purple);}
+  .tag.category{color:var(--green);}
+
+  .mod-editor .power-card{background:var(--panel-2);}
+  .mod-editor textarea{font-family:'Space Mono',monospace;font-size:11.5px;}
+
+  .keybind-row{display:grid;grid-template-columns:130px 1fr 70px 32px;gap:8px;align-items:center;margin-bottom:6px;}
+  .keybind-row input{font-family:'Space Mono',monospace;}
+  .attr-row{display:grid;grid-template-columns:1fr 110px 70px 32px;gap:8px;align-items:center;margin-bottom:6px;}
+  .attr-row input{font-family:'Space Mono',monospace;}
+  .color-row{display:grid;grid-template-columns:auto 46px 1fr;gap:8px;align-items:center;margin-bottom:6px;}
+  .color-row label{margin:0;font-size:12px;}
+  .color-row input[type=color]{padding:2px;height:32px;}
+  .color-row .hexlabel{color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;}
+
+  .warn-banner{font-size:13px;color:#1a0708;background:var(--gold);border-left:4px solid var(--accent);padding:10px 12px;margin:14px 0;font-weight:600;}
+  .info-banner{font-size:12.5px;color:var(--text);background:#152229;border-left:4px solid var(--cyan);padding:10px 12px;margin:14px 0;}
+
+  .tex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px;}
+  .tex-card{border:1px solid var(--line);background:var(--panel);padding:8px;}
+  .tex-card.selected{border-color:var(--green);}
+  .tex-card img{width:100%;height:90px;object-fit:contain;background:#000;image-rendering:pixelated;}
+  .tex-card .fname{font-size:10.5px;color:var(--muted);word-break:break-all;margin:6px 0 4px;font-family:'Space Mono',monospace;}
+  .tex-card .modebar{display:flex;gap:4px;margin-top:6px;}
+  .tex-card .modebar button{flex:1;font-size:10.5px;padding:4px;}
+  .badge{display:inline-block;background:var(--accent);color:#1a0708;font-size:9.5px;font-weight:700;
+         padding:1px 5px;margin-left:5px;letter-spacing:.02em;}
+  .badge.new{background:var(--green);}
+  .badge.slot{background:var(--cyan);}
+  .badge.icon{background:var(--gold);}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(5,6,10,0.85);display:none;align-items:center;justify-content:center;z-index:50;padding:16px;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--panel-2);border:1px solid var(--line-bright);width:min(920px,94vw);max-height:92vh;overflow:auto;padding:18px;}
+  .paint-layout{display:grid;grid-template-columns:1fr 220px;gap:16px;}
+  .paint-canvas-wrap{background:#000;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;min-height:380px;position:relative;overflow:hidden;}
+  #paintCanvas, #gizmoCanvas, #previewCanvas{image-rendering:pixelated;cursor:crosshair;}
+  .toolrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .layer-item{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);padding:6px 8px;margin-bottom:6px;font-size:12px;}
+  .layer-item input[type=range]{flex:1;}
+
+  pre{background:var(--panel);border:1px solid var(--line);padding:14px;font-family:'Space Mono',monospace;
+      font-size:12px;color:#c9e8ea;max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;}
+  .note{font-size:12.5px;color:var(--muted);border-left:2px solid var(--accent);padding-left:10px;margin-top:14px;}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  footer{margin-top:20px;text-align:center;color:var(--muted);font-size:12px;}
+  .preview-wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:12px;}
+  .preview-canvas-box{background:#0a0b10;border:1px solid var(--line);width:280px;height:340px;flex:none;}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+  .slot-picker-row{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:6px 8px;margin-bottom:6px;}
+  .slot-picker-row select{width:auto;flex:1;}
+  .slot-picker-row img{object-fit:contain;background:#000;image-rendering:pixelated;flex:none;}
+  .slot-picker-row label{white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">// FISK'S SUPERHEROES · HERO FORGE</p>
+  <h1>Hero Forge<span>.</span></h1>
+  <p class="sub">Upload a real heropack, pull its powers, attributes, and keybinds into a new hero, reuse or repaint its textures, and export a matching renderer — or skip the upload entirely and start from a power preset. Textures and renderers are now resolved from the pack's actual <code>loadTextures(...)</code> / <code>setItemIcons(...)</code> calls, not guessed from folder names.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="scan">1. Scan pack</button>
+    <button class="tab" data-tab="build" disabled>2. Build hero</button>
+    <button class="tab" data-tab="textures" disabled>3. Textures &amp; preview</button>
+    <button class="tab" data-tab="export" disabled>4. Export</button>
+  </div>
+
+  <!-- TAB 1: SCAN -->
+  <div class="panel active" id="tab-scan">
+    <h2>Upload a heropack (optional)</h2>
+    <p class="hint">Drop in the .zip exactly as you'd install it — Hero Forge reads heropack.json plus every hero, power, renderer, and texture file inside. You don't need a pack to get started: <b>Quick presets</b> below work standalone and just skip textures/renderer until you have a pack to pull those from.</p>
+    <div class="dropzone" id="dropzone">
+      <strong>Click to choose a heropack .zip</strong><br>
+      <span style="color:var(--muted);font-size:12.5px;">or drag it here</span>
+    </div>
+    <input type="file" id="zipInput" accept=".zip">
+    <div id="scanStatus" style="margin-top:14px;color:var(--muted);font-size:13px;"></div>
+    <div class="stat-row" id="statRow" style="display:none;">
+      <div class="stat"><b id="statHeroes">0</b><span>heroes found</span></div>
+      <div class="stat"><b id="statPowers">0</b><span>powers found</span></div>
+      <div class="stat"><b id="statTextures">0</b><span>texture files</span></div>
+      <div class="stat"><b id="statRenderers">0</b><span>renderer files</span></div>
+      <div class="stat"><b id="statKeys">0</b><span>keybind names in use</span></div>
+    </div>
+    <div id="capeGlobalNote"></div>
+
+    <h3>Or start from a preset (no pack needed)</h3>
+    <p class="hint">These fill in tier, attributes, powers, and keybinds using real values pulled from published packs. You'll still need an uploaded pack for pieces/renderer/textures, but you can start building powers and attributes right now.</p>
+    <div id="heroPresetButtons" class="tag-row"></div>
+    <button class="btn primary" id="startNoPackBtn" style="margin-top:14px;">Start building without a pack →</button>
+  </div>
+
+  <!-- TAB 2: BUILD -->
+  <div class="panel" id="tab-build">
+    <h2>Build your hero</h2>
+    <div class="row2">
+      <div class="field">
+        <label for="heroName">Hero name</label>
+        <input type="text" id="heroName" placeholder="e.g. Voltguard" value="Voltguard">
+      </div>
+      <div class="field">
+        <label for="baseHero">Base off an existing hero (optional, needs a pack)</label>
+        <select id="baseHero"><option value="">— start from scratch —</option></select>
+      </div>
+    </div>
+    <div class="slug-preview" id="slugPreview"></div>
+    <p class="hint">Basing off a hero copies its tier, pieces, powers (with their internal values, still editable below), attributes, keybinds, and its own textures/renderer over to your new hero. On export, your hero's file is that hero's real file with just those fields patched in place — any imports, custom functions, tick handlers, damage profiles etc. are carried over untouched. Starting from scratch builds a plain, minimal hero file.</p>
+    <div class="row2">
+      <div class="field">
+        <label for="heroTier">Tier</label>
+        <input type="number" id="heroTier" value="5">
+      </div>
+      <div class="field">
+        <label for="heroVersion">Version / subtitle (optional)</label>
+        <input type="text" id="heroVersion" placeholder="e.g. Arc Reactor Mk I">
+      </div>
+    </div>
+    <div class="row4">
+      <div class="field"><label for="pChest">Chestplate piece</label><input type="text" id="pChest" value="item.superhero_armor.piece.chestpiece"></div>
+      <div class="field"><label for="pLegs">Leggings piece</label><input type="text" id="pLegs" value="item.superhero_armor.piece.pants"></div>
+      <div class="field"><label for="pBoots">Boots piece</label><input type="text" id="pBoots" value="item.superhero_armor.piece.boots"></div>
+      <div class="field"><label for="pHelmet">Helmet piece</label><input type="text" id="pHelmet" placeholder="leave blank if none" value=""></div>
+    </div>
+    <p class="hint">Chestplate is required for every hero and always gets written. Leave Leggings, Boots, or Helmet blank if this hero doesn't use that slot — a blank slot is skipped entirely in the export, same as any hero in this pack that only uses one or two pieces.</p>
+
+    <h3>Attributes <span class="badge slot">the actual numbers</span></h3>
+    <p class="hint">This is where a hero's real power lives — <code>hero.addAttribute(name, value, tier)</code> calls. Powers only turn an ability on; these values are what make Metro Man's punch hit harder than yours. Basing off a hero copies its real attribute values in; presets fill in reasonable starting values you should tune.</p>
+    <div id="attrRows"></div>
+    <div class="row2" style="align-items:end;">
+      <button class="btn small" id="addAttrBtn">+ Add attribute</button>
+      <div>
+        <label for="attrPreset">Quick-add common attribute</label>
+        <select id="attrPreset"></select>
+      </div>
+    </div>
+
+    <h3>Powers</h3>
+    <p class="hint">Check every power your hero should have. Open "Edit internal powers &amp; values" on any checked power to turn its internal modifiers on/off or change their values — this isn't limited to the pack's stock configuration. <span class="badge preset">PRESET</span> powers work even without a pack loaded.</p>
+    <div id="conflictWarning"></div>
+    <div id="powerList"></div>
+
+    <h3>Keybinds</h3>
+    <p class="hint">Key names are pulled from real addKeyBind() calls and power-internal keys already in this pack. You can still type a custom one.</p>
+    <div id="keybindRows"></div>
+    <button class="btn small" id="addKeybindBtn">+ Add keybind</button>
+
+    <h3>Sounds carried automatically</h3>
+    <p class="hint">Sound events live inside each power's own definition, so picking a power already brings its sounds along — nothing extra to wire up.</p>
+    <div id="soundList" class="tag-row"></div>
+
+    <h3>Renderer &amp; visuals</h3>
+    <p class="hint">Pick an existing hero's renderer as your starting point — this controls the <i>logic</i> (flight physics, beams, cape physics, animations), not which textures get used. Once picked, every texture slot it declares (layer1, layer2, cape, and anything else, including slots it only inherits via <code>extend(...)</code>) is listed below with its own picker, defaulting to that renderer's original texture — but you can point any slot at <i>any</i> texture anywhere in the pack. Pick MetroMan's renderer for the flight logic, then set the cape slot to Black Adam's cape and layer1/layer2 to whatever you want — they're independent choices. Leave the renderer on "none" to hand-write one yourself.</p>
+    <div class="field">
+      <label for="rendererTemplate">Renderer template</label>
+      <select id="rendererTemplate"><option value="">— none (write your own later) —</option></select>
+    </div>
+    <div id="rendererSlotInfo"></div>
+
+    <div id="slotPickerSection" style="display:none;">
+      <h3>Suit / cape texture slots</h3>
+      <p class="hint">One row per slot the renderer actually reads from <code>loadTextures({...})</code>. Each dropdown lists every suit/cape texture in the whole pack, grouped by folder — pick any of them regardless of which hero it originally belonged to, or switch to "Upload / paint custom" for something new.</p>
+      <div id="slotPickerRows"></div>
+    </div>
+
+    <div id="iconPickerSection" style="display:none;">
+      <h3>Ability / item icons</h3>
+      <p class="hint">If this renderer has a real <code>renderer.setItemIcons(...)</code> call, positions come straight from it (including <code>%s</code> placeholders, which the game substitutes with the hero's own name at runtime — that substitution was being silently dropped before, which is why icons weren't showing up). Most heroes in these packs <b>don't</b> call <code>setItemIcons</code> at all — they rely on the base renderer's default convention instead: <code>&lt;hero&gt;_0.png</code> for the helmet, <code>_1.png</code> for the chestplate, <code>_2.png</code> for leggings, <code>_3.png</code> for boots, skipping whichever slot has no piece (e.g. Metro Man has no helmet, so only <code>_1/_2/_3</code> exist for him). Hero Forge now detects which case applies and, for the convention case, follows <i>your</i> current helmet/leggings/boots fields above — so a slot only appears here if this hero actually has that piece.</p>
+      <div id="iconPickerRows"></div>
+    </div>
+
+    <div id="beamColorSection" style="display:none;">
+      <h3>Beam / laser / effect colors</h3>
+      <p class="hint">Every <code>0xRRGGBB</code> color literal found in the chosen renderer, in order of appearance. These usually drive beams, overlays, and trails. Edit any of them — the export rewrites that exact literal in place. Anything beyond color (unique particle emitters, custom beam geometry) still needs hand-scripting.</p>
+      <div id="beamColorRows"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: TEXTURES -->
+  <div class="panel" id="tab-textures">
+    <h2>Textures &amp; preview</h2>
+    <p class="hint">Slot and icon assignment now happens in step 2, right where you pick the renderer, since that's where "which texture goes in which slot" actually matters. This tab is for browsing what's in the pack and previewing the result.</p>
+
+    <h3>Browse pack textures</h3>
+    <p class="hint">Read-only reference — click "Paint a copy" to open the paint tool on any texture; save it, then pick "Upload / paint custom" on the relevant slot back in step 2 to use your painted version.</p>
+    <div class="tex-grid" id="suitTexGrid"></div>
+
+    <h3>Preview on player model</h3>
+    <p class="hint">This renders your hero's currently selected layer1 / layer2 / cape textures on an actual Minecraft-style player model (not a plain cube), so you can check the UV placement looks right before exporting. Cape is rendered as a flat plane, as intended.</p>
+    <div class="preview-wrap">
+      <div class="preview-canvas-box"><canvas id="previewCanvas" width="280" height="340"></canvas></div>
+      <div style="flex:1;min-width:220px;">
+        <p class="hint" id="previewStatus">Pick a renderer template in step 2 to enable this preview.</p>
+        <button class="btn small" id="refreshPreviewBtn">Refresh preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: EXPORT -->
+  <div class="panel" id="tab-export">
+    <h2>Export</h2>
+    <p class="hint">This packages the entire imported heropack, plus your new hero's file, its renderer (if a template was chosen), any customized power files, and its textures — all namespaced to this hero so it never collides with another custom hero you build later.</p>
+    <button class="btn primary" id="buildExportBtn">Generate export</button>
+    <div id="exportOut"></div>
+  </div>
+
+  <footer>Particle emitters, unique 3D models, custom beam geometry, and any hand-scripted logic beyond a flat texture swap or color literal still need a human touch — Hero Forge copies and remaps the closest renderer for you, but bespoke effects are still yours to script.</footer>
+</div>
+
+<!-- PAINT MODAL -->
+<div class="modal-bg" id="paintModalBg">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h2 style="margin:0;">Edit texture</h2>
+      <button class="btn small" id="closePaintBtn">Close</button>
+    </div>
+    <div class="toolrow">
+      <button class="btn small" id="viewModeToggle">Switch to player preview</button>
+      <button class="btn small" id="gridToggle">Toggle grid</button>
+      <button class="btn small" id="zoomIn">Zoom +</button>
+      <button class="btn small" id="zoomOut">Zoom −</button>
+      <button class="btn small" id="eraserBtn">Eraser</button>
+      <input type="color" id="paintColor" value="#ef4d55">
+      <select id="brushSize"><option value="1">1px</option><option value="2" selected>2px</option><option value="4">4px</option><option value="8">8px</option></select>
+    </div>
+    <div class="paint-layout">
+      <div class="paint-canvas-wrap" id="canvasWrap">
+        <canvas id="paintCanvas" width="512" height="512"></canvas>
+        <canvas id="gizmoCanvas" width="512" height="512" style="display:none;"></canvas>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">Layers</h3>
+        <div id="layerList"></div>
+        <button class="btn small" id="addLayerBtn">+ Add layer</button>
+        <div class="note" id="gizmoNote">Painting happens on the flat texture grid; the player preview shows this texture applied to whichever body slot(s) it's mapped to for this hero.</div>
+        <button class="btn primary" id="applyPaintBtn" style="margin-top:16px;width:100%;">Apply to texture</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DOMAIN DATA — known modifier/attribute vocabulary pulled from
+// real published heropacks, used for presets and quick-add lists.
+// ============================================================
+const KNOWN_ATTRIBUTES = [
+  "PUNCH_DAMAGE","WEAPON_DAMAGE","SPRINT_SPEED","BASE_SPEED_LEVELS",
+  "FALL_RESISTANCE","DAMAGE_REDUCTION","KNOCKBACK","JUMP_HEIGHT"
+];
+
+// category is used purely for the soft "these usually can't both be
+// active" conflict warning — it never blocks a selection, it just warns,
+// since some real heroes (Metro Man) do run flight + speed together and
+// resolve it themselves with isModifierEnabled/isKeyBindEnabled.
+const POWER_PRESETS = {
+  "fiskheroes:controlled_flight": {
+    label: "Flight", category: "movement",
+    modifiers: {
+      "fiskheroes:controlled_flight": {
+        speed: 0.15, boostSpeed: 0.3, canBoost: true,
+        barrelRoll: { duration: 14, speed: 0.12, drag: 0.03 },
+        diveSpeedRetention: 0.5,
+        collision: { blocks: { stopFlying: false, takeDamage: false }, entities: { stopFlying: false, dealDamage: true } },
+        knockback: 0.5,
+        soundEvents: { ENABLE: ["fiskheroes:flight_loop"], BOOST: ["fiskheroes:flight_boost"], IMPACT_ENTITY: "fiskheroes:flight_impact_entity" }
+      }
+    },
+    keyFields: [],
+    attrs: [{name:"BASE_SPEED_LEVELS", value:2, tier:0}]
+  },
+  "fiskheroes:super_speed": {
+    label: "Super Speed", category: "movement",
+    modifiers: { "fiskheroes:super_speed": { canUseTreadmill: false, canUseTachyons: false, soundEvents: { MOVE: ["fiskheroes:super_speed_move_loop"], SPRINT: "fiskheroes:super_speed_sprint" } } },
+    keyFields: ["SUPER_SPEED"],
+    attrs: [{name:"SPRINT_SPEED", value:0.7, tier:1}, {name:"BASE_SPEED_LEVELS", value:4, tier:0}]
+  },
+  "fiskheroes:slow_motion": {
+    label: "Slow Motion", category: "utility",
+    modifiers: { "fiskheroes:slow_motion": { isToggle: true } },
+    keyFields: ["SLOW_MOTION"],
+    attrs: []
+  },
+  "fiskheroes:heat_vision": {
+    label: "Heat Vision", category: "offense",
+    modifiers: { "fiskheroes:heat_vision": { damageProfile: { damage: 7.0, types: { FIRE: 1.0 }, properties: { COOK_ENTITY: true, HEAT_TRANSFER: 140 } }, range: 32.0, radius: 0.1, soundEvents: { SHOOT: "fiskheroes:heat_vision" } } },
+    keyFields: ["HEAT_VISION"],
+    attrs: []
+  },
+  "fiskheroes:intangibility": {
+    label: "Intangibility / Phasing", category: "defense",
+    modifiers: { "fiskheroes:intangibility": { "_note": "Template only — packs vary a lot on this one's exact fields (fall-through rules, visual alpha). Check an existing intangibility power in your pack if you have one and copy its fields in here." } },
+    keyFields: ["INTANGIBILITY"],
+    attrs: []
+  },
+  "fiskheroes:damage_immunity": {
+    label: "Damage Immunity (Explosion)", category: "defense",
+    modifiers: { "fiskheroes:damage_immunity": { damageType: "EXPLOSION" } },
+    keyFields: [], attrs: [{name:"DAMAGE_REDUCTION", value:2, tier:0}]
+  },
+  "fiskheroes:projectile_immunity": {
+    label: "Projectile Immunity", category: "defense",
+    modifiers: { "fiskheroes:projectile_immunity": {} }, keyFields: [], attrs: []
+  },
+  "fiskheroes:fire_immunity": {
+    label: "Fire Immunity", category: "defense",
+    modifiers: { "fiskheroes:fire_immunity": {} }, keyFields: [], attrs: []
+  },
+  "fiskheroes:water_breathing": {
+    label: "Water Breathing", category: "utility",
+    modifiers: { "fiskheroes:water_breathing": {} }, keyFields: [], attrs: []
+  },
+  "fiskheroes:leaping": {
+    label: "Super Leap", category: "movement",
+    modifiers: { "fiskheroes:leaping": { leapAmount: [2, 1.5] } }, keyFields: [], attrs: [{name:"JUMP_HEIGHT", value:1.5, tier:0}]
+  }
+};
+
+// full hero starting points — bundles of powers + attributes + keybinds,
+// no pack required. Modeled on real hero builds (Metro Man's actual
+// attribute values, Reverse Flash's actual speedster values, etc).
+const HERO_PRESETS = {
+  speedster: {
+    label: "Speedster",
+    tier: 5,
+    attrs: [
+      {name:"PUNCH_DAMAGE", value:5.0, tier:0}, {name:"WEAPON_DAMAGE", value:0.5, tier:0},
+      {name:"JUMP_HEIGHT", value:1.0, tier:0}, {name:"FALL_RESISTANCE", value:4.0, tier:0},
+      {name:"BASE_SPEED_LEVELS", value:100.0, tier:0}
+    ],
+    powers: ["fiskheroes:super_speed", "fiskheroes:slow_motion"],
+    keybinds: [{key:"SUPER_SPEED", label:"key.superSpeed", tier:1}, {key:"SLOW_MOTION", label:"key.slowMotion", tier:2}]
+  },
+  flying_brick: {
+    label: "Flying Brick",
+    tier: 9,
+    attrs: [
+      {name:"PUNCH_DAMAGE", value:10.0, tier:0}, {name:"WEAPON_DAMAGE", value:1.0, tier:0},
+      {name:"SPRINT_SPEED", value:0.7, tier:1}, {name:"BASE_SPEED_LEVELS", value:4.0, tier:0},
+      {name:"FALL_RESISTANCE", value:1.0, tier:1}
+    ],
+    powers: ["fiskheroes:controlled_flight", "fiskheroes:heat_vision", "fiskheroes:super_speed", "fiskheroes:slow_motion"],
+    keybinds: [{key:"HEAT_VISION", label:"key.heatVision", tier:1}, {key:"SUPER_SPEED", label:"key.superSpeed", tier:2}, {key:"SLOW_MOTION", label:"key.slowMotionHold", tier:3}]
+  },
+  blaster: {
+    label: "Energy Blaster",
+    tier: 6,
+    attrs: [{name:"PUNCH_DAMAGE", value:4.5, tier:0}, {name:"DAMAGE_REDUCTION", value:1.0, tier:0}],
+    powers: ["fiskheroes:heat_vision", "fiskheroes:damage_immunity"],
+    keybinds: [{key:"HEAT_VISION", label:"key.heatVision", tier:1}]
+  },
+  phase_walker: {
+    label: "Phase Walker",
+    tier: 5,
+    attrs: [{name:"PUNCH_DAMAGE", value:3.0, tier:0}, {name:"FALL_RESISTANCE", value:2.0, tier:0}],
+    powers: ["fiskheroes:intangibility", "fiskheroes:projectile_immunity"],
+    keybinds: [{key:"INTANGIBILITY", label:"Phase", tier:1}]
+  }
+};
+
+// Standard 64x64 Minecraft skin UV table (pixel coords, layer0 = base skin).
+// Each part maps face -> [u, v, w, h]. Layer1 (overlay) tables are derived
+// from these with the well-known offsets used by every Minecraft skin.
+const SKIN_PARTS = {
+  head:      { size:[8,8,8],   base:{top:[8,0,8,8],bottom:[16,0,8,8],right:[0,8,8,8],front:[8,8,8,8],left:[16,8,8,8],back:[24,8,8,8]},
+                                 overlay:{top:[40,0,8,8],bottom:[48,0,8,8],right:[32,8,8,8],front:[40,8,8,8],left:[48,8,8,8],back:[56,8,8,8]} },
+  body:      { size:[8,12,4],  base:{top:[20,16,8,4],bottom:[28,16,8,4],right:[16,20,4,12],front:[20,20,8,12],left:[28,20,4,12],back:[32,20,8,12]},
+                                 overlay:{top:[20,32,8,4],bottom:[28,32,8,4],right:[16,36,4,12],front:[20,36,8,12],left:[28,36,4,12],back:[32,36,8,12]} },
+  rightArm:  { size:[4,12,4],  base:{top:[44,16,4,4],bottom:[48,16,4,4],right:[40,20,4,12],front:[44,20,4,12],left:[48,20,4,12],back:[52,20,4,12]},
+                                 overlay:{top:[44,32,4,4],bottom:[48,32,4,4],right:[40,36,4,12],front:[44,36,4,12],left:[48,36,4,12],back:[52,36,4,12]} },
+  leftArm:   { size:[4,12,4],  base:{top:[36,48,4,4],bottom:[40,48,4,4],right:[32,52,4,12],front:[36,52,4,12],left:[40,52,4,12],back:[44,52,4,12]},
+                                 overlay:{top:[52,48,4,4],bottom:[56,48,4,4],right:[48,52,4,12],front:[52,52,4,12],left:[56,52,4,12],back:[60,52,4,12]} },
+  rightLeg:  { size:[4,12,4],  base:{top:[4,16,4,4],bottom:[8,16,4,4],right:[0,20,4,12],front:[4,20,4,12],left:[8,20,4,12],back:[12,20,4,12]},
+                                 overlay:{top:[4,32,4,4],bottom:[8,32,4,4],right:[0,36,4,12],front:[4,36,4,12],left:[8,36,4,12],back:[12,36,4,12]} },
+  leftLeg:   { size:[4,12,4],  base:{top:[20,48,4,4],bottom:[24,48,4,4],right:[16,52,4,12],front:[20,52,4,12],left:[24,52,4,12],back:[28,52,4,12]},
+                                 overlay:{top:[4,48,4,4],bottom:[8,48,4,4],right:[0,52,4,12],front:[4,52,4,12],left:[8,52,4,12],back:[12,52,4,12]} }
+};
+const PART_POS = { head:[0,26,0], body:[0,12,0], rightArm:[-6,12,0], leftArm:[6,12,0], rightLeg:[-2,0,0], leftLeg:[2,0,0] };
+
+// ============================================================
+// STATE
+// ============================================================
+let zip = null, domain = null, heropackMeta = null;
+let heroesParsed = {};    // slug -> {name,tier,version,chestplate,leggings,boots,helmet,powers,attributes,keybinds,file,rawText}
+let powersParsed = {};    // id -> {file,label,rawJson,rawModifiers,modifiers,keyFields,sounds}
+let renderersParsed = {}; // slug -> {path, rawText, extendsTarget}
+let discoveredKeyNames = new Set();
+let capeMentioned = false;
+let suitTexturePaths = [];
+let iconTexturePaths = [];
+let suitTexPrefixG = "", iconTexPrefixG = "";
+let noPackMode = false;
+
+let newHero = {
+  powers: new Map(),      // id -> {modifiers: {...editable...}, includedKeys: Set}
+  keybinds: [],           // {key,label,tier}
+  attributes: [],          // {name,value,tier}
+  slotAssignments: {},     // slotName -> {sourcePath: pack-texture-path|null, mode:'pack'|'custom', file:null}
+  iconAssignments: [],     // [{index, sourcePath, mode:'pack'|'custom', file:null, template}]
+  iconUsesExplicitCall: false, // whether icons come from a real setItemIcons() call vs the default slug_N convention
+  beamColors: []           // {index (match order), hex, label}
+};
+
+// what the paint modal is currently editing: {type:'slot', slot} | {type:'icon', index} | {type:'browse', path}
+let currentPaintTarget = null;
+
+// ============================================================
+// TAB NAV
+// ============================================================
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  if (t.disabled) return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  document.getElementById("tab-"+t.dataset.tab).classList.add("active");
+  if (t.dataset.tab === "textures") refreshPlayerPreview();
+}));
+function unlockTabs(){ document.querySelectorAll(".tab").forEach(t=>t.disabled=false); }
+
+// ============================================================
+// PRESET BUTTONS (available before any pack is loaded)
+// ============================================================
+function renderHeroPresetButtons(){
+  const box = document.getElementById("heroPresetButtons");
+  box.innerHTML = "";
+  Object.entries(HERO_PRESETS).forEach(([id, p]) => {
+    const btn = document.createElement("button");
+    btn.className = "btn small preset";
+    btn.textContent = p.label;
+    btn.addEventListener("click", () => applyHeroPreset(id));
+    box.appendChild(btn);
+  });
+}
+renderHeroPresetButtons();
+
+document.getElementById("startNoPackBtn").addEventListener("click", () => {
+  if (!zip){
+    noPackMode = true;
+    heroesParsed = {}; powersParsed = {}; renderersParsed = {};
+    discoveredKeyNames = new Set(); suitTexturePaths = []; iconTexturePaths = [];
+    domain = domain || "yourpack";
+    unlockTabs();
+    populateBaseHeroSelect(); populateRendererSelect(); populateAttrPresetSelect();
+    renderPowerList(); renderKeybindRows(); renderAttrRows(); renderBrowseGallery();
+    updateSlugPreview();
+    document.querySelector('.tab[data-tab="build"]').click();
+  } else {
+    document.querySelector('.tab[data-tab="build"]').click();
+  }
+});
+
+function applyHeroPreset(id){
+  const p = HERO_PRESETS[id];
+  if (!p) return;
+  if (!zip && !noPackMode){
+    noPackMode = true;
+    domain = domain || "yourpack";
+    populateBaseHeroSelect(); populateRendererSelect(); populateAttrPresetSelect();
+    unlockTabs();
+  }
+  document.getElementById("heroTier").value = p.tier;
+  newHero.attributes = p.attrs.map(a => ({...a}));
+  newHero.powers = new Map();
+  p.powers.forEach(pid => addPowerToHero(pid));
+  newHero.keybinds = p.keybinds.map(k => ({...k}));
+  renderPowerList(); renderKeybindRows(); renderAttrRows();
+  document.querySelector('.tab[data-tab="build"]').click();
+}
+
+// ============================================================
+// UPLOAD & SCAN
+// ============================================================
+const dropzone = document.getElementById("dropzone");
+const zipInput = document.getElementById("zipInput");
+dropzone.addEventListener("click", () => zipInput.click());
+dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.style.borderColor="var(--cyan)"; });
+dropzone.addEventListener("dragleave", () => dropzone.style.borderColor="var(--line-bright)");
+dropzone.addEventListener("drop", e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) handleZip(e.dataTransfer.files[0]);
+});
+zipInput.addEventListener("change", e => { if (e.target.files[0]) handleZip(e.target.files[0]); });
+
+function setStatus(msg){ document.getElementById("scanStatus").textContent = msg; }
+
+async function handleZip(file){
+  noPackMode = false;
+  setStatus("Reading zip…");
+  try{
+    zip = await JSZip.loadAsync(file);
+  } catch(err){ setStatus("Couldn't read that as a zip: " + err.message); return; }
+
+  const hpFile = zip.file("heropack.json");
+  if (!hpFile){ setStatus("No heropack.json found at the root of this zip."); return; }
+  try {
+    heropackMeta = JSON.parse(await hpFile.async("string"));
+  } catch(err){ setStatus("heropack.json couldn't be parsed: " + err.message); return; }
+  domain = heropackMeta.domain;
+  setStatus("Found pack \"" + (heropackMeta.name||domain) + "\" (domain: " + domain + "). Scanning…");
+
+  heroesParsed = {}; powersParsed = {}; renderersParsed = {}; discoveredKeyNames = new Set(); capeMentioned = false;
+  suitTexturePaths = []; iconTexturePaths = [];
+  newHero = { powers: new Map(), keybinds: [], attributes: [], slotAssignments: {}, iconAssignments: [], iconUsesExplicitCall: false, beamColors: [] };
+
+  const heroPrefix = `assets/${domain}/data/heroes/`;
+  const powerPrefix = `assets/${domain}/data/powers/`;
+  const suitTexPrefix = `assets/${domain}/textures/heroes/`;
+  const iconTexPrefix = `assets/${domain}/textures/items/heroes/`;
+  const rendererPrefix = `assets/${domain}/renderers/heroes/`;
+  suitTexPrefixG = suitTexPrefix;
+  iconTexPrefixG = iconTexPrefix;
+
+  const entries = Object.keys(zip.files);
+
+  // heroes
+  for (const path of entries){
+    if (path.startsWith(heroPrefix) && path.endsWith(".js") && !zip.files[path].dir){
+      const text = await zip.files[path].async("string");
+      const slug = path.slice(heroPrefix.length).replace(/\.js$/,"");
+      if (slug.startsWith("external/")) continue; // shared helper modules, not real heroes
+      heroesParsed[slug] = Object.assign({file:path, rawText:text}, parseHeroJS(text));
+      heroesParsed[slug].keybinds.forEach(k => discoveredKeyNames.add(k.key));
+    }
+  }
+  // powers
+  for (const path of entries){
+    if (path.startsWith(powerPrefix) && path.endsWith(".json") && !zip.files[path].dir){
+      const slug = path.slice(powerPrefix.length).replace(/\.json$/,"");
+      const id = domain + ":" + slug;
+      try{
+        const json = JSON.parse(await zip.files[path].async("string"));
+        const rawModifiers = json.modifiers || {};
+        const modifiers = Object.keys(rawModifiers);
+        const keys = []; collectKeys(rawModifiers, keys);
+        const sounds = []; collectSounds(rawModifiers, sounds);
+        powersParsed[id] = { file: path, label: json.name || prettify(slug.split("/").pop()), rawJson: json, rawModifiers, modifiers, keyFields: [...new Set(keys)], sounds: [...new Set(sounds)] };
+        keys.forEach(k => discoveredKeyNames.add(k));
+      } catch(e){ /* skip unparsable power file */ }
+    }
+  }
+  // renderers (also doubles as the cape-mention scan, so each file is only read once)
+  for (const path of entries){
+    if (path.startsWith(rendererPrefix) && path.endsWith(".js") && !zip.files[path].dir){
+      const slug = path.slice(rendererPrefix.length).replace(/\.js$/,"");
+      if (slug.startsWith("external/")) continue;
+      const text = await zip.files[path].async("string");
+      const extendMatch = text.match(/extend\(\s*"([^"]+)"\s*\)/);
+      renderersParsed[slug] = { path, rawText: text, extendsTarget: extendMatch ? extendMatch[1] : null };
+      if (/cape/i.test(text)) capeMentioned = true;
+    }
+  }
+  // textures
+  for (const path of entries){
+    if (zip.files[path].dir) continue;
+    if (path.startsWith(suitTexPrefix) && /\.png$/i.test(path)) suitTexturePaths.push(path);
+    else if (path.startsWith(iconTexPrefix) && /\.png$/i.test(path)) iconTexturePaths.push(path);
+  }
+
+  finishScan();
+}
+
+function finishScan(){
+  document.getElementById("statRow").style.display = "flex";
+  document.getElementById("statHeroes").textContent = Object.keys(heroesParsed).length;
+  document.getElementById("statPowers").textContent = Object.keys(powersParsed).length;
+  document.getElementById("statTextures").textContent = suitTexturePaths.length + iconTexturePaths.length;
+  document.getElementById("statRenderers").textContent = Object.keys(renderersParsed).length;
+  document.getElementById("statKeys").textContent = discoveredKeyNames.size;
+  setStatus("Scan complete. Head to \"Build hero\" to start.");
+
+  if (capeMentioned){
+    document.getElementById("capeGlobalNote").innerHTML =
+      `<p class="note">This pack uses cape rendering (CAPE_PHYSICS / cape mesh) in at least one renderer file. If your new hero needs a cape, pick any renderer template that has a "cape" slot in step 2 — you can then point that slot at any cape texture in the pack, not just the one that renderer originally shipped with.</p>`;
+  }
+
+  populateBaseHeroSelect();
+  populateRendererSelect();
+  populateAttrPresetSelect();
+  renderPowerList();
+  renderKeybindRows();
+  renderAttrRows();
+  renderBrowseGallery();
+  updateSlugPreview();
+  unlockTabs();
+}
+
+function prettify(slug){ return slug.replace(/[_\-]+/g," ").replace(/\b\w/g,c=>c.toUpperCase()); }
+function slugify(name){ return name.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "new_hero"; }
+
+function parseHeroJS(text){
+  const g = (re) => { const m = text.match(re); return m ? m[1] : null; };
+  const powers = [];
+  for (const m of text.matchAll(/hero\.addPowers\(([^)]*)\)/g))
+    for (const pm of m[1].matchAll(/"([^"]+)"/g)) powers.push(pm[1]);
+  const keybinds = [];
+  for (const m of text.matchAll(/hero\.addKeyBind\(\s*"([^"]+)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*,\s*(-?\d+)\s*\)/g))
+    keybinds.push({key:m[1], label:m[2], tier:+m[3]});
+  const attributes = [];
+  for (const m of text.matchAll(/hero\.addAttribute\(\s*"([^"]+)"\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+)\s*\)/g))
+    attributes.push({name:m[1], value:+m[2], tier:+m[3]});
+  return {
+    name: g(/hero\.setName\(\s*"((?:[^"\\]|\\.)*)"\s*\)/),
+    tier: (()=>{const m=text.match(/hero\.setTier\(\s*(-?\d+)\s*\)/); return m?+m[1]:null;})(),
+    version: g(/hero\.setVersion\(\s*"((?:[^"\\]|\\.)*)"\s*\)/),
+    chestplate: g(/hero\.setChestplate\(\s*"([^"]*)"\s*\)/),
+    leggings: g(/hero\.setLeggings\(\s*"([^"]*)"\s*\)/),
+    boots: g(/hero\.setBoots\(\s*"([^"]*)"\s*\)/),
+    helmet: g(/hero\.setHelmet\(\s*"([^"]*)"\s*\)/),
+    powers, keybinds, attributes
+  };
+}
+function collectKeys(obj, out){
+  if (obj && typeof obj === "object"){
+    for (const k in obj){
+      if (k === "key" && typeof obj[k] === "string") out.push(obj[k]);
+      collectKeys(obj[k], out);
+    }
+  }
+}
+function collectSounds(obj, out){
+  if (obj && typeof obj === "object"){
+    for (const k in obj){
+      if (k === "soundEvents" && obj[k] && typeof obj[k] === "object"){
+        for (const sk in obj[k]){
+          const v = obj[k][sk];
+          if (typeof v === "string") out.push(v);
+          else if (Array.isArray(v)) v.forEach(x=>typeof x==="string"&&out.push(x));
+        }
+      }
+      collectSounds(obj[k], out);
+    }
+  }
+}
+
+// Recursively replace string leaves that match keys in `map`.
+function remapStrings(value, map){
+  let changed = false;
+  function walk(v){
+    if (typeof v === "string"){ if (map.has(v)){ changed = true; return map.get(v); } return v; }
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === "object"){ const out = {}; for (const k in v) out[k] = walk(v[k]); return out; }
+    return v;
+  }
+  const result = walk(value);
+  return { json: result, changed };
+}
+
+// ============================================================
+// RENDERER TEXTURE-SLOT RESOLUTION — this is the fix for textures
+// not matching. We no longer guess "textures for a hero" from a
+// folder that happens to share the hero's slug; instead we parse
+// that hero's own renderer's loadTextures({...}) block (and follow
+// its extend() chain within this pack), which is what the game
+// actually reads.
+// ============================================================
+function getRendererChain(slug, seen){
+  seen = seen || new Set();
+  if (!renderersParsed[slug] || seen.has(slug)) return [];
+  seen.add(slug);
+  const r = renderersParsed[slug];
+  let chain = [];
+  if (r.extendsTarget){
+    const [tDomain, tSlug] = splitId(r.extendsTarget);
+    if (tDomain === domain && renderersParsed[tSlug]) chain = getRendererChain(tSlug, seen);
+  }
+  chain.push(slug);
+  return chain;
+}
+function splitId(id){
+  const i = id.indexOf(":");
+  return i === -1 ? [domain, id] : [id.slice(0,i), id.slice(i+1)];
+}
+function resolveTexId(id){
+  // id like "misc:metroman/metroman_layer1" -> path + whether it's inside this pack
+  const [d, rest] = splitId(id);
+  if (d !== domain) return { path: null, external: true, id };
+  const path = `${suitTexPrefixG}${rest}.png`;
+  return { path, external: false, id, exists: !!(zip && zip.files[path]) };
+}
+function resolveIconName(name){
+  // setItemIcons uses bare names in the SAME domain's items/heroes folder
+  const path = `${iconTexPrefixG}${name}.png`;
+  return { path, exists: !!(zip && zip.files[path]) };
+}
+
+// merged loadTextures slot map for a renderer, following its extend chain
+function getMergedRendererSlots(slug){
+  const chain = getRendererChain(slug);
+  const slots = {};
+  chain.forEach(s => {
+    const text = renderersParsed[s].rawText;
+    const m = text.match(/loadTextures\(\s*\{([\s\S]*?)\}\s*\)/);
+    if (!m) return;
+    for (const pm of m[1].matchAll(/"((?:[^"\\]|\\.)*)"(\s*:\s*)"((?:[^"\\]|\\.)*)"/g)){
+      slots[pm[1]] = resolveTexId(pm[3]);
+    }
+  });
+  return slots;
+}
+// Positional icon list from a renderer's real setItemIcons(...) call (own
+// file first, else inherited). THE FIX: "%s" in these packs is a runtime
+// placeholder the game substitutes with the renderer's own hero name — e.g.
+// setItemIcons("%s_0", "zoom_1", ...) inside zoom_s9.js resolves "%s_0" to
+// the real file "zoom_s9_0.png". The old version treated "%s" names as
+// unresolvable and silently dropped them, which is why icons weren't
+// rendering for the majority of packs (nearly every renderer uses %s for
+// at least one tier). We now substitute %s with that renderer's own slug
+// before resolving, exactly like the game does at runtime.
+function getRendererIconNames(slug){
+  const chain = getRendererChain(slug).slice().reverse(); // own file first
+  for (const s of chain){
+    const text = renderersParsed[s].rawText;
+    const m = text.match(/setItemIcons\(([^)]*)\)/);
+    if (!m) continue;
+    const templates = [...m[1].matchAll(/"([^"]*)"/g)].map(pm => pm[1]);
+    if (!templates.length) continue;
+    return templates.map((template, index) => {
+      const resolvedName = template.replace(/%s/g, s);
+      const info = resolveIconName(resolvedName);
+      return { index, template, resolvedName, ...info };
+    });
+  }
+  return [];
+}
+// Fallback used when a renderer has no explicit setItemIcons(...) call
+// anywhere in its extend() chain — which is most heroes. The base renderer
+// resolves icons by a fixed convention instead: "<slug>_0.png" for the
+// helmet, "_1.png" for the chestplate, "_2.png" for leggings, "_3.png" for
+// boots, and it simply never asks for a slot the hero doesn't have a piece
+// for (confirmed against Metro Man: no helmet -> only _1/_2/_3 exist).
+// We mirror that using the CURRENT new-hero piece fields, not the template
+// renderer's original hero, since it's this hero's pieces that matter.
+function defaultIconSlots(rendererSlug){
+  const helmet = document.getElementById("pHelmet").value.trim();
+  const legs = document.getElementById("pLegs").value.trim();
+  const boots = document.getElementById("pBoots").value.trim();
+  const indices = [];
+  if (helmet) indices.push(0);
+  indices.push(1); // chestplate is always required
+  if (legs) indices.push(2);
+  if (boots) indices.push(3);
+  return indices.map(index => {
+    const resolvedName = `${rendererSlug}_${index}`;
+    return { index, template: `%s_${index}`, resolvedName, ...resolveIconName(resolvedName) };
+  });
+}
+// all texture paths (suit+cape) actually used by a hero's own renderer
+function texturesForHeroRenderer(heroSlug){
+  if (!renderersParsed[heroSlug]) return [];
+  const slots = getMergedRendererSlots(heroSlug);
+  const seen = new Set(); const out = [];
+  Object.entries(slots).forEach(([slotName, info]) => {
+    if (info.external || !info.path || seen.has(info.path)) return;
+    seen.add(info.path);
+    out.push({ path: info.path, slots: Object.keys(slots).filter(k => slots[k].path === info.path) });
+  });
+  return out;
+}
+
+// Where a selected texture will land in the export, for a given new hero slug.
+function destPathFor(path, slug){
+  const fname = path.split("/").pop();
+  const isIcon = path.startsWith(iconTexPrefixG);
+  return isIcon ? `${iconTexPrefixG}${slug}_${fname}` : `${suitTexPrefixG}${slug}/${fname}`;
+}
+
+// ============================================================
+// TAB 2: BUILD HERO
+// ============================================================
+function populateBaseHeroSelect(){
+  const sel = document.getElementById("baseHero");
+  sel.innerHTML = `<option value="">— start from scratch —</option>`;
+  Object.entries(heroesParsed).forEach(([slug,h]) => {
+    sel.innerHTML += `<option value="${slug}">${h.name || slug}</option>`;
+  });
+}
+function populateRendererSelect(){
+  const sel = document.getElementById("rendererTemplate");
+  sel.innerHTML = `<option value="">— none (write your own later) —</option>`;
+  Object.keys(renderersParsed).forEach(slug => {
+    const label = (heroesParsed[slug] && heroesParsed[slug].name) || slug;
+    sel.innerHTML += `<option value="${slug}">${label}</option>`;
+  });
+}
+function populateAttrPresetSelect(){
+  const sel = document.getElementById("attrPreset");
+  sel.innerHTML = KNOWN_ATTRIBUTES.map(a => `<option value="${a}">${prettify(a)}</option>`).join("");
+}
+
+function addPowerToHero(id){
+  if (newHero.powers.has(id)) return;
+  const p = powersParsed[id] || presetAsPower(id);
+  if (!p) return;
+  const modifiers = JSON.parse(JSON.stringify(p.rawModifiers || {}));
+  newHero.powers.set(id, { modifiers, includedKeys: new Set(Object.keys(modifiers)) });
+  p.keyFields.forEach(k => {
+    if (!newHero.keybinds.some(kb=>kb.key===k)){
+      newHero.keybinds.push({key:k, label:prettify(k), tier: +document.getElementById("heroTier").value || 1});
+    }
+  });
+  const preset = POWER_PRESETS[id];
+  if (preset && preset.attrs){
+    preset.attrs.forEach(a => {
+      if (!newHero.attributes.some(x=>x.name===a.name)) newHero.attributes.push({...a});
+    });
+  }
+}
+function removePowerFromHero(id){ newHero.powers.delete(id); }
+function presetAsPower(id){
+  const preset = POWER_PRESETS[id];
+  if (!preset) return null;
+  return { file: null, label: preset.label, rawJson: { name: preset.label, modifiers: preset.modifiers }, rawModifiers: preset.modifiers, modifiers: Object.keys(preset.modifiers), keyFields: preset.keyFields || [], sounds: [], isPreset: true, category: preset.category };
+}
+function allPowersCatalog(){
+  const out = {};
+  Object.entries(powersParsed).forEach(([id,p]) => out[id] = p);
+  Object.keys(POWER_PRESETS).forEach(id => { if (!out[id]) out[id] = presetAsPower(id); });
+  return out;
+}
+
+document.getElementById("heroName").addEventListener("input", updateSlugPreview);
+["pHelmet","pLegs","pBoots"].forEach(id => {
+  document.getElementById(id).addEventListener("input", refreshDefaultIconSlotsIfNeeded);
+});
+function refreshDefaultIconSlotsIfNeeded(){
+  // only auto-adjust when this renderer has no explicit setItemIcons() call —
+  // if it does, the pack author's own positions are authoritative and we
+  // don't second-guess them just because a piece field changed
+  if (newHero.iconUsesExplicitCall) return;
+  const slug = document.getElementById("rendererTemplate").value;
+  if (!slug || !renderersParsed[slug]) return;
+  const prevByIndex = new Map(newHero.iconAssignments.map(a => [a.index, a]));
+  const iconInfos = defaultIconSlots(slug);
+  newHero.iconAssignments = iconInfos.map(info => {
+    const prev = prevByIndex.get(info.index);
+    if (prev) return prev; // keep any pick the person already made for a slot that's still relevant
+    return { index: info.index, template: info.template, sourcePath: info.exists ? info.path : null, mode: "pack", file: null };
+  });
+  document.getElementById("iconPickerSection").style.display = newHero.iconAssignments.length ? "block" : "none";
+  renderIconPickers();
+}
+
+function updateSlugPreview(){
+  const el = document.getElementById("slugPreview");
+  if (!domain){ el.textContent = ""; return; }
+  const name = document.getElementById("heroName").value.trim() || "New Hero";
+  const slug = slugify(name);
+  const conflict = !!heroesParsed[slug];
+  el.textContent = `File slug: ${slug}.js` + (conflict
+    ? ` — ⚠️ matches an existing hero in this pack and will overwrite it on export.`
+    : ``);
+  el.classList.toggle("warn", conflict);
+}
+
+document.getElementById("baseHero").addEventListener("change", e => {
+  const slug = e.target.value;
+  if (!slug){ return; }
+  const h = heroesParsed[slug];
+  if (h.tier != null) document.getElementById("heroTier").value = h.tier;
+  if (h.version) document.getElementById("heroVersion").value = h.version;
+  document.getElementById("pChest").value = h.chestplate || "";
+  document.getElementById("pLegs").value = h.leggings || "";
+  document.getElementById("pBoots").value = h.boots || "";
+  document.getElementById("pHelmet").value = h.helmet || "";
+
+  newHero.powers = new Map();
+  h.powers.forEach(id => addPowerToHero(id));
+  newHero.keybinds = h.keybinds.map(k=>({...k}));
+  newHero.attributes = h.attributes.map(a=>({...a}));
+
+  // default the renderer template to this hero's own renderer, if it has one —
+  // onRendererTemplateChange() below builds slot/icon assignments defaulted to
+  // that renderer's own textures, which you can then override per-slot.
+  const rendererSel = document.getElementById("rendererTemplate");
+  rendererSel.value = renderersParsed[slug] ? slug : "";
+  onRendererTemplateChange();
+
+  renderPowerList();
+  renderKeybindRows();
+  renderAttrRows();
+  refreshPlayerPreview();
+});
+
+// ---- Attributes UI ----
+document.getElementById("addAttrBtn").addEventListener("click", () => {
+  newHero.attributes.push({name:"", value:1, tier:0});
+  renderAttrRows();
+});
+function renderAttrRows(){
+  const box = document.getElementById("attrRows");
+  box.innerHTML = "";
+  const dl = `<datalist id="attrNameOptions">${KNOWN_ATTRIBUTES.map(a=>`<option value="${a}">`).join("")}</datalist>`;
+  box.insertAdjacentHTML("beforeend", dl);
+  newHero.attributes.forEach((a, idx) => {
+    const row = document.createElement("div");
+    row.className = "attr-row";
+    row.innerHTML = `
+      <input type="text" list="attrNameOptions" value="${a.name}" data-field="name" data-idx="${idx}" placeholder="ATTRIBUTE_NAME">
+      <input type="number" step="0.1" value="${a.value}" data-field="value" data-idx="${idx}" placeholder="value">
+      <input type="number" value="${a.tier}" data-field="tier" data-idx="${idx}" placeholder="tier">
+      <button class="btn small" data-remove="${idx}">×</button>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const idx = +e.target.dataset.idx; const field = e.target.dataset.field;
+      newHero.attributes[idx][field] = field==="name" ? e.target.value : +e.target.value;
+    });
+  });
+  box.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.addEventListener("click", e => { newHero.attributes.splice(+e.target.dataset.remove,1); renderAttrRows(); });
+  });
+}
+document.getElementById("attrPreset").addEventListener("change", function(){
+  const name = this.value;
+  if (!name || newHero.attributes.some(a=>a.name===name)) return;
+  newHero.attributes.push({name, value:1, tier:0});
+  renderAttrRows();
+});
+
+// ---- Power list ----
+function renderPowerList(){
+  const list = document.getElementById("powerList");
+  list.innerHTML = "";
+  const catalog = allPowersCatalog();
+  Object.entries(catalog).forEach(([id,p]) => {
+    const checked = newHero.powers.has(id);
+    const div = document.createElement("div");
+    div.className = "power-card" + (checked?" checked":"");
+    div.innerHTML = `
+      <label class="chk">
+        <input type="checkbox" data-id="${id}" ${checked?"checked":""}>
+        <div style="flex:1;">
+          <div class="pname">${p.label}${p.isPreset?' <span class="badge new">PRESET</span>':""}</div>
+          <div class="pid">${id}</div>
+          <div class="tag-row">
+            ${p.category?`<span class="tag category">${p.category}</span>`:""}
+            ${p.modifiers.map(m=>`<span class="tag">${prettify(m.split(":").pop())}</span>`).join("")}
+            ${p.sounds.map(s=>`<span class="tag sound">♪ ${s.split(":").pop()}</span>`).join("")}
+          </div>
+        </div>
+      </label>
+      ${checked ? `
+        <button class="btn small edit-power-btn" data-editpower="${id}" style="margin-top:8px;">Edit internal powers &amp; values</button>
+        <div class="mod-editor" data-editorfor="${CSS.escape(id)}" style="display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;"></div>
+      ` : ""}`;
+    list.appendChild(div);
+  });
+  list.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", e => {
+      const id = e.target.dataset.id;
+      if (e.target.checked) addPowerToHero(id); else removePowerFromHero(id);
+      renderPowerList(); renderKeybindRows(); renderSoundList(); renderAttrRows(); renderConflictWarning();
+    });
+  });
+  list.querySelectorAll(".edit-power-btn").forEach(btn => {
+    btn.addEventListener("click", e => {
+      const id = e.target.dataset.editpower;
+      const panel = list.querySelector(`.mod-editor[data-editorfor="${CSS.escape(id)}"]`);
+      const isOpen = panel.style.display !== "none";
+      if (isOpen){ panel.style.display = "none"; e.target.textContent = "Edit internal powers & values"; }
+      else { panel.style.display = "block"; e.target.textContent = "Hide editor"; renderModifierEditor(id, panel); }
+    });
+  });
+  renderSoundList();
+  renderConflictWarning();
+}
+
+function renderModifierEditor(id, panel){
+  const state = newHero.powers.get(id);
+  const catalog = allPowersCatalog();
+  const original = (catalog[id] && catalog[id].rawModifiers) || {};
+  const keys = Object.keys(state.modifiers);
+  let html = "";
+  keys.forEach(key => {
+    const inc = state.includedKeys.has(key);
+    const isCustomKey = !(key in original);
+    html += `
+      <div class="power-card">
+        <label class="chk" style="margin-bottom:6px;">
+          <input type="checkbox" class="mod-inc" data-key="${key}" ${inc?"checked":""}>
+          <div class="pname" style="font-size:12.5px;">${prettify(key)}${isCustomKey?' <span class="badge new">NEW</span>':""}</div>
+        </label>
+        <textarea class="mod-json" data-key="${key}" rows="5">${JSON.stringify(state.modifiers[key], null, 2)}</textarea>
+      </div>`;
+  });
+  html += `
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <input type="text" class="new-mod-key" placeholder="new internal power / modifier key" style="flex:1;">
+      <button class="btn small add-mod-btn">+ Add</button>
+    </div>`;
+  panel.innerHTML = html;
+
+  panel.querySelectorAll(".mod-inc").forEach(cb => cb.addEventListener("change", e => {
+    const key = e.target.dataset.key;
+    if (e.target.checked) state.includedKeys.add(key); else state.includedKeys.delete(key);
+  }));
+  panel.querySelectorAll(".mod-json").forEach(ta => ta.addEventListener("change", e => {
+    const key = e.target.dataset.key;
+    try{ state.modifiers[key] = JSON.parse(e.target.value); e.target.style.borderColor = "var(--line)"; }
+    catch(err){ e.target.style.borderColor = "var(--accent)"; }
+  }));
+  panel.querySelector(".add-mod-btn").addEventListener("click", () => {
+    const keyInput = panel.querySelector(".new-mod-key");
+    const key = keyInput.value.trim();
+    if (!key || Object.prototype.hasOwnProperty.call(state.modifiers, key)) return;
+    state.modifiers[key] = {};
+    state.includedKeys.add(key);
+    renderModifierEditor(id, panel);
+  });
+}
+
+function renderSoundList(){
+  const box = document.getElementById("soundList");
+  const catalog = allPowersCatalog();
+  const sounds = new Set();
+  newHero.powers.forEach((state, id) => (catalog[id]?.sounds||[]).forEach(s=>sounds.add(s)));
+  box.innerHTML = sounds.size
+    ? [...sounds].map(s=>`<span class="tag sound">♪ ${s}</span>`).join("")
+    : `<span style="color:var(--muted);font-size:12.5px;">No powers selected yet.</span>`;
+}
+
+// Soft conflict warning — never blocks selection, just surfaces it and,
+// on export, auto-generates the isModifierEnabled/isKeyBindEnabled
+// scaffold (the same pattern real packs use, e.g. Metro Man disabling
+// SUPER_SPEED's keybind while flying) so the two powers don't fight.
+function movementPowerIdsSelected(){
+  const catalog = allPowersCatalog();
+  return [...newHero.powers.keys()].filter(id => {
+    const p = catalog[id];
+    return p && (POWER_PRESETS[id]?.category === "movement" || /super_speed|controlled_flight|slow_motion/.test(id));
+  });
+}
+function renderConflictWarning(){
+  const box = document.getElementById("conflictWarning");
+  const moving = movementPowerIdsSelected();
+  if (moving.length > 1){
+    box.innerHTML = `<div class="warn-banner">⚠️ This hero has ${moving.length} movement-type powers selected (${moving.map(m=>m.split(":").pop()).join(", ")}). Real heroes that combine these (Metro Man = flight + super speed + slow motion) disable one while another is active — Hero Forge will auto-generate that isModifierEnabled/isKeyBindEnabled exclusivity scaffold in your exported hero.js. Check it and adjust the getData() conditions for your pack's actual data keys.</div>`;
+  } else {
+    box.innerHTML = "";
+  }
+}
+
+// ---- Keybinds ----
+function renderKeybindRows(){
+  const box = document.getElementById("keybindRows");
+  box.innerHTML = "";
+  const keyOptionsHtml = `<datalist id="keyOptions">${[...discoveredKeyNames].map(k=>`<option value="${k}">`).join("")}</datalist>`;
+  box.insertAdjacentHTML("beforeend", keyOptionsHtml);
+  newHero.keybinds.forEach((k, idx) => {
+    const row = document.createElement("div");
+    row.className = "keybind-row";
+    row.innerHTML = `
+      <input type="text" list="keyOptions" value="${k.key}" data-field="key" data-idx="${idx}" placeholder="KEY_NAME">
+      <input type="text" value="${k.label}" data-field="label" data-idx="${idx}" placeholder="Display label">
+      <input type="number" value="${k.tier}" data-field="tier" data-idx="${idx}">
+      <button class="btn small" data-remove="${idx}">×</button>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const idx = +e.target.dataset.idx;
+      if (idx == null || isNaN(idx)) return;
+      const field = e.target.dataset.field;
+      newHero.keybinds[idx][field] = field==="tier" ? +e.target.value : e.target.value;
+    });
+  });
+  box.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.addEventListener("click", e => { newHero.keybinds.splice(+e.target.dataset.remove, 1); renderKeybindRows(); });
+  });
+}
+document.getElementById("addKeybindBtn").addEventListener("click", () => {
+  newHero.keybinds.push({key:"", label:"", tier:1});
+  renderKeybindRows();
+});
+
+// ---- Renderer template + slot/icon assignments + beam colors ----
+document.getElementById("rendererTemplate").addEventListener("change", onRendererTemplateChange);
+function onRendererTemplateChange(){
+  const slug = document.getElementById("rendererTemplate").value;
+  const infoBox = document.getElementById("rendererSlotInfo");
+  const beamSection = document.getElementById("beamColorSection");
+  const slotSection = document.getElementById("slotPickerSection");
+  const iconSection = document.getElementById("iconPickerSection");
+  newHero.beamColors = [];
+  newHero.slotAssignments = {};
+  newHero.iconAssignments = [];
+  if (!slug || !renderersParsed[slug]){
+    infoBox.innerHTML = "";
+    beamSection.style.display = "none";
+    slotSection.style.display = "none";
+    iconSection.style.display = "none";
+    refreshPlayerPreview();
+    return;
+  }
+  const slots = getMergedRendererSlots(slug);
+  const rows = Object.entries(slots).map(([name, info]) =>
+    `<span class="tag ${info.external?'':'slot'}">${name}: ${info.external ? "external/shared asset (left as-is)" : (info.exists ? "found" : "missing in zip")}</span>`
+  ).join(" ");
+  infoBox.innerHTML = `<p class="hint" style="margin-top:8px;">Resolved texture slots for the "${slug}" renderer (including inherited ones): ${rows || "none found"}</p>`;
+
+  // default every non-external slot to that renderer's own original texture —
+  // you override any of these below without changing the renderer itself
+  Object.entries(slots).forEach(([name, info]) => {
+    if (info.external) return;
+    newHero.slotAssignments[name] = { sourcePath: info.exists ? info.path : null, mode: "pack", file: null };
+  });
+  slotSection.style.display = Object.keys(newHero.slotAssignments).length ? "block" : "none";
+  renderSlotPickers();
+
+  // icons: prefer an explicit setItemIcons(...) call if this renderer chain
+  // has one. Most heroes (Metro Man, Reverse Flash, etc.) DON'T call it at
+  // all and instead rely on the base renderer's default convention: it looks
+  // for "<hero_slug>_0.png" (helmet), "_1.png" (chest), "_2.png" (legs),
+  // "_3.png" (boots) automatically, skipping any slot the hero doesn't have
+  // a piece for. We fall back to that convention here so those renderers
+  // still get icon pickers instead of silently having none.
+  let iconInfos = getRendererIconNames(slug);
+  newHero.iconUsesExplicitCall = iconInfos.length > 0;
+  if (!newHero.iconUsesExplicitCall) iconInfos = defaultIconSlots(slug);
+  newHero.iconAssignments = iconInfos.map(info => ({
+    index: info.index, template: info.template,
+    sourcePath: info.exists ? info.path : null, mode: "pack", file: null
+  }));
+  iconSection.style.display = newHero.iconAssignments.length ? "block" : "none";
+  renderIconPickers();
+
+  const chain = getRendererChain(slug);
+  const fullText = chain.map(s => renderersParsed[s].rawText).join("\n");
+  const colorRe = /0x[0-9A-Fa-f]{6}/g;
+  const matches = [...fullText.matchAll(colorRe)];
+  newHero.beamColors = matches.map((m, i) => {
+    const before = fullText.slice(Math.max(0, m.index-120), m.index);
+    const labelMatch = before.match(/"([^"]{2,40})"(?!.*")/);
+    return { hex: "#" + m[0].slice(2), label: labelMatch ? labelMatch[1] : `Color ${i+1}` };
+  });
+  beamSection.style.display = newHero.beamColors.length ? "block" : "none";
+  renderBeamColorRows();
+  refreshPlayerPreview();
+}
+
+// ---- per-slot texture pickers (independent of which hero the renderer came from) ----
+function groupedTexOptions(paths, prefix, selectedPath){
+  const byFolder = {};
+  paths.forEach(p => {
+    const rel = p.slice(prefix.length);
+    const folder = rel.includes("/") ? rel.split("/")[0] : "(root)";
+    (byFolder[folder] = byFolder[folder] || []).push({ path: p, rel });
+  });
+  return Object.keys(byFolder).sort().map(folder => {
+    const opts = byFolder[folder].map(({path, rel}) =>
+      `<option value="${path}" ${path===selectedPath?"selected":""}>${rel}</option>`
+    ).join("");
+    return `<optgroup label="${folder}">${opts}</optgroup>`;
+  }).join("");
+}
+function thumbFor(path){ return zip && zip.files[path] ? zip.files[path].async("blob").then(b=>URL.createObjectURL(b)) : Promise.resolve(null); }
+
+async function renderSlotPickers(){
+  const box = document.getElementById("slotPickerRows");
+  box.innerHTML = "";
+  for (const [slot, assign] of Object.entries(newHero.slotAssignments)){
+    const row = document.createElement("div");
+    row.className = "slot-picker-row";
+    row.innerHTML = `
+      <img class="slot-thumb" width="40" height="40">
+      <label style="margin:0;min-width:60px;">${slot}</label>
+      <select data-slot="${slot}" style="flex:1;">
+        <option value="__custom__">— upload / paint custom —</option>
+        ${groupedTexOptions(suitTexturePaths, suitTexPrefixG, assign.mode==="pack" ? assign.sourcePath : null)}
+      </select>
+      <button class="btn small" data-paintslot="${slot}">Paint</button>
+      <button class="btn small" data-uploadslot="${slot}">Upload</button>
+      <input type="file" accept="image/png" class="slot-upload-input" data-slot="${slot}" style="display:none;">
+    `;
+    box.appendChild(row);
+    if (assign.mode==="custom"){ row.querySelector("select").value = "__custom__"; }
+    updateSlotThumb(row, slot);
+  }
+  box.querySelectorAll("select[data-slot]").forEach(sel => {
+    sel.addEventListener("change", e => {
+      const slot = e.target.dataset.slot;
+      if (e.target.value === "__custom__"){
+        // keep existing custom file if there is one, otherwise prompt upload
+        if (newHero.slotAssignments[slot].mode !== "custom"){
+          newHero.slotAssignments[slot] = { sourcePath: null, mode: "custom", file: null };
+        }
+      } else {
+        newHero.slotAssignments[slot] = { sourcePath: e.target.value, mode: "pack", file: null };
+      }
+      updateSlotThumb(e.target.closest(".slot-picker-row"), slot);
+      refreshPlayerPreview();
+    });
+  });
+  box.querySelectorAll("[data-uploadslot]").forEach(btn => {
+    btn.addEventListener("click", e => e.target.closest(".slot-picker-row").querySelector(".slot-upload-input").click());
+  });
+  box.querySelectorAll(".slot-upload-input").forEach(inp => {
+    inp.addEventListener("change", e => {
+      const slot = e.target.dataset.slot;
+      if (!e.target.files[0]) return;
+      newHero.slotAssignments[slot] = { sourcePath: null, mode: "custom", file: e.target.files[0] };
+      const row = e.target.closest(".slot-picker-row");
+      row.querySelector("select").value = "__custom__";
+      updateSlotThumb(row, slot);
+      refreshPlayerPreview();
+    });
+  });
+  box.querySelectorAll("[data-paintslot]").forEach(btn => {
+    btn.addEventListener("click", e => openPaintModalForSlot(e.target.dataset.paintslot));
+  });
+}
+async function updateSlotThumb(row, slot){
+  if (!row) return;
+  const img = row.querySelector(".slot-thumb");
+  const a = newHero.slotAssignments[slot];
+  let url = null;
+  if (a.mode==="custom" && a.file) url = URL.createObjectURL(a.file);
+  else if (a.sourcePath) url = await thumbFor(a.sourcePath);
+  img.src = url || "";
+  img.style.background = "#000";
+}
+
+// ---- per-icon-position pickers ----
+async function renderIconPickers(){
+  const box = document.getElementById("iconPickerRows");
+  box.innerHTML = "";
+  newHero.iconAssignments.forEach((a, idx) => {
+    const row = document.createElement("div");
+    row.className = "slot-picker-row";
+    row.innerHTML = `
+      <img class="icon-thumb" width="32" height="32">
+      <label style="margin:0;min-width:70px;">Icon ${idx} <span class="hexlabel">(${a.template})</span></label>
+      <select data-icon="${idx}" style="flex:1;">
+        <option value="__custom__">— upload / paint custom —</option>
+        ${groupedTexOptions(iconTexturePaths, iconTexPrefixG, a.mode==="pack" ? a.sourcePath : null)}
+      </select>
+      <button class="btn small" data-painticon="${idx}">Paint</button>
+      <button class="btn small" data-uploadicon="${idx}">Upload</button>
+      <input type="file" accept="image/png" class="icon-upload-input" data-icon="${idx}" style="display:none;">
+    `;
+    box.appendChild(row);
+    if (a.mode==="custom"){ row.querySelector("select").value = "__custom__"; }
+    updateIconThumb(row, idx);
+  });
+  box.querySelectorAll("select[data-icon]").forEach(sel => {
+    sel.addEventListener("change", e => {
+      const idx = +e.target.dataset.icon;
+      if (e.target.value === "__custom__"){
+        if (newHero.iconAssignments[idx].mode !== "custom") newHero.iconAssignments[idx] = {...newHero.iconAssignments[idx], sourcePath:null, mode:"custom", file:null};
+      } else {
+        newHero.iconAssignments[idx] = {...newHero.iconAssignments[idx], sourcePath: e.target.value, mode:"pack", file:null};
+      }
+      updateIconThumb(e.target.closest(".slot-picker-row"), idx);
+    });
+  });
+  box.querySelectorAll("[data-uploadicon]").forEach(btn => {
+    btn.addEventListener("click", e => e.target.closest(".slot-picker-row").querySelector(".icon-upload-input").click());
+  });
+  box.querySelectorAll(".icon-upload-input").forEach(inp => {
+    inp.addEventListener("change", e => {
+      const idx = +e.target.dataset.icon;
+      if (!e.target.files[0]) return;
+      newHero.iconAssignments[idx] = {...newHero.iconAssignments[idx], sourcePath:null, mode:"custom", file:e.target.files[0]};
+      const row = e.target.closest(".slot-picker-row");
+      row.querySelector("select").value = "__custom__";
+      updateIconThumb(row, idx);
+    });
+  });
+  box.querySelectorAll("[data-painticon]").forEach(btn => {
+    btn.addEventListener("click", e => openPaintModalForIcon(+e.target.dataset.painticon));
+  });
+}
+async function updateIconThumb(row, idx){
+  if (!row) return;
+  const img = row.querySelector(".icon-thumb");
+  const a = newHero.iconAssignments[idx];
+  let url = null;
+  if (a.mode==="custom" && a.file) url = URL.createObjectURL(a.file);
+  else if (a.sourcePath) url = await thumbFor(a.sourcePath);
+  img.src = url || "";
+  img.style.background = "#000";
+}
+function renderBeamColorRows(){
+  const box = document.getElementById("beamColorRows");
+  box.innerHTML = "";
+  newHero.beamColors.forEach((c, idx) => {
+    const row = document.createElement("div");
+    row.className = "color-row";
+    row.innerHTML = `
+      <label>${c.label}</label>
+      <input type="color" value="${c.hex}" data-idx="${idx}">
+      <span class="hexlabel">${c.hex.toUpperCase()}</span>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll("input[type=color]").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const idx = +e.target.dataset.idx;
+      newHero.beamColors[idx].hex = e.target.value;
+      e.target.nextElementSibling.textContent = e.target.value.toUpperCase();
+    });
+  });
+}
+
+// ============================================================
+// TAB 3: read-only browse gallery (selection lives in the slot/icon
+// pickers in step 2 now — this is just for looking things over)
+// ============================================================
+async function renderBrowseGallery(){
+  const grid = document.getElementById("suitTexGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  for (const path of suitTexturePaths){
+    const blob = await zip.files[path].async("blob");
+    const url = URL.createObjectURL(blob);
+    const fname = path.slice(suitTexPrefixG.length);
+    const isCape = /cape/i.test(path);
+    const card = document.createElement("div");
+    card.className = "tex-card";
+    card.innerHTML = `
+      <img src="${url}">
+      <div class="fname">${fname}${isCape?'<span class="badge slot">cape-like name</span>':""}</div>
+      <button class="btn small" style="margin-top:6px;width:100%;">Paint a copy</button>
+    `;
+    grid.appendChild(card);
+    card.querySelector("button").addEventListener("click", () => openPaintModal({type:"browse", path}, url));
+  }
+}
+
+// ============================================================
+// PAINT MODAL (2D grid+layers, player-model preview toggle)
+// ============================================================
+const paintModalBg = document.getElementById("paintModalBg");
+const paintCanvas = document.getElementById("paintCanvas");
+const pctx = paintCanvas.getContext("2d");
+const gizmoCanvas = document.getElementById("gizmoCanvas");
+let layers = [];
+let activeLayer = 0;
+let baseImgNatural = {w:64,h:64};
+let zoom = 8;
+let showGrid = true;
+let drawing = false;
+let erasing = false;
+let is3D = false;
+
+function openPaintModalForSlot(slot){
+  const a = newHero.slotAssignments[slot];
+  const defaultSize = slot === "cape" ? {w:64,h:32} : {w:64,h:64};
+  if (a && a.mode==="custom" && a.file) openPaintModal({type:"slot", slot}, URL.createObjectURL(a.file), defaultSize);
+  else if (a && a.sourcePath && zip.files[a.sourcePath]) zip.files[a.sourcePath].async("blob").then(b => openPaintModal({type:"slot", slot}, URL.createObjectURL(b), defaultSize));
+  else openPaintModal({type:"slot", slot}, null, defaultSize);
+}
+function openPaintModalForIcon(index){
+  const a = newHero.iconAssignments[index];
+  const defaultSize = {w:16,h:16};
+  if (a && a.mode==="custom" && a.file) openPaintModal({type:"icon", index}, URL.createObjectURL(a.file), defaultSize);
+  else if (a && a.sourcePath && zip.files[a.sourcePath]) zip.files[a.sourcePath].async("blob").then(b => openPaintModal({type:"icon", index}, URL.createObjectURL(b), defaultSize));
+  else openPaintModal({type:"icon", index}, null, defaultSize);
+}
+
+async function openPaintModal(target, url, defaultSize){
+  currentPaintTarget = target;
+  is3D = false;
+  document.getElementById("viewModeToggle").textContent = "Switch to player preview";
+  paintCanvas.style.display = "block";
+  gizmoCanvas.style.display = "none";
+
+  if (!url){
+    // nothing to load yet — start from a blank canvas at the right size for this slot
+    const size = defaultSize || {w:64,h:64};
+    baseImgNatural = size;
+    zoom = Math.max(2, Math.min(16, Math.floor(512 / Math.max(size.w, size.h))));
+    const blank = document.createElement("canvas");
+    blank.width = size.w; blank.height = size.h;
+    setupLayers(blank);
+    redrawPaint();
+    paintModalBg.classList.add("open");
+    return;
+  }
+  const img = new Image();
+  img.onload = () => {
+    baseImgNatural = {w: img.naturalWidth, h: img.naturalHeight};
+    zoom = Math.max(2, Math.min(16, Math.floor(512 / Math.max(img.naturalWidth, img.naturalHeight))));
+    setupLayers(img);
+    redrawPaint();
+  };
+  img.src = url;
+
+  paintModalBg.classList.add("open");
+}
+document.getElementById("closePaintBtn").addEventListener("click", () => paintModalBg.classList.remove("open"));
+
+function setupLayers(img){
+  layers = [];
+  const base = document.createElement("canvas");
+  base.width = baseImgNatural.w; base.height = baseImgNatural.h;
+  const bctx = base.getContext("2d");
+  bctx.drawImage(img, 0, 0);
+  layers.push({canvas: base, ctx: bctx, opacity: 1, visible: true, name: "Base"});
+  activeLayer = 0;
+  renderLayerList();
+}
+function renderLayerList(){
+  const box = document.getElementById("layerList");
+  box.innerHTML = "";
+  layers.forEach((l, idx) => {
+    const row = document.createElement("div");
+    row.className = "layer-item";
+    row.style.borderColor = idx===activeLayer ? "var(--cyan)" : "var(--line)";
+    row.innerHTML = `
+      <input type="checkbox" ${l.visible?"checked":""} class="lv" data-idx="${idx}">
+      <span style="flex:1;cursor:pointer;" class="ln" data-idx="${idx}">${l.name}</span>
+      <input type="range" min="0" max="1" step="0.05" value="${l.opacity}" class="lo" data-idx="${idx}">
+    `;
+    box.appendChild(row);
+  });
+  box.querySelectorAll(".lv").forEach(cb => cb.addEventListener("change", e => { layers[+e.target.dataset.idx].visible = e.target.checked; redrawPaint(); }));
+  box.querySelectorAll(".ln").forEach(sp => sp.addEventListener("click", e => { activeLayer = +e.target.dataset.idx; renderLayerList(); }));
+  box.querySelectorAll(".lo").forEach(rg => rg.addEventListener("input", e => { layers[+e.target.dataset.idx].opacity = +e.target.value; redrawPaint(); }));
+}
+document.getElementById("addLayerBtn").addEventListener("click", () => {
+  const c = document.createElement("canvas");
+  c.width = baseImgNatural.w; c.height = baseImgNatural.h;
+  layers.push({canvas:c, ctx:c.getContext("2d"), opacity:1, visible:true, name:"Layer "+layers.length});
+  activeLayer = layers.length-1;
+  renderLayerList(); redrawPaint();
+});
+
+function compositeFlat(){
+  const out = document.createElement("canvas");
+  out.width = baseImgNatural.w; out.height = baseImgNatural.h;
+  const octx = out.getContext("2d");
+  layers.forEach(l => { if (l.visible){ octx.globalAlpha = l.opacity; octx.drawImage(l.canvas,0,0); } });
+  octx.globalAlpha = 1;
+  return out;
+}
+
+function redrawPaint(){
+  const w = baseImgNatural.w * zoom, h = baseImgNatural.h * zoom;
+  paintCanvas.width = w; paintCanvas.height = h;
+  pctx.imageSmoothingEnabled = false;
+  pctx.clearRect(0,0,w,h);
+  const flat = compositeFlat();
+  pctx.drawImage(flat, 0, 0, w, h);
+  if (showGrid){
+    pctx.strokeStyle = "rgba(255,255,255,0.15)"; pctx.lineWidth = 1;
+    for (let x=0; x<=baseImgNatural.w; x++){ pctx.beginPath(); pctx.moveTo(x*zoom+0.5,0); pctx.lineTo(x*zoom+0.5,h); pctx.stroke(); }
+    for (let y=0; y<=baseImgNatural.h; y++){ pctx.beginPath(); pctx.moveTo(0,y*zoom+0.5); pctx.lineTo(w,y*zoom+0.5); pctx.stroke(); }
+  }
+  if (is3D) updateModalPlayerPreview();
+}
+document.getElementById("gridToggle").addEventListener("click", () => { showGrid=!showGrid; redrawPaint(); });
+document.getElementById("zoomIn").addEventListener("click", () => { zoom=Math.min(32,zoom+2); redrawPaint(); });
+document.getElementById("zoomOut").addEventListener("click", () => { zoom=Math.max(2,zoom-2); redrawPaint(); });
+document.getElementById("eraserBtn").addEventListener("click", (e) => { erasing=!erasing; e.target.style.borderColor = erasing?"var(--accent)":"var(--line-bright)"; });
+
+function paintAt(px, py){
+  const size = +document.getElementById("brushSize").value;
+  const ctx = layers[activeLayer].ctx;
+  const gx = Math.floor(px / zoom), gy = Math.floor(py / zoom);
+  if (erasing){ ctx.clearRect(gx - Math.floor(size/2), gy - Math.floor(size/2), size, size); }
+  else { ctx.fillStyle = document.getElementById("paintColor").value; ctx.fillRect(gx - Math.floor(size/2), gy - Math.floor(size/2), size, size); }
+  redrawPaint();
+}
+paintCanvas.addEventListener("mousedown", e => { if (is3D) return; drawing=true; const r=paintCanvas.getBoundingClientRect(); paintAt(e.clientX-r.left, e.clientY-r.top); });
+paintCanvas.addEventListener("mousemove", e => { if (drawing && !is3D){ const r=paintCanvas.getBoundingClientRect(); paintAt(e.clientX-r.left, e.clientY-r.top); }});
+window.addEventListener("mouseup", () => drawing=false);
+
+document.getElementById("applyPaintBtn").addEventListener("click", () => {
+  const flat = compositeFlat();
+  flat.toBlob(async blob => {
+    const t = currentPaintTarget;
+    if (t && t.type === "slot"){
+      newHero.slotAssignments[t.slot] = { sourcePath: null, mode: "custom", file: blob };
+      renderSlotPickers();
+      refreshPlayerPreview();
+    } else if (t && t.type === "icon"){
+      newHero.iconAssignments[t.index] = {...newHero.iconAssignments[t.index], sourcePath: null, mode: "custom", file: blob};
+      renderIconPickers();
+    } else if (t && t.type === "browse"){
+      // not tied to a slot — hand back a download so it can be picked up via
+      // "Upload / paint custom" on whichever slot or icon it belongs to
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "painted_" + t.path.split("/").pop();
+      a.click();
+    }
+    paintModalBg.classList.remove("open");
+  });
+});
+
+document.getElementById("viewModeToggle").addEventListener("click", () => {
+  is3D = !is3D;
+  document.getElementById("viewModeToggle").textContent = is3D ? "Switch to 2D grid" : "Switch to player preview";
+  paintCanvas.style.display = is3D ? "none" : "block";
+  gizmoCanvas.style.display = is3D ? "block" : "none";
+  if (is3D) updateModalPlayerPreview();
+});
+
+// ============================================================
+// MINECRAFT-STYLE PLAYER MODEL PREVIEW
+// (used both in the paint modal and the Textures tab)
+// ============================================================
+function cropRegion(sourceCanvas, u, v, w, h, scaleFactor){
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(sourceCanvas, u*scaleFactor, v*scaleFactor, w*scaleFactor, h*scaleFactor, 0, 0, w, h);
+  return c;
+}
+function makePartGroup(THREE, skinCanvas, scaleFactor, partKey, opts){
+  opts = opts || {};
+  const part = SKIN_PARTS[partKey];
+  const group = new THREE.Group();
+  const order = ["right","left","top","bottom","front","back"]; // matches BoxGeometry face order [+x,-x,+y,-y,+z,-z]
+  function buildBox(table, sizeMul, name){
+    const mats = order.map(face => {
+      const [u,v,w,h] = table[face];
+      const crop = cropRegion(skinCanvas, u, v, w, h, scaleFactor);
+      const tex = new THREE.CanvasTexture(crop);
+      tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+      return new THREE.MeshBasicMaterial({ map: tex, transparent:true, alphaTest:0.15 });
+    });
+    const [sx,sy,sz] = part.size;
+    const geo = new THREE.BoxGeometry(sx*sizeMul, sy*sizeMul, sz*sizeMul);
+    const mesh = new THREE.Mesh(geo, mats);
+    mesh.name = name;
+    return mesh;
+  }
+  const base = buildBox(part.base, 1, partKey+"_base");
+  group.add(base);
+  if (!opts.skipOverlay){
+    const overlay = buildBox(part.overlay, 1.08, partKey+"_overlay");
+    group.add(overlay);
+  }
+  return group;
+}
+function buildPlayerModel(THREE, scene, skinCanvas, capeCanvas){
+  const scaleFactor = skinCanvas.width / 64;
+  const root = new THREE.Group();
+  Object.keys(SKIN_PARTS).forEach(partKey => {
+    const g = makePartGroup(THREE, skinCanvas, scaleFactor, partKey);
+    const [x,y,z] = PART_POS[partKey];
+    g.position.set(x, y, z);
+    root.add(g);
+  });
+  if (capeCanvas){
+    const capeScale = capeCanvas.width / 64;
+    const crop = cropRegion(capeCanvas, 1, 1, 10, 16, capeScale);
+    const tex = new THREE.CanvasTexture(crop);
+    tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+    const geo = new THREE.PlaneGeometry(10, 16);
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent:true, side: THREE.DoubleSide });
+    const cape = new THREE.Mesh(geo, mat);
+    cape.position.set(0, 20, -2.6);
+    cape.rotation.x = 0.15;
+    root.add(cape);
+  }
+  root.position.y = -16;
+  scene.add(root);
+  return root;
+}
+
+async function loadImageFromZipOrBlob(pathOrBlob){
+  let blob;
+  if (typeof pathOrBlob === "string"){ if (!zip || !zip.files[pathOrBlob]) return null; blob = await zip.files[pathOrBlob].async("blob"); }
+  else blob = pathOrBlob;
+  const url = URL.createObjectURL(blob);
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+}
+function imageToCanvas(img){
+  const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  c.getContext("2d").drawImage(img,0,0); return c;
+}
+
+// resolve which source (zip path / File / in-progress canvas) should be
+// used for a given renderer slot right now, honoring any pending edits made
+// via the per-slot picker (or the paint modal, if it's actively editing
+// this exact slot).
+function sourceForSlot(slotName, overrideSlot, overrideCanvas){
+  if (overrideSlot && overrideSlot === slotName && overrideCanvas) return { canvas: overrideCanvas };
+  const a = newHero.slotAssignments[slotName];
+  if (!a) return null;
+  if (a.mode === "custom" && a.file) return { blob: a.file };
+  if (a.sourcePath) return { zipPath: a.sourcePath };
+  return null;
+}
+async function resolveSource(src){
+  if (!src) return null;
+  if (src.canvas) return src.canvas;
+  if (src.blob) { const img = await loadImageFromZipOrBlob(src.blob); return img ? imageToCanvas(img) : null; }
+  if (src.zipPath){ const img = await loadImageFromZipOrBlob(src.zipPath); return img ? imageToCanvas(img) : null; }
+  return null;
+}
+
+let previewRenderer3D = null, previewScene = null, previewCamera = null, previewRoot = null, previewDragging=false, previewRotY=0.6, previewLastX=0;
+function ensurePreviewRenderer(canvas){
+  if (previewRenderer3D) return;
+  previewScene = new THREE.Scene();
+  previewScene.background = new THREE.Color(0x0a0b10);
+  previewCamera = new THREE.PerspectiveCamera(35, canvas.width/canvas.height, 0.1, 200);
+  previewCamera.position.set(0, -4, 60);
+  previewRenderer3D = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  previewRenderer3D.setSize(canvas.width, canvas.height, false);
+  const light = new THREE.AmbientLight(0xffffff, 1.2);
+  previewScene.add(light);
+  canvas.addEventListener("mousedown", e => { previewDragging = true; previewLastX = e.clientX; });
+  window.addEventListener("mouseup", () => previewDragging = false);
+  canvas.addEventListener("mousemove", e => { if (!previewDragging) return; previewRotY += (e.clientX-previewLastX)*0.01; previewLastX = e.clientX; if (previewRoot) previewRoot.rotation.y = previewRotY; });
+  (function animate(){ requestAnimationFrame(animate); if (previewRenderer3D) previewRenderer3D.render(previewScene, previewCamera); })();
+}
+async function renderPlayerPreview(canvas, statusEl, overrideSlot, overrideCanvas){
+  const rendererSlug = document.getElementById("rendererTemplate").value;
+  if (!rendererSlug || !renderersParsed[rendererSlug]){
+    if (statusEl) statusEl.textContent = "Pick a renderer template in step 2 to enable this preview.";
+    return;
+  }
+  ensurePreviewRenderer(canvas);
+  const layer1Src = sourceForSlot("layer1", overrideSlot, overrideCanvas);
+  const layer2Src = sourceForSlot("layer2", overrideSlot, overrideCanvas);
+  const capeSrc = sourceForSlot("cape", overrideSlot, overrideCanvas);
+  const layer1 = await resolveSource(layer1Src);
+  const layer2 = await resolveSource(layer2Src);
+  const cape = await resolveSource(capeSrc);
+  if (!layer1 && !layer2){
+    if (statusEl) statusEl.textContent = "No layer1/layer2 texture assigned yet — pick one in the slot pickers above.";
+    return;
+  }
+  // composite layer1 as base skin; if only layer2 exists, use it as base
+  const base = layer1 || layer2;
+  const skinCanvas = document.createElement("canvas");
+  skinCanvas.width = base.width; skinCanvas.height = base.height;
+  const sctx = skinCanvas.getContext("2d");
+  sctx.drawImage(base, 0, 0);
+  // if both exist and are the same declared texture id, layer2 IS the overlay already baked in game;
+  // here we just use layer1 as the base skin and let makePartGroup's own "overlay" box sample the same
+  // canvas's overlay UV region — but since packs sometimes point layer1/layer2 at two DIFFERENT files
+  // (rather than two regions of one file), draw layer2 into a second canvas and use it for overlay boxes.
+  if (previewRoot){ previewScene.remove(previewRoot); }
+  const overlayCanvas = layer2 ? (() => { const c=document.createElement("canvas"); c.width=layer2.width; c.height=layer2.height; c.getContext("2d").drawImage(layer2,0,0); return c; })() : skinCanvas;
+  previewRoot = buildPlayerModelDual(THREE, previewScene, skinCanvas, overlayCanvas, cape);
+  if (statusEl) statusEl.textContent = `Previewing layer1${layer2?" + layer2":""}${cape?" + cape":""} from "${rendererSlug}".`;
+}
+// like buildPlayerModel but samples overlay boxes from a possibly-separate overlay canvas
+function buildPlayerModelDual(THREE, scene, baseCanvas, overlayCanvas, capeCanvas){
+  const baseScale = baseCanvas.width / 64;
+  const overlayScale = overlayCanvas.width / 64;
+  const root = new THREE.Group();
+  Object.keys(SKIN_PARTS).forEach(partKey => {
+    const part = SKIN_PARTS[partKey];
+    const group = new THREE.Group();
+    const order = ["right","left","top","bottom","front","back"];
+    function buildBox(table, sizeMul, srcCanvas, scaleFactor){
+      const mats = order.map(face => {
+        const [u,v,w,h] = table[face];
+        const crop = cropRegion(srcCanvas, u, v, w, h, scaleFactor);
+        const tex = new THREE.CanvasTexture(crop);
+        tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+        return new THREE.MeshBasicMaterial({ map: tex, transparent:true, alphaTest:0.15 });
+      });
+      const [sx,sy,sz] = part.size;
+      const geo = new THREE.BoxGeometry(sx*sizeMul, sy*sizeMul, sz*sizeMul);
+      return new THREE.Mesh(geo, mats);
+    }
+    group.add(buildBox(part.base, 1, baseCanvas, baseScale));
+    group.add(buildBox(part.overlay, 1.08, overlayCanvas, overlayScale));
+    const [x,y,z] = PART_POS[partKey];
+    group.position.set(x,y,z);
+    root.add(group);
+  });
+  if (capeCanvas){
+    const capeScale = capeCanvas.width / 64;
+    const crop = cropRegion(capeCanvas, 1, 1, 10, 16, capeScale);
+    const tex = new THREE.CanvasTexture(crop);
+    tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+    const geo = new THREE.PlaneGeometry(10, 16);
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent:true, side: THREE.DoubleSide });
+    const cape = new THREE.Mesh(geo, mat);
+    cape.position.set(0, 20, -2.6); cape.rotation.x = 0.15;
+    root.add(cape);
+  }
+  root.rotation.y = previewRotY;
+  root.position.y = -16;
+  scene.add(root);
+  return root;
+}
+
+function refreshPlayerPreview(){
+  const canvas = document.getElementById("previewCanvas");
+  const statusEl = document.getElementById("previewStatus");
+  if (!zip && !noPackMode) return;
+  renderPlayerPreview(canvas, statusEl, null, null);
+}
+document.getElementById("refreshPreviewBtn").addEventListener("click", refreshPlayerPreview);
+
+async function updateModalPlayerPreview(){
+  ensurePreviewRenderer(gizmoCanvas);
+  const flat = compositeFlat();
+  const slot = (currentPaintTarget && currentPaintTarget.type === "slot") ? currentPaintTarget.slot : null;
+  const statusEl = document.getElementById("gizmoNote");
+  if (!slot){
+    await renderPlayerPreview(gizmoCanvas, statusEl, null, null);
+    if (statusEl) statusEl.textContent = "This texture isn't tied to a suit/cape slot, so the preview shows your hero's other currently-assigned slots for reference — this one won't appear on the model until you pick it in a slot picker.";
+  } else {
+    await renderPlayerPreview(gizmoCanvas, statusEl, slot, flat);
+  }
+}
+
+// ============================================================
+// HERO FILE GENERATION
+// ============================================================
+function stringCallRe(method){ return new RegExp(String.raw`hero\.${method}\(\s*"(?:[^"\\]|\\.)*"\s*\)\s*;?`); }
+function numberCallRe(method){ return new RegExp(String.raw`hero\.${method}\(\s*-?\d+\s*\)\s*;?`); }
+function escJs(v){ return String(v).replace(/"/g,'\\"'); }
+
+function patchHeroText(rawText, ctx){
+  let text = rawText;
+  function setOrInsertString(method, value, anchorRe){
+    const re = stringCallRe(method);
+    const call = `hero.${method}("${escJs(value)}");`;
+    if (re.test(text)) text = text.replace(re, call);
+    else if (value !== "" && anchorRe){
+      const m = text.match(anchorRe);
+      if (m){ const pos = m.index + m[0].length; text = text.slice(0,pos) + `\n    ${call}` + text.slice(pos); }
+    }
+  }
+  function removeStringCall(method){
+    const re = new RegExp(String.raw`[ \t]*hero\.${method}\(\s*"(?:[^"\\]|\\.)*"\s*\)\s*;?\r?\n?`);
+    text = text.replace(re, "");
+  }
+
+  setOrInsertString("setName", ctx.name, /function\s+init\s*\([^)]*\)\s*\{/);
+  if (ctx.version) setOrInsertString("setVersion", ctx.version, stringCallRe("setName"));
+  else removeStringCall("setVersion");
+
+  {
+    const re = numberCallRe("setTier");
+    const call = `hero.setTier(${ctx.tier});`;
+    if (re.test(text)) text = text.replace(re, call);
+    else {
+      const anchor = ctx.version ? stringCallRe("setVersion") : stringCallRe("setName");
+      const m = text.match(anchor);
+      if (m){ const pos = m.index+m[0].length; text = text.slice(0,pos) + `\n    ${call}` + text.slice(pos); }
+    }
+  }
+
+  setOrInsertString("setChestplate", ctx.chest, numberCallRe("setTier"));
+  if (ctx.legs) setOrInsertString("setLeggings", ctx.legs, stringCallRe("setChestplate")); else removeStringCall("setLeggings");
+  if (ctx.boots) setOrInsertString("setBoots", ctx.boots, ctx.legs ? stringCallRe("setLeggings") : stringCallRe("setChestplate")); else removeStringCall("setBoots");
+  if (ctx.helmet) setOrInsertString("setHelmet", ctx.helmet, ctx.boots ? stringCallRe("setBoots") : (ctx.legs ? stringCallRe("setLeggings") : stringCallRe("setChestplate"))); else removeStringCall("setHelmet");
+
+  // powers
+  const addPowersRe = /hero\.addPowers\([^)]*\)\s*;?/;
+  const pieceAnchors = [stringCallRe("setHelmet"), stringCallRe("setBoots"), stringCallRe("setLeggings"), stringCallRe("setChestplate")];
+  if (ctx.powerIds.length){
+    const call = `hero.addPowers(${ctx.powerIds.map(p=>`"${p}"`).join(", ")});`;
+    if (addPowersRe.test(text)) text = text.replace(addPowersRe, call);
+    else {
+      let inserted = false;
+      for (const a of pieceAnchors){ const m = text.match(a); if (m){ const pos=m.index+m[0].length; text = text.slice(0,pos) + `\n    ${call}` + text.slice(pos); inserted = true; break; } }
+      if (!inserted) text = text.replace(/\{/, `{\n    ${call}`);
+    }
+  } else {
+    text = text.replace(new RegExp(String.raw`[ \t]*hero\.addPowers\([^)]*\)\s*;?\r?\n?`), "");
+  }
+
+  // attributes — replace the contiguous block of existing addAttribute calls (if any),
+  // otherwise insert right after addPowers/pieces, matching real pack ordering
+  text = patchAttributeBlock(text, ctx);
+  // keybinds
+  text = patchKeybinds(text, ctx);
+  // movement-power exclusivity scaffold
+  text = patchConflictScaffold(text, ctx);
+
+  return text;
+}
+
+function patchAttributeBlock(text, ctx){
+  const attrRe = /[ \t]*hero\.addAttribute\(\s*"[^"]+"\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+\s*\)\s*;?\r?\n?/g;
+  const matches = [...text.matchAll(attrRe)];
+  const block = ctx.attributes.filter(a=>a.name).map(a => `    hero.addAttribute("${escJs(a.name)}", ${a.value}, ${a.tier});\n`).join("");
+  if (matches.length){
+    const start = matches[0].index;
+    const end = matches[matches.length-1].index + matches[matches.length-1][0].length;
+    return text.slice(0,start) + block + text.slice(end);
+  }
+  if (!block) return text;
+  const addPowersRe = /hero\.addPowers\([^)]*\)\s*;?/;
+  const m = text.match(addPowersRe);
+  if (m){ const pos = m.index+m[0].length; return text.slice(0,pos) + `\n${block}` + text.slice(pos); }
+  const pieceAnchors = [stringCallRe("setHelmet"), stringCallRe("setBoots"), stringCallRe("setLeggings"), stringCallRe("setChestplate")];
+  for (const a of pieceAnchors){ const pm = text.match(a); if (pm){ const pos = pm.index+pm[0].length; return text.slice(0,pos) + `\n\n${block}` + text.slice(pos); } }
+  return text.replace(/\{/, `{\n${block}`);
+}
+
+function patchKeybinds(text, ctx){
+  const kbRe = /[ \t]*hero\.addKeyBind\(\s*"([^"]+)"\s*,\s*"(?:[^"\\]|\\.)*"\s*,\s*-?\d+\s*\)\s*;?\r?\n?/g;
+  const matches = [...text.matchAll(kbRe)];
+  const desiredByKey = new Map(ctx.keybinds.filter(k=>k.key).map(k=>[k.key,k]));
+
+  if (matches.length){
+    const originalKeysInOrder = matches.map(m=>m[1]);
+    let block = "";
+    originalKeysInOrder.forEach(key => {
+      if (desiredByKey.has(key)){
+        const kb = desiredByKey.get(key);
+        block += `    hero.addKeyBind("${kb.key}", "${escJs(kb.label||kb.key)}", ${kb.tier||1});\n`;
+      }
+    });
+    ctx.keybinds.filter(k => k.key && !originalKeysInOrder.includes(k.key)).forEach(k => {
+      block += `    hero.addKeyBind("${k.key}", "${escJs(k.label||k.key)}", ${k.tier||1});\n`;
+    });
+    const start = matches[0].index;
+    const end = matches[matches.length-1].index + matches[matches.length-1][0].length;
+    return text.slice(0,start) + block + text.slice(end);
+  }
+
+  const kbLines = ctx.keybinds.filter(k=>k.key).map(k=>`    hero.addKeyBind("${k.key}", "${escJs(k.label||k.key)}", ${k.tier||1});`).join("\n");
+  if (!kbLines) return text;
+  const addPowersRe = /hero\.addPowers\([^)]*\)\s*;?/;
+  const anchor = ctx.powerIds.length ? addPowersRe : (ctx.helmet ? stringCallRe("setHelmet") : ctx.boots ? stringCallRe("setBoots") : ctx.legs ? stringCallRe("setLeggings") : stringCallRe("setChestplate"));
+  const m = text.match(anchor);
+  if (m){ const pos = m.index+m[0].length; return text.slice(0,pos) + `\n${kbLines}` + text.slice(pos); }
+  return text.replace(/\{/, `{\n${kbLines}`);
+}
+
+// Auto-generated exclusivity scaffold for movement powers, modeled on the
+// real pattern used in shipped hero files (super_speed disabled while flying).
+function patchConflictScaffold(text, ctx){
+  const moving = ctx.powerIds.filter(id => /super_speed|controlled_flight|slow_motion/.test(id));
+  if (moving.length < 2) return text;
+  if (/function\s+isModifierEnabled/.test(text)) return text; // hero already customizes this — don't clobber it
+  const flightId = moving.find(id => /controlled_flight/.test(id));
+  const speedId = moving.find(id => /super_speed/.test(id));
+  if (!flightId || !speedId) return text;
+
+  const enableHook = `\n\nhero.setModifierEnabled(isModifierEnabled);\nhero.setKeyBindEnabled(isKeyBindEnabled);`;
+  const addPowersRe = /hero\.addPowers\([^)]*\)\s*;?/;
+  const m = text.match(addPowersRe);
+  if (m && !/setModifierEnabled/.test(text)){
+    const pos = m.index+m[0].length;
+    text = text.slice(0,pos) + enableHook + text.slice(pos);
+  }
+  const funcs = `
+
+// Auto-generated by Hero Forge: flight and super speed can't both be
+// active at once (matches the real pattern used by packs like Metro Man).
+// Adjust the getData() key below if your pack tracks flight differently.
+function isModifierEnabled(entity, modifier) {
+    switch (modifier.name()) {
+    case "${speedId}":
+        return !entity.getData("fiskheroes:flying");
+    default:
+        return true;
+    }
+}
+
+function isKeyBindEnabled(entity, keyBind) {
+    switch (keyBind) {
+    case "SUPER_SPEED":
+        return !entity.getData("fiskheroes:flying");
+    default:
+        return true;
+    }
+}
+`;
+  text += funcs;
+  return text;
+}
+
+function buildFromScratchJS(ctx){
+  let js = `function init(hero) {\n`;
+  js += `    hero.setName("${escJs(ctx.name)}");\n`;
+  if (ctx.version) js += `    hero.setVersion("${escJs(ctx.version)}");\n`;
+  js += `    hero.setTier(${ctx.tier});\n\n`;
+  js += `    hero.setChestplate("${escJs(ctx.chest)}");\n`;
+  if (ctx.legs) js += `    hero.setLeggings("${escJs(ctx.legs)}");\n`;
+  if (ctx.boots) js += `    hero.setBoots("${escJs(ctx.boots)}");\n`;
+  if (ctx.helmet) js += `    hero.setHelmet("${escJs(ctx.helmet)}");\n`;
+  js += `\n`;
+  if (ctx.powerIds.length) js += `    hero.addPowers(${ctx.powerIds.map(p=>`"${p}"`).join(", ")});\n`;
+  const attrBlock = ctx.attributes.filter(a=>a.name).map(a=>`    hero.addAttribute("${escJs(a.name)}", ${a.value}, ${a.tier});`).join("\n");
+  if (attrBlock) js += attrBlock + "\n";
+  js += `\n`;
+  ctx.keybinds.forEach(k => { if (!k.key) return; js += `    hero.addKeyBind("${k.key}", "${escJs(k.label||k.key)}", ${k.tier||1});\n`; });
+  const moving = ctx.powerIds.filter(id => /super_speed|controlled_flight|slow_motion/.test(id));
+  const flightId = moving.find(id => /controlled_flight/.test(id));
+  const speedId = moving.find(id => /super_speed/.test(id));
+  if (flightId && speedId){
+    js += `\n    hero.setModifierEnabled(isModifierEnabled);\n    hero.setKeyBindEnabled(isKeyBindEnabled);\n`;
+  }
+  js += `}\n`;
+  if (flightId && speedId){
+    js += `
+// Auto-generated by Hero Forge: flight and super speed can't both be
+// active at once (matches the real pattern used by packs like Metro Man).
+// Adjust the getData() key below if your pack tracks flight differently.
+function isModifierEnabled(entity, modifier) {
+    switch (modifier.name()) {
+    case "${speedId}":
+        return !entity.getData("fiskheroes:flying");
+    default:
+        return true;
+    }
+}
+
+function isKeyBindEnabled(entity, keyBind) {
+    switch (keyBind) {
+    case "SUPER_SPEED":
+        return !entity.getData("fiskheroes:flying");
+    default:
+        return true;
+    }
+}
+`;
+  }
+  return js;
+}
+
+// ============================================================
+// RENDERER FILE GENERATION — flattens ALL resolved slots (including
+// inherited ones) into the exported renderer's own loadTextures block,
+// remapped to point at this hero's relocated textures, so the copy is
+// self-contained and never silently depends on the original hero's
+// still-unchanged files. Also rewrites setItemIcons(...) names and any
+// edited beam/effect colors.
+// ============================================================
+// slotNewIds: Map(slotName -> new texture id string). Every resolved slot is
+// written out explicitly (flattened) regardless of whether the user changed
+// it, so the exported renderer never silently depends on another hero's file.
+function patchRendererTextures(rawText, mergedSlots, slotNewIds){
+  const flattenedEntries = Object.entries(mergedSlots).map(([slot, info]) => {
+    if (info.external) return `    "${slot}": "${info.id}"`;
+    const newId = slotNewIds.has(slot) ? slotNewIds.get(slot) : info.id;
+    return `    "${slot}": "${newId}"`;
+  }).join(",\n");
+  const newBlock = `loadTextures({\n${flattenedEntries}\n})`;
+  const loadTexturesRe = /loadTextures\(\s*\{[\s\S]*?\}\s*\)/;
+  if (loadTexturesRe.test(rawText)) return rawText.replace(loadTexturesRe, newBlock);
+  return newBlock + ";\n" + rawText;
+}
+// argsList: array of concrete (already-renamed) icon names, one per position
+// in the original setItemIcons(...) call — replaces the whole call, so %s
+// placeholders and shared literal names alike become this hero's own files.
+function patchRendererIcons(text, argsList){
+  if (!argsList.length) return text;
+  const call = `setItemIcons(${argsList.map(a=>`"${a}"`).join(", ")})`;
+  return text.replace(/setItemIcons\([^)]*\)/, call);
+}
+function patchRendererColors(text, colors){
+  if (!colors.length) return text;
+  const colorRe = /0x[0-9A-Fa-f]{6}/g;
+  let i = 0;
+  return text.replace(colorRe, () => {
+    const c = colors[i]; i++;
+    return c ? c.hex.replace("#","0x").toUpperCase() : arguments[0];
+  });
+}
+
+// ============================================================
+// TAB 4: EXPORT
+// ============================================================
+document.getElementById("buildExportBtn").addEventListener("click", async () => {
+  const out = document.getElementById("exportOut");
+  out.innerHTML = "<p class='hint'>Building export…</p>";
+
+  const name = document.getElementById("heroName").value.trim() || "New Hero";
+  const slug = slugify(name);
+  const tier = +document.getElementById("heroTier").value || 1;
+  const version = document.getElementById("heroVersion").value.trim();
+  const pChest = document.getElementById("pChest").value.trim();
+  const pLegs = document.getElementById("pLegs").value.trim();
+  const pBoots = document.getElementById("pBoots").value.trim();
+  const pHelmet = document.getElementById("pHelmet").value.trim();
+  const baseSlug = document.getElementById("baseHero").value;
+  const rendererSlug = document.getElementById("rendererTemplate").value;
+
+  const overwritesExistingHero = !!heroesParsed[slug];
+
+  // ---- resolve powers (unchanged from before — no icon-in-JSON remapping,
+  // since real packs wire icons through setItemIcons, not power JSON) ----
+  const catalog = allPowersCatalog();
+  const powerIdsForHero = [];
+  const customPowerFiles = [];
+  for (const [id, state] of newHero.powers.entries()){
+    const p = catalog[id];
+    const original = (p && p.rawModifiers) || {};
+    const effectiveModifiers = {};
+    state.includedKeys.forEach(k => { effectiveModifiers[k] = state.modifiers[k]; });
+
+    const originalKeysSorted = Object.keys(original).sort();
+    const effectiveKeysSorted = Object.keys(effectiveModifiers).sort();
+    const modifiersSame = JSON.stringify(originalKeysSorted) === JSON.stringify(effectiveKeysSorted)
+                   && effectiveKeysSorted.every(k => JSON.stringify(original[k]) === JSON.stringify(effectiveModifiers[k]));
+
+    const sourceJson = (p && p.rawJson) || { name: (p&&p.label)||id, modifiers: original };
+
+    if (p && p.isPreset){
+      const basePowerSlug = id.includes(":") ? id.split(":").pop() : id;
+      const customSlug = `custom/${slug}/${basePowerSlug}`;
+      const customId = domain + ":" + customSlug;
+      const customJson = Object.assign({}, sourceJson, { modifiers: effectiveModifiers });
+      customPowerFiles.push({ path: `assets/${domain}/data/powers/${customSlug}.json`, json: customJson });
+      powerIdsForHero.push(customId);
+    } else if (modifiersSame){
+      powerIdsForHero.push(id);
+    } else {
+      const basePowerSlug = id.slice(domain.length + 1);
+      const customSlug = `custom/${slug}/${basePowerSlug}`;
+      const customId = domain + ":" + customSlug;
+      const customJson = Object.assign({}, sourceJson, { modifiers: effectiveModifiers });
+      customPowerFiles.push({ path: `assets/${domain}/data/powers/${customSlug}.json`, json: customJson });
+      powerIdsForHero.push(customId);
+    }
+  }
+
+  const genCtx = {
+    name, version, tier,
+    chest: pChest, legs: pLegs, boots: pBoots, helmet: pHelmet,
+    powerIds: powerIdsForHero, keybinds: newHero.keybinds, attributes: newHero.attributes
+  };
+  const js = (baseSlug && heroesParsed[baseSlug] && heroesParsed[baseSlug].rawText)
+    ? patchHeroText(heroesParsed[baseSlug].rawText, genCtx)
+    : buildFromScratchJS(genCtx);
+
+  // ---- suit/cape textures: one file per slot the user assigned, named after
+  // the slot so different slots can never collide even if they reuse the
+  // same source file (e.g. layer1 and layer2 both pointing at Black Adam) ----
+  async function bytesFromDescriptor(desc){
+    if (desc.file) return await desc.file.arrayBuffer();
+    if (desc.zipPath) return await zip.files[desc.zipPath].async("arraybuffer");
+    return null;
+  }
+  const slotNewIds = new Map();
+  const textureWrites = [];
+  const missingSlots = [];
+  Object.entries(newHero.slotAssignments).forEach(([slot, a]) => {
+    let destPath, desc;
+    if (a.mode === "custom" && a.file){
+      destPath = `${suitTexPrefixG}${slug}/${slot}_custom.png`;
+      desc = { file: a.file };
+    } else if (a.sourcePath){
+      const base = a.sourcePath.split("/").pop();
+      destPath = `${suitTexPrefixG}${slug}/${slot}_${base}`;
+      desc = { zipPath: a.sourcePath };
+    } else {
+      missingSlots.push(slot);
+      return;
+    }
+    textureWrites.push({ destPath, desc, slot });
+    slotNewIds.set(slot, domain + ":" + destPath.slice(suitTexPrefixG.length).replace(/\.png$/i,""));
+  });
+
+  // ---- icons: write files named "<newSlug>_<armorSlotIndex>.png" — using
+  // the real armor-slot index (0=helmet,1=chest,2=legs,3=boots), NOT the
+  // array position, since the convention case can skip index 0 entirely
+  // for helmet-less heroes (using array position here was the bug that
+  // produced wrong filenames before). If this renderer has a real
+  // setItemIcons() call we also rewrite it with the new names; if it
+  // relies on the default convention (most heroes), we don't touch the
+  // renderer text at all — the base renderer will automatically look for
+  // these exact filenames once this hero is registered under its own slug.
+  const iconWrites = [];
+  const iconArgs = [];
+  newHero.iconAssignments.forEach(a => {
+    const newName = `${slug}_${a.index}`;
+    if (a.mode === "custom" && a.file){
+      iconWrites.push({ destPath: `${iconTexPrefixG}${newName}.png`, desc: { file: a.file }, index: a.index });
+      iconArgs[a.index] = newName;
+    } else if (a.sourcePath){
+      iconWrites.push({ destPath: `${iconTexPrefixG}${newName}.png`, desc: { zipPath: a.sourcePath }, index: a.index });
+      iconArgs[a.index] = newName;
+    } else {
+      iconArgs[a.index] = a.template; // nothing assigned — fall back to the original template string
+    }
+  });
+
+  // renderer file — fully flattened texture slots + colors, icons only
+  // rewritten when this renderer actually declares setItemIcons() itself
+  let rendererJS = null;
+  let mergedSlots = {};
+  if (rendererSlug && renderersParsed[rendererSlug]){
+    mergedSlots = getMergedRendererSlots(rendererSlug);
+    const combinedSource = renderersParsed[rendererSlug].rawText; // extend() line preserved as-is
+    rendererJS = patchRendererTextures(combinedSource, mergedSlots, slotNewIds);
+    if (newHero.iconUsesExplicitCall) rendererJS = patchRendererIcons(rendererJS, iconArgs);
+    rendererJS = patchRendererColors(rendererJS, newHero.beamColors);
+  }
+
+  const exportZip = new JSZip();
+  for (const path of Object.keys(zip.files)){
+    const entry = zip.files[path];
+    if (entry.dir){ exportZip.folder(path); continue; }
+    const data = await entry.async("uint8array");
+    exportZip.file(path, data);
+  }
+
+  exportZip.file(`assets/${domain}/data/heroes/${slug}.js`, js);
+  const rendererPath = `assets/${domain}/renderers/heroes/${slug}.js`;
+  if (rendererJS !== null) exportZip.file(rendererPath, rendererJS);
+  customPowerFiles.forEach(cp => exportZip.file(cp.path, JSON.stringify(cp.json, null, 2)));
+
+  const mapping = [];
+  for (const {destPath, desc, slot} of textureWrites){
+    const bytes = await bytesFromDescriptor(desc);
+    if (bytes) { exportZip.file(destPath, bytes); mapping.push({slot, to: destPath, from: desc.zipPath || "(custom upload/paint)"}); }
+  }
+  const iconMapping = [];
+  for (const {destPath, desc} of iconWrites){
+    const bytes = await bytesFromDescriptor(desc);
+    if (bytes) { exportZip.file(destPath, bytes); iconMapping.push({to: destPath, from: desc.zipPath || "(custom upload/paint)"}); }
+  }
+
+  const readme = `Hero Forge export — full heropack with "${name}" added\n\n` +
+    `This zip is the ENTIRE imported heropack, unchanged, plus:\n` +
+    ` - New hero file: assets/${domain}/data/heroes/${slug}.js\n` +
+    (rendererJS !== null ? ` - New renderer file: ${rendererPath} (copied from "${rendererSlug}", every texture slot flattened + independently assigned, icons renamed, colors applied)\n` : "") +
+    customPowerFiles.map(cp=>` - New/modified power file: ${cp.path}\n`).join("") +
+    `\nSuit/cape textures written (${mapping.length}), one per slot, named "<slot>_<original filename>" so different slots reusing the same source file never collide:\n` +
+    (mapping.map(m=>` - [${m.slot}] ${m.from}  ->  ${m.to}`).join("\n") || " (none assigned)") + "\n\n" +
+    (missingSlots.length ? `⚠️ These slots had nothing assigned in step 2, so they were left pointing at their renderer template's original texture: ${missingSlots.join(", ")}.\n\n` : "") +
+    `Item icons written (${iconMapping.length}), each named "${slug}_<armor slot index>.png" (0=helmet, 1=chestplate, 2=leggings, 3=boots — only the slots this hero actually has a piece for):\n` +
+    (iconMapping.map(m=>` - ${m.from} -> ${m.to}`).join("\n") || " (none — this renderer has no setItemIcons() call, or nothing resolved)") + "\n\n" +
+    (rendererJS === null ? `No renderer template was chosen, so no renderer file was generated for this hero — copy the closest matching renderer file yourself as a starting point.\n\n` : "") +
+    (newHero.beamColors.length ? `Beam/effect colors:\n - ${newHero.beamColors.length} color literal(s) in the renderer were set from step 2.\n\n` : "") +
+    `Attributes written (the actual numeric values, not just which powers are on):\n` +
+    (newHero.attributes.filter(a=>a.name).map(a=>` - ${a.name}: ${a.value} (tier ${a.tier})`).join("\n") || " (none set)") + "\n\n" +
+    `Still hand-script yourself, same as any hero in this pack:\n` +
+    ` - Anything beyond a flat texture swap or color literal in the renderer — unique particle emitters, custom 3D models/geometry, bespoke beam or physics tuning.\n` +
+    ` - Item/ability translation strings.\n` +
+    ` - The auto-generated movement-exclusivity scaffold (if present in hero.js) uses a placeholder getData() key — check it matches how your pack actually tracks flight.\n\n` +
+    (overwritesExistingHero ? `NOTE: "${slug}.js" matches an existing hero already in this pack — that hero's file (and its renderer, if the same slug had one and you didn't pick a different template) was overwritten by this export.\n\n` : "") +
+    `Unzip this in place of your original pack folder — everything else from the original pack is included as-is, so there's nothing to merge by hand.\n`;
+  exportZip.file("HERO_FORGE_README.txt", readme);
+
+  const blob = await exportZip.generateAsync({type:"blob"});
+  const url = URL.createObjectURL(blob);
+
+  out.innerHTML = `
+    ${overwritesExistingHero ? `<div class="warn-banner">⚠️ "${slug}.js" matches an existing hero in this pack — exporting will overwrite it (and its renderer, unless you picked a different template).</div>` : ""}
+    ${missingSlots.length ? `<div class="warn-banner">⚠️ ${missingSlots.length} slot(s) had nothing assigned in step 2: ${missingSlots.join(", ")}. They'll still point at the renderer template's original texture.</div>` : ""}
+    <div class="actions">
+      <a class="btn primary" href="${url}" download="${domain}_with_${slug}.zip">Download ${domain}_with_${slug}.zip (full pack)</a>
+    </div>
+    <h3>Generated hero.js</h3>
+    <pre>${js.replace(/</g,"&lt;")}</pre>
+    ${rendererJS !== null ? `<h3>Generated renderer (from "${rendererSlug}")</h3><pre>${rendererJS.replace(/</g,"&lt;")}</pre>` : `<p class="note">No renderer template selected — nothing was generated at ${rendererPath}.</p>`}
+    ${customPowerFiles.length ? `<h3>Custom power files (${customPowerFiles.length})</h3><pre>${customPowerFiles.map(cp=>cp.path).join("\n")}</pre>` : ""}
+    <h3>Suit/cape texture mapping (${mapping.length} files)</h3>
+    <pre>${mapping.map(m=>`[${m.slot}] ${m.from} -> ${m.to}`).join("\n") || "No renderer template chosen in step 2."}</pre>
+    <h3>Icon mapping (${iconMapping.length} files)</h3>
+    <pre>${iconMapping.map(m=>`${m.from} -> ${m.to}`).join("\n") || "No icons resolved."}</pre>
+    <p class="note">This download is your complete heropack — the new hero, its renderer (if a template was chosen), its powers, attributes, and its textures are already merged in alongside everything that was in the original zip.</p>
+  `;
+});
+</script>
+</body>
+</html>
